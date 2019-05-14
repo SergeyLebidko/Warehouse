@@ -5,6 +5,7 @@ import javax.swing.*;
 public class MainClass {
 
     private static DBHandler dbHandler;
+    private static ActionHandler actionHandler;
 
     public static void main(String[] args) {
         //Пытаемся получить подключение к базе данных
@@ -15,6 +16,9 @@ public class MainClass {
             return;
         }
 
+        //Создаем класс логики приложения
+        actionHandler = new ActionHandler();
+
         //Если подключение успешно получено, то запускаем создание интерфейса
         new GUI();
     }
@@ -22,5 +26,7 @@ public class MainClass {
     public static DBHandler getDbHandler() {
         return dbHandler;
     }
+
+    public static ActionHandler getActionHandler(){return actionHandler;};
 
 }
