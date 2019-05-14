@@ -15,11 +15,13 @@ public class ResourcesList {
     //Ресурсы для кнопок
     private static ImageLoader imageLoader = new ImageLoader();
     public static final Image logoImage = imageLoader.getImage("logo");
-    public static final ImageIcon openImage = imageLoader.getImageIcon("open");
-    public static final ImageIcon addImage = imageLoader.getImageIcon("add");
-    public static final ImageIcon removeImage = imageLoader.getImageIcon("remove");
-    public static final ImageIcon editImage = imageLoader.getImageIcon("edit");
-    public static final ImageIcon reportImage = imageLoader.getImageIcon("report");
+    public static final ImageIcon openIcon = imageLoader.getImageIcon("open");
+    public static final ImageIcon addIcon = imageLoader.getImageIcon("add");
+    public static final ImageIcon removeIcon = imageLoader.getImageIcon("remove");
+    public static final ImageIcon editIcon = imageLoader.getImageIcon("edit");
+    public static final ImageIcon reportIcon = imageLoader.getImageIcon("report");
+    public static final ImageIcon removeFilterIcon = imageLoader.getImageIcon("remove_filter");
+    public static final ImageIcon excelIcon =imageLoader.getImageIcon("excel");
 
     public static final String openBtnText = "";
     public static final String openBtnToolTip = "Открыть";
@@ -67,7 +69,9 @@ public class ResourcesList {
                 "add",
                 "remove",
                 "edit",
-                "report"
+                "report",
+                "remove_filter",
+                "excel"
         };
 
         private HashMap<String, Image> imageMap = new HashMap<>();
