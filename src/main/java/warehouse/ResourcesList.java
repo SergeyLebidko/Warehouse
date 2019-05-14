@@ -37,7 +37,7 @@ public class ResourcesList {
     public static final String reportBtnToolTip = "Отчет";
 
     //Параметры главного окна
-    public static final String frmTitle = "RegisterBook";
+    public static final String frmTitle = "Warehouse";
     public static final int FRM_WIDTH = 1200;
     public static final int FRM_HEIGHT = 900;
     public static final int MIN_FRM_WIDTH = 600;
