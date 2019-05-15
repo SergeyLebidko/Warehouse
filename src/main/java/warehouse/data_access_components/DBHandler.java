@@ -1,4 +1,4 @@
-package warehouse;
+package warehouse.data_access_components;
 
 import java.sql.Connection;
 import java.sql.DriverManager;

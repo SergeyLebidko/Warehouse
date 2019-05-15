@@ -1,5 +1,7 @@
 package warehouse;
 
+import warehouse.data_access_components.DBHandler;
+
 import javax.swing.*;
 
 public class MainClass {
