@@ -20,8 +20,8 @@ public class ResourcesList {
     public static final ImageIcon removeIcon = imageLoader.getImageIcon("remove");
     public static final ImageIcon editIcon = imageLoader.getImageIcon("edit");
     public static final ImageIcon reportIcon = imageLoader.getImageIcon("report");
-    public static final ImageIcon removeFilterIcon = imageLoader.getImageIcon("remove_filter");
     public static final ImageIcon excelIcon =imageLoader.getImageIcon("excel");
+    public static final ImageIcon removeFilterIcon = imageLoader.getImageIcon("remove_filter");
 
     public static final String openBtnText = "";
     public static final String openBtnToolTip = "Открыть";
@@ -34,6 +34,9 @@ public class ResourcesList {
 
     public static final String removeBtnText = "";
     public static final String removeBtnToolTip = "Удалить";
+
+    public static final String xlsBtnText = "";
+    public static final String xlsBtnToolTip = "Экспорт в Excel";
 
     public static final String reportBtnText = "";
     public static final String reportBtnToolTip = "Отчет";

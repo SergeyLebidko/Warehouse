@@ -9,9 +9,17 @@ public class GUI {
 
     private JFrame frm;
 
+    private JButton openBtn;
+    private JButton addBtn;
+    private JButton editBtn;
+    private JButton removeBtn;
+    private JButton xlsBtn;
+    private JButton reportBtn;
+
     public GUI() {
         localizationStandartDialog();
         createFrm();
+        createToolbar();
         showFrm();
     }
 
@@ -33,6 +41,44 @@ public class GUI {
         frm.setLocation(xPos, yPos);
         JPanel contentPane = new JPanel(new BorderLayout(5, 5));
         frm.setContentPane(contentPane);
+    }
+
+    private void createToolbar() {
+        JToolBar toolBar = new JToolBar();
+        toolBar.setFloatable(false);
+        toolBar.setBorder(BorderFactory.createEmptyBorder(0,5,0,5));
+
+        openBtn = new JButton(openBtnText, openIcon);
+        openBtn.setToolTipText(openBtnToolTip);
+
+        addBtn = new JButton(addBtnText, addIcon);
+        addBtn.setToolTipText(addBtnToolTip);
+
+        editBtn = new JButton(editBtnText, editIcon);
+        editBtn.setToolTipText(editBtnToolTip);
+
+        removeBtn = new JButton(removeBtnText, removeIcon);
+        removeBtn.setToolTipText(removeBtnToolTip);
+
+        xlsBtn = new JButton(xlsBtnText, excelIcon);
+        xlsBtn.setToolTipText(xlsBtnToolTip);
+
+        reportBtn = new JButton(reportBtnText, reportIcon);
+        reportBtn.setToolTipText(reportBtnToolTip);
+
+        toolBar.add(openBtn);
+        toolBar.add(Box.createHorizontalStrut(10));
+        toolBar.add(addBtn);
+        toolBar.add(Box.createHorizontalStrut(3));
+        toolBar.add(editBtn);
+        toolBar.add(Box.createHorizontalStrut(3));
+        toolBar.add(removeBtn);
+        toolBar.add(Box.createHorizontalGlue());
+        toolBar.add(xlsBtn);
+        toolBar.add(Box.createHorizontalStrut(3));
+        toolBar.add(reportBtn);
+
+        frm.add(toolBar, BorderLayout.NORTH);
     }
 
     private void showFrm() {
