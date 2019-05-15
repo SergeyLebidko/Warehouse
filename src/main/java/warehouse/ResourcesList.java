@@ -20,8 +20,11 @@ public class ResourcesList {
     public static final ImageIcon removeIcon = imageLoader.getImageIcon("remove");
     public static final ImageIcon editIcon = imageLoader.getImageIcon("edit");
     public static final ImageIcon reportIcon = imageLoader.getImageIcon("report");
-    public static final ImageIcon excelIcon =imageLoader.getImageIcon("excel");
+    public static final ImageIcon excelIcon = imageLoader.getImageIcon("excel");
     public static final ImageIcon removeFilterIcon = imageLoader.getImageIcon("remove_filter");
+    public static final ImageIcon toUpIcon = imageLoader.getImageIcon("to_up");
+    public static final ImageIcon toDownIcon = imageLoader.getImageIcon("to_down");
+    public static final ImageIcon noOrderIcon = imageLoader.getImageIcon("no_order");
 
     public static final String openBtnText = "";
     public static final String openBtnToolTip = "Открыть";
@@ -40,6 +43,9 @@ public class ResourcesList {
 
     public static final String reportBtnText = "";
     public static final String reportBtnToolTip = "Отчет";
+
+    public static final String removeFilterBtnText = "";
+    public static final String removeFilterToolTip = "Очистить фильтр";
 
     //Параметры главного окна
     public static final String frmTitle = "Warehouse";
@@ -61,6 +67,9 @@ public class ResourcesList {
     public static final Color evenCellsColor = new Color(240, 240, 240);
     public static final Color notEvenCellsColor = new Color(255, 255, 255);
 
+    //Сообщения об ошибках
+    public static final String FAIL_CATALOG_ACCESS = "Не удалось получить содержимое каталога. Ошибка:";
+
     //Шрифт для таблиц
     public static final Font mainFont = new Font("Arial", Font.PLAIN, 16);
 
@@ -74,7 +83,10 @@ public class ResourcesList {
                 "edit",
                 "report",
                 "remove_filter",
-                "excel"
+                "excel",
+                "to_up",
+                "to_down",
+                "no_order"
         };
 
         private HashMap<String, Image> imageMap = new HashMap<>();

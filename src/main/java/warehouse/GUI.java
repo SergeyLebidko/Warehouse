@@ -5,9 +5,13 @@ import java.awt.*;
 
 import static warehouse.ResourcesList.*;
 
+
 public class GUI {
 
     private JFrame frm;
+    private JPanel contentPane;
+
+    private ActionHandler actionHandler;
 
     private JButton openBtn;
     private JButton addBtn;
@@ -19,11 +23,15 @@ public class GUI {
     public GUI() {
         localizationStandartDialog();
         createFrm();
+        createActionHandlerState();
         createToolbar();
+
+        test();
+
         showFrm();
     }
 
-    private void localizationStandartDialog(){
+    private void localizationStandartDialog() {
         UIManager.put("OptionPane.yesButtonText", yesButtonText);
         UIManager.put("OptionPane.noButtonText", noButtonText);
         UIManager.put("OptionPane.cancelButtonText", cancelButtonText);
@@ -39,14 +47,19 @@ public class GUI {
         int xPos = Toolkit.getDefaultToolkit().getScreenSize().width / 2 - FRM_WIDTH / 2;
         int yPos = Toolkit.getDefaultToolkit().getScreenSize().height / 2 - FRM_HEIGHT / 2;
         frm.setLocation(xPos, yPos);
-        JPanel contentPane = new JPanel(new BorderLayout(5, 5));
+        contentPane = new JPanel(new BorderLayout(5, 5));
         frm.setContentPane(contentPane);
+    }
+
+    private void createActionHandlerState() {
+        actionHandler = MainClass.getActionHandler();
+        actionHandler.setContentPane(contentPane);
     }
 
     private void createToolbar() {
         JToolBar toolBar = new JToolBar();
         toolBar.setFloatable(false);
-        toolBar.setBorder(BorderFactory.createEmptyBorder(0,5,0,5));
+        toolBar.setBorder(BorderFactory.createEmptyBorder(0, 5, 0, 5));
 
         openBtn = new JButton(openBtnText, openIcon);
         openBtn.setToolTipText(openBtnToolTip);
@@ -83,6 +96,10 @@ public class GUI {
 
     private void showFrm() {
         frm.setVisible(true);
+    }
+
+    private void test(){
+        actionHandler.commandHandler(ActionHandler.OPEN_CATALOG_COMMAND);
     }
 
 }
