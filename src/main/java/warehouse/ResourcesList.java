@@ -60,6 +60,11 @@ public class ResourcesList {
     public static final String cancelButtonText = "Отмена";
     public static final String inputDialogTitle = "";
 
+    //Названия пунктов всплывающих меню
+    public static final String openCatalogItemText = "Каталог";
+    public static final String openContractorsItemText = "Контрагенты";
+    public static final String openDocumentsItemText = "Документы";
+
     //Параметры табличного компонента
     public static final int rowHeight = 40;
     public static final Color gridColor = Color.LIGHT_GRAY;
@@ -69,7 +74,8 @@ public class ResourcesList {
     public static final int preferredWidthNumberColumn = 80;
 
     //Сообщения об ошибках
-    public static final String FAIL_CATALOG_ACCESS = "Не удалось получить содержимое каталога. Ошибка:";
+    public static final String failCatalogAccess = "Не удалось получить содержимое каталога. Ошибка:";
+    public static final String failContractorsAccess = "Не удалось получить доступ к списку контрагентов. Ошибка:";
 
     //Шрифт для таблиц
     public static final Font mainFont = new Font("Arial", Font.PLAIN, 16);

@@ -360,6 +360,10 @@ public class SimpleDataTable {
         content = list;
         this.sortOrder = sortOrder;
         this.sortedColumn = sortedColumn;
+        idFindField.setText("");
+        nameFindField.setText("");
+        nameFilter = "";
+        idFilter = "";
         model.refresh();
     }
 

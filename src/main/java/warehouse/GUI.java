@@ -2,6 +2,10 @@ package warehouse;
 
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 
 import static warehouse.ResourcesList.*;
 
@@ -20,14 +24,16 @@ public class GUI {
     private JButton xlsBtn;
     private JButton reportBtn;
 
+    JPopupMenu openMenu;
+
     public GUI() {
         localizationStandartDialog();
         createFrm();
         createActionHandlerState();
         createToolbar();
-
-        test();
-
+        createOpenMenu();
+        createReportMenu();
+        createBtnListeners();
         showFrm();
     }
 
@@ -94,12 +100,47 @@ public class GUI {
         frm.add(toolBar, BorderLayout.NORTH);
     }
 
-    private void showFrm() {
-        frm.setVisible(true);
+    private void createOpenMenu(){
+        openMenu = new JPopupMenu("Открыть:");
+        JMenuItem openCatalogItem = new JMenuItem(openCatalogItemText);
+        JMenuItem openContractorsItem = new JMenuItem(openContractorsItemText);
+        JMenuItem openDocumentsItem = new JMenuItem(openDocumentsItemText);
+
+        openMenu.add(openCatalogItem);
+        openMenu.add(openContractorsItem);
+        openMenu.add(openDocumentsItem);
+
+        openCatalogItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actionHandler.commandHandler(ActionHandler.OPEN_CATALOG_COMMAND);
+            }
+        });
+
+        openContractorsItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actionHandler.commandHandler(ActionHandler.OPEN_CONTRACTORS_COMMAND);
+            }
+        });
     }
 
-    private void test(){
-        actionHandler.commandHandler(ActionHandler.OPEN_CATALOG_COMMAND);
+    private void createReportMenu(){
+        //Вставить код
+    }
+
+    private void createBtnListeners(){
+        //Кнопка Открыть
+        openBtn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                openMenu.show(openBtn, e.getX(), e.getY());
+            }
+        });
+    }
+
+    private void showFrm() {
+        frm.setVisible(true);
     }
 
 }

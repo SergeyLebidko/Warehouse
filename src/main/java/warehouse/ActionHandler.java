@@ -25,8 +25,11 @@ public class ActionHandler {
 
     private JPanel contentPane;
 
+    private SimpleDataTable simpleDataTable;    //Компонент для отображения в главном окне простых таблиц
+
     public ActionHandler() {
         dbHandler = MainClass.getDbHandler();
+        simpleDataTable = new SimpleDataTable();
         contentPane = null;
         state = NO_DATASET;
     }
@@ -39,20 +42,42 @@ public class ActionHandler {
         //Открыть каталог
         if (command.equals(OPEN_CATALOG_COMMAND)){
             showCatalog();
+            return;
+        }
+
+        //Открыть список контрагентов
+        if (command.equals(OPEN_CONTRACTORS_COMMAND)){
+            showContractors();
+            return;
         }
     }
 
     private void showCatalog(){
-        SimpleDataTable dataTable = new SimpleDataTable();
         ArrayList<SimpleDataElement> list;
         try {
             list = dbHandler.getCatalog();
         } catch (SQLException e) {
-            JOptionPane.showMessageDialog(null, FAIL_CATALOG_ACCESS+" "+e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, failCatalogAccess +" "+e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        dataTable.refresh(list, 1, TO_UP );
-        contentPane.add(dataTable.getVisualComponent());
+        simpleDataTable.refresh(list, 1, TO_UP );
+        contentPane.add(simpleDataTable.getVisualComponent());
+        contentPane.revalidate();
+        contentPane.repaint();
+    }
+
+    private void showContractors(){
+        ArrayList<SimpleDataElement> list;
+        try {
+            list = dbHandler.getContractors();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, failContractorsAccess +" "+e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        simpleDataTable.refresh(list, 1, TO_UP );
+        contentPane.add(simpleDataTable.getVisualComponent());
+        contentPane.revalidate();
+        contentPane.repaint();
     }
 
 }
