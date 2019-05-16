@@ -137,6 +137,14 @@ public class GUI {
                 openMenu.show(openBtn, e.getX(), e.getY());
             }
         });
+
+        //Кнопка Экспорт
+        xlsBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actionHandler.commandHandler(ActionHandler.EXPORT_TO_XLS_COMMAND);
+            }
+        });
     }
 
     private void showFrm() {

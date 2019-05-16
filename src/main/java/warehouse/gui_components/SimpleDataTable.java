@@ -1,5 +1,13 @@
 package warehouse.gui_components;
 
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.CellUtil;
+import org.apache.poi.ss.util.RegionUtil;
 import warehouse.data_access_components.SimpleDataElement;
 import warehouse.data_access_components.SortOrders;
 
@@ -31,7 +39,9 @@ public class SimpleDataTable {
     private String idFilter;
 
     private JLabel statusLab;
+    private JLabel nameLab;
 
+    private String displayName;
     private int sortedColumn;
     private SortOrders sortOrder;
 
@@ -226,6 +236,14 @@ public class SimpleDataTable {
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getColumnModel().getColumn(0).setMaxWidth(preferredWidthNumberColumn);
 
+        JPanel topPane = new JPanel(new BorderLayout(5,5));
+
+        Box nameBox = Box.createHorizontalBox();
+        nameLab = new JLabel(displayName);
+        nameLab.setFont(mainFont);
+        nameBox.add(nameLab);
+        nameBox.add(Box.createHorizontalGlue());
+
         idFindField = new JTextField(5);
         idFindField.setMaximumSize(new Dimension(preferredWidthNumberColumn, 100));
         idFindField.setFont(mainFont);
@@ -246,13 +264,16 @@ public class SimpleDataTable {
         filterBox.add(Box.createHorizontalStrut(5));
         filterBox.add(removeFilterBtn);
 
+        topPane.add(nameBox, BorderLayout.NORTH);
+        topPane.add(filterBox, BorderLayout.SOUTH);
 
-        contentPane.add(filterBox, BorderLayout.NORTH);
+        contentPane.add(topPane, BorderLayout.NORTH);
         contentPane.add(new JScrollPane(table), BorderLayout.CENTER);
         contentPane.add(statusLab, BorderLayout.SOUTH);
 
         simpleElementComparator = new SimpleElementComparator();
         content = null;
+        displayName = "";
         sortedColumn = 1;
         sortOrder = NO_ORDER;
         idFilter = "";
@@ -352,19 +373,106 @@ public class SimpleDataTable {
         model.refresh();
     }
 
-    public void refresh(ArrayList<SimpleDataElement> list) {
-        refresh(list, 1, NO_ORDER);
-    }
-
-    public void refresh(ArrayList<SimpleDataElement> list, int sortedColumn, SortOrders sortOrder) {
+    public void refresh(ArrayList<SimpleDataElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
         content = list;
         this.sortOrder = sortOrder;
         this.sortedColumn = sortedColumn;
+        this.displayName = displayName;
+        nameLab.setText(displayName);
         idFindField.setText("");
         nameFindField.setText("");
         nameFilter = "";
         idFilter = "";
         model.refresh();
+    }
+
+    public HSSFWorkbook getExcelWorkbook() {
+        //Создаем файл в памяти
+        HSSFWorkbook workbook = new HSSFWorkbook();
+
+        //Создаем лист
+        HSSFSheet sheet = workbook.createSheet("Лист1");
+
+        //Заполняем лист данными
+        //Формируем ячейку с наименованием набора данных
+        HSSFCellStyle nameStyle = workbook.createCellStyle();
+        HSSFFont nameFont = workbook.createFont();
+        nameFont.setFontHeight((short) 256);
+        nameFont.setBold(true);
+        nameStyle.setFont(nameFont);
+        nameStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        Row row = sheet.createRow(0);
+
+        Cell nameCell = row.createCell(0);
+        row.createCell(1);
+        row.createCell(2);
+
+        nameCell.setCellValue(displayName);
+        nameCell.setCellStyle(nameStyle);
+
+        CellRangeAddress region = new CellRangeAddress(0, 0, 0, 2);
+        sheet.addMergedRegion(region);
+
+        RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
+
+        //Формируем заголовки столбцов
+        HSSFCellStyle headerStyle = workbook.createCellStyle();
+        HSSFFont headerFont = workbook.createFont();
+        headerFont.setFontHeight((short) 200);
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        row = sheet.createRow(1);
+        Cell cell1 = row.createCell(0);
+        Cell cell2 = row.createCell(1);
+        Cell cell3 = row.createCell(2);
+
+        cell1.setCellValue("№ п/п");
+        cell2.setCellValue("Номер");
+        cell3.setCellValue("Наименование");
+
+        cell1.setCellStyle(headerStyle);
+        cell2.setCellStyle(headerStyle);
+        cell3.setCellStyle(headerStyle);
+
+        //Вносим данные
+        HSSFCellStyle styleTextCell = workbook.createCellStyle();
+        styleTextCell.setWrapText(true);
+
+        HSSFCellStyle styleNumericCell = workbook.createCellStyle();
+        styleNumericCell.setAlignment(HorizontalAlignment.CENTER);
+        styleNumericCell.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        Cell cell;
+        int number = 1;
+        for (int index = 0; index < model.getRowCount(); index++) {
+            row = sheet.createRow(index + 2);
+
+            //Столбец № п/п
+            cell = row.createCell(0);
+            cell.setCellValue(number);
+            cell.setCellStyle(styleNumericCell);
+            number++;
+
+            //Столбец Номер
+            cell = row.createCell(1);
+            cell.setCellValue(((SimpleDataElement) model.getValueAt(index, 0)).getId());
+            cell.setCellStyle(styleNumericCell);
+
+            //Столбец Наименование
+            cell = row.createCell(2);
+            cell.setCellValue(((SimpleDataElement) model.getValueAt(index, 0)).getName());
+            cell.setCellStyle(styleTextCell);
+        }
+
+        //Расширяем столбцы, чтобы данные полностью в них помещались
+        sheet.setColumnWidth(0, 3000);
+        sheet.setColumnWidth(1, 3000);
+        sheet.setColumnWidth(2, 10000);
+
+        return workbook;
     }
 
     private void revertSortOrder() {

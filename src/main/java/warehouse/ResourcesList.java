@@ -12,6 +12,10 @@ public class ResourcesList {
     public static final String jdbcClassName = "org.sqlite.JDBC";
     public static final String databaseConnectionString = "jdbc:sqlite:database\\database.db";
 
+    //Параметры файла для экспорта данных в excel
+    public static final String exportFolder = "xls";
+    public static final String exportFileName = "export.xls";
+
     //Ресурсы для кнопок
     private static ImageLoader imageLoader = new ImageLoader();
     public static final Image logoImage = imageLoader.getImage("logo");
@@ -76,6 +80,8 @@ public class ResourcesList {
     //Сообщения об ошибках
     public static final String failCatalogAccess = "Не удалось получить содержимое каталога. Ошибка:";
     public static final String failContractorsAccess = "Не удалось получить доступ к списку контрагентов. Ошибка:";
+    public static final String failExportFolderCreate = "Не удалось создать папку для экспорта. Ошибка:";
+    public static final String failOpenExportXLSFile = "Не удалось открыть созданный файл. Ошибка:";
 
     //Шрифт для таблиц
     public static final Font mainFont = new Font("Arial", Font.PLAIN, 16);
