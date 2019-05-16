@@ -2,7 +2,7 @@ package warehouse.data_access_components;
 
 public class ContractorsElement implements SimpleDataElement{
 
-    private int id;
+    private Integer id;
     private String name;
 
     public ContractorsElement(int id, String name) {
@@ -11,7 +11,7 @@ public class ContractorsElement implements SimpleDataElement{
     }
 
     @Override
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 

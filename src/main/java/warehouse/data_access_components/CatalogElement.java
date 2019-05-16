@@ -2,7 +2,7 @@ package warehouse.data_access_components;
 
 public class CatalogElement implements SimpleDataElement{
 
-    private int id;
+    private Integer id;
     private String name;
 
     public CatalogElement(int id, String name) {
@@ -11,7 +11,7 @@ public class CatalogElement implements SimpleDataElement{
     }
 
     @Override
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 

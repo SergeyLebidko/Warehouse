@@ -33,11 +33,11 @@ public class ActionHandler {
 
     private JPanel contentPane;
 
-    private SimpleDataTable simpleDataTable;    //Компонент для отображения в главном окне простых таблиц
+    private DataTable dataTable;    //Компонент для отображения в главном окне простых таблиц
 
     public ActionHandler() {
         dbHandler = MainClass.getDbHandler();
-        simpleDataTable = new SimpleDataTable();
+        dataTable = new SimpleDataTable();
         contentPane = null;
         state = NO_DATASET;
     }
@@ -74,8 +74,8 @@ public class ActionHandler {
             JOptionPane.showMessageDialog(null, failCatalogAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        simpleDataTable.refresh(list, "Каталог", 1, TO_UP);
-        contentPane.add(simpleDataTable.getVisualComponent());
+        dataTable.refresh(list, "Каталог", 1, TO_UP);
+        contentPane.add(dataTable.getVisualComponent());
         contentPane.revalidate();
         contentPane.repaint();
         state = CATALOG_DATASET;
@@ -89,8 +89,8 @@ public class ActionHandler {
             JOptionPane.showMessageDialog(null, failContractorsAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        simpleDataTable.refresh(list, "Контрагенты", 1, TO_UP);
-        contentPane.add(simpleDataTable.getVisualComponent());
+        dataTable.refresh(list, "Контрагенты", 1, TO_UP);
+        contentPane.add(dataTable.getVisualComponent());
         contentPane.revalidate();
         contentPane.repaint();
         state = CONTRACTORS_DATASET;
@@ -101,7 +101,7 @@ public class ActionHandler {
 
         //Получаем рабочую книгу из текущего отображаемого компонента
         if (state.equals(CATALOG_DATASET) | state.equals(CONTRACTORS_DATASET)) {
-            workbook = simpleDataTable.getExcelWorkbook();
+            workbook = dataTable.getExcelWorkbook();
         }
 
         if (workbook == null) return;

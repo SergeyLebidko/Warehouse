@@ -8,6 +8,7 @@ import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.CellUtil;
 import org.apache.poi.ss.util.RegionUtil;
+import warehouse.data_access_components.DataElement;
 import warehouse.data_access_components.SimpleDataElement;
 import warehouse.data_access_components.SortOrders;
 
@@ -23,7 +24,7 @@ import java.util.Comparator;
 import static warehouse.ResourcesList.*;
 import static warehouse.data_access_components.SortOrders.*;
 
-public class SimpleDataTable {
+public class SimpleDataTable implements DataTable {
 
     private JPanel contentPane;
     private Model model;
@@ -318,10 +319,12 @@ public class SimpleDataTable {
         });
     }
 
+    @Override
     public JPanel getVisualComponent() {
         return contentPane;
     }
 
+    @Override
     public SimpleDataElement getSelectedRow() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow == (-1)) return null;
@@ -329,6 +332,7 @@ public class SimpleDataTable {
         return selectedElement;
     }
 
+    @Override
     public void setIdFilter(String nextFilter) {
         nextFilter = nextFilter.trim();
         if (nextFilter.equals("")) {
@@ -373,8 +377,16 @@ public class SimpleDataTable {
         model.refresh();
     }
 
-    public void refresh(ArrayList<SimpleDataElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
-        content = list;
+    @Override
+    public void refresh(ArrayList<? extends DataElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
+        content = new ArrayList<>();
+
+        SimpleDataElement simpleDataElement;
+        for (DataElement element: list){
+            simpleDataElement = (SimpleDataElement)element;
+            content.add(simpleDataElement);
+        }
+
         this.sortOrder = sortOrder;
         this.sortedColumn = sortedColumn;
         this.displayName = displayName;
@@ -386,6 +398,7 @@ public class SimpleDataTable {
         model.refresh();
     }
 
+    @Override
     public HSSFWorkbook getExcelWorkbook() {
         //Создаем файл в памяти
         HSSFWorkbook workbook = new HSSFWorkbook();

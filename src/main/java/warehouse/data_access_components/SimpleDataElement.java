@@ -1,8 +1,8 @@
 package warehouse.data_access_components;
 
-public interface SimpleDataElement {
+public interface SimpleDataElement extends DataElement {
 
-    int getId();
+    Integer getId();
     String getName();
 
 }
