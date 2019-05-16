@@ -24,14 +24,17 @@ public class SimpleDataTable {
     private JTable table;
     private SimpleElementComparator simpleElementComparator;
 
-    private JTextField findField;
+    private JTextField nameFindField;
+    private JTextField idFindField;
     private JButton removeFilterBtn;
+    private String nameFilter;
+    private String idFilter;
+
     private JLabel statusLab;
 
     private int sortedColumn;
     private SortOrders sortOrder;
 
-    private String nameFilter;
 
     private ArrayList<SimpleDataElement> content;
 
@@ -86,13 +89,16 @@ public class SimpleDataTable {
         }
 
         private boolean filterCheck(SimpleDataElement dataElement) {
+            String id = dataElement.getId() + "";
             String name = dataElement.getName();
+
             name = name.toLowerCase();
-            return name.indexOf(nameFilter.toLowerCase()) != (-1);
+
+            return (id.indexOf(idFilter) != (-1)) & (name.indexOf(nameFilter.toLowerCase()) != (-1));
         }
 
         private boolean filterEmpty() {
-            return nameFilter.equals("");
+            return idFilter.equals("") & nameFilter.equals("");
         }
 
         @Override
@@ -221,12 +227,23 @@ public class SimpleDataTable {
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getColumnModel().getColumn(0).setMaxWidth(preferredWidthNumberColumn);
 
-        findField = new JTextField();
-        findField.setFont(mainFont);
+        idFindField = new JTextField(5);
+        idFindField.setMaximumSize(new Dimension(preferredWidthNumberColumn, 100));
+        idFindField.setFont(mainFont);
+
+        nameFindField = new JTextField();
+        nameFindField.setFont(mainFont);
+
         removeFilterBtn = new JButton(removeFilterBtnText, removeFilterIcon);
 
         Box filterBox = Box.createHorizontalBox();
-        filterBox.add(findField);
+        filterBox.add(new JLabel("Номер:"));
+        filterBox.add(Box.createHorizontalStrut(5));
+        filterBox.add(idFindField);
+        filterBox.add(Box.createHorizontalStrut(5));
+        filterBox.add(new JLabel("Наименование:"));
+        filterBox.add(Box.createHorizontalStrut(5));
+        filterBox.add(nameFindField);
         filterBox.add(Box.createHorizontalStrut(5));
         filterBox.add(removeFilterBtn);
 
@@ -237,16 +254,26 @@ public class SimpleDataTable {
 
         simpleElementComparator = new SimpleElementComparator();
         content = null;
+        sortedColumn = 1;
         sortOrder = NO_ORDER;
+        idFilter = "";
         nameFilter = "";
     }
 
     private void createActionListeners() {
-        //Обработчик событий строки поиска
-        findField.addKeyListener(new KeyAdapter() {
+        //Обработчик событий строки поиска по номеру
+        idFindField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                setNameFilter(findField.getText());
+                setIdFilter(idFindField.getText());
+            }
+        });
+
+        //Обработчик событий строки поиска по наименованию
+        nameFindField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                setNameFilter(nameFindField.getText());
             }
         });
 
@@ -282,6 +309,28 @@ public class SimpleDataTable {
         return selectedElement;
     }
 
+    public void setIdFilter(String nextFilter) {
+        nextFilter = nextFilter.trim();
+        if (nextFilter.equals("")) {
+            if (idFilter.equals("")) return;
+            idFilter = "";
+            model.refresh();
+            return;
+        }
+
+        //Проверяем возможность конвертирования строки с номером в число
+        try {
+            Integer.parseInt(nextFilter);
+        } catch (Exception ex) {
+            return;
+        }
+
+        idFilter = nextFilter;
+
+        //Уведомляем модель таблицы о произошедших изменениях
+        model.refresh();
+    }
+
     public void setNameFilter(String nextFilter) {
         nextFilter = nextFilter.trim();
         if (nextFilter.equals(nameFilter)) return;
@@ -292,9 +341,13 @@ public class SimpleDataTable {
     }
 
     public void removeFilter() {
-        findField.setText("");
-        if (nameFilter.equals("")) return;
+        idFindField.setText("");
+        nameFindField.setText("");
+
+        if (idFilter.equals("") & nameFilter.equals("")) return;
+
         nameFilter = "";
+        idFilter = "";
 
         //Уведомляем модель таблицы о произошедших изменениях
         model.refresh();
