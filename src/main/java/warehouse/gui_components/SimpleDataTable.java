@@ -1,6 +1,5 @@
 package warehouse.gui_components;
 
-import warehouse.data_access_components.CatalogElement;
 import warehouse.data_access_components.SimpleDataElement;
 import warehouse.data_access_components.SortOrders;
 
@@ -52,16 +51,16 @@ public class SimpleDataTable {
 
         public Model() {
             rowCount = 0;
-            columnCount = 1;
-            statusLab.setText("Строки: "+rowCount);
+            columnCount = 2;
+            statusLab.setText("Строки: " + rowCount);
         }
 
         public void refresh() {
-            if (content==null)return;
+            if (content == null) return;
 
             if (filterEmpty()) {
                 rowCount = content.size();
-                statusLab.setText("Строки: "+rowCount);
+                statusLab.setText("Строки: " + rowCount);
                 fireTableDataChanged();
                 return;
             }
@@ -70,7 +69,7 @@ public class SimpleDataTable {
             for (SimpleDataElement element : content) {
                 if (filterCheck(element)) rowCount++;
             }
-            statusLab.setText("Строки: "+rowCount);
+            statusLab.setText("Строки: " + rowCount);
             fireTableDataChanged();
         }
 
@@ -122,6 +121,17 @@ public class SimpleDataTable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JLabel lab = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             lab.setFont(mainFont);
+
+            SimpleDataElement element = (SimpleDataElement) value;
+            if (column == 0) {
+                lab.setText(element.getId() + "");
+                lab.setHorizontalAlignment(SwingConstants.CENTER);
+            }
+            if (column == 1) {
+                lab.setText(element.toString());
+                lab.setHorizontalAlignment(SwingConstants.LEFT);
+            }
+
             if (!isSelected) {
                 if ((row % 2) == 0) {
                     lab.setBackground(evenCellsColor);
@@ -130,6 +140,7 @@ public class SimpleDataTable {
                     lab.setBackground(notEvenCellsColor);
                 }
             }
+
             return lab;
         }
 
@@ -141,22 +152,36 @@ public class SimpleDataTable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JLabel lab = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
             lab.setBackground(headerColor);
-            lab.setText("");
+
+            if (column == 0) {
+                lab.setText("Номер");
+            }
+            if (column == 1) {
+                lab.setText("Наименование");
+            }
+
             lab.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
             lab.setHorizontalAlignment(SwingConstants.CENTER);
-            switch (sortOrder) {
-                case TO_UP: {
-                    lab.setIcon(toUpIcon);
-                    break;
-                }
-                case TO_DOWN: {
-                    lab.setIcon(toDownIcon);
-                    break;
-                }
-                case NO_ORDER: {
-                    lab.setIcon(noOrderIcon);
+
+            if (column==0){
+                lab.setIcon(null);
+            }
+            if (column == 1) {
+                switch (sortOrder) {
+                    case TO_UP: {
+                        lab.setIcon(toUpIcon);
+                        break;
+                    }
+                    case TO_DOWN: {
+                        lab.setIcon(toDownIcon);
+                        break;
+                    }
+                    case NO_ORDER: {
+                        lab.setIcon(noOrderIcon);
+                    }
                 }
             }
+
             return lab;
         }
 
@@ -170,7 +195,7 @@ public class SimpleDataTable {
     private void createFields() {
         contentPane = new JPanel(new BorderLayout(5, 5));
         contentPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-        statusLab=new JLabel("");
+        statusLab = new JLabel("");
         model = new Model();
         table = new JTable(model);
         cellRenderer = new CellRenderer();
@@ -182,6 +207,7 @@ public class SimpleDataTable {
         table.setShowVerticalLines(false);
         table.setGridColor(gridColor);
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.getColumnModel().getColumn(0).setMaxWidth(preferredWidthNumberColumn);
 
         findField = new JTextField();
         findField.setFont(mainFont);
@@ -223,8 +249,10 @@ public class SimpleDataTable {
         //Обработчик щелчка по заголовку столбца
         table.getTableHeader().addMouseListener(new MouseAdapter() {
             @Override
-            public void mouseReleased(MouseEvent e) {
+            public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 1 & e.getButton() == MouseEvent.BUTTON1) {
+                    int columnNumber = table.getTableHeader().columnAtPoint(e.getPoint());
+                    if (columnNumber!=1)return;
                     revertSortOrder();
                 }
             }
@@ -271,7 +299,7 @@ public class SimpleDataTable {
     }
 
     private void revertSortOrder() {
-        if (content==null)return;
+        if (content == null) return;
         SortOrders nextOrder = null;
         switch (sortOrder) {
             case NO_ORDER: {

@@ -14,6 +14,8 @@ import java.util.ArrayList;
 public class ActionHandler {
 
     public static final String OPEN_CATALOG_COMMAND = "open catalog";
+    public static final String OPEN_CONTRACTORS_COMMAND = "open contractors";
+    public static final String OPEN_DOCUMENTS_LIST_COMMAND = "open documents list";
 
     private static final String NO_DATASET = "";
     private static final String CATALOG_DATASET = "catalog";
