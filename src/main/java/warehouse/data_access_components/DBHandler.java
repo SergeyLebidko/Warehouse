@@ -32,4 +32,21 @@ public class DBHandler {
         return list;
     }
 
+    public ArrayList<SimpleDataElement> getContractors() throws SQLException {
+        String query = "SELECT * FROM CONTRACTORS ORDER BY NAME";
+
+        ResultSet resultSet = statement.executeQuery(query);
+        ArrayList<SimpleDataElement> list = new ArrayList<>();
+
+        int id;
+        String name;
+        while (resultSet.next()){
+            id = resultSet.getInt(1);
+            name = resultSet.getString(2);
+            list.add(new ContractorsElement(id, name));
+        }
+
+        return list;
+    }
+
 }

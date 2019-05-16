@@ -35,7 +35,6 @@ public class SimpleDataTable {
     private int sortedColumn;
     private SortOrders sortOrder;
 
-
     private ArrayList<SimpleDataElement> content;
 
     private class SimpleElementComparator implements Comparator<SimpleDataElement> {
