@@ -28,8 +28,10 @@ public class SimpleDataTable {
     private JButton removeFilterBtn;
     private JLabel statusLab;
 
+    private int sortedColumn;
     private SortOrders sortOrder;
-    private String filter;
+
+    private String nameFilter;
 
     private ArrayList<SimpleDataElement> content;
 
@@ -37,9 +39,17 @@ public class SimpleDataTable {
 
         @Override
         public int compare(SimpleDataElement o1, SimpleDataElement o2) {
-            String name1 = o1.getName();
-            String name2 = o2.getName();
-            return sortOrder.getMul() * name1.compareTo(name2);
+            if (sortedColumn == 0) {
+                Integer id1 = o1.getId();
+                Integer id2 = o2.getId();
+                return sortOrder.getMul() * id1.compareTo(id2);
+            }
+            if (sortedColumn == 1) {
+                String name1 = o1.getName();
+                String name2 = o2.getName();
+                return sortOrder.getMul() * name1.compareTo(name2);
+            }
+            return 0;
         }
 
     }
@@ -57,6 +67,8 @@ public class SimpleDataTable {
 
         public void refresh() {
             if (content == null) return;
+
+            content.sort(simpleElementComparator);
 
             if (filterEmpty()) {
                 rowCount = content.size();
@@ -76,11 +88,11 @@ public class SimpleDataTable {
         private boolean filterCheck(SimpleDataElement dataElement) {
             String name = dataElement.getName();
             name = name.toLowerCase();
-            return name.indexOf(filter.toLowerCase()) != (-1);
+            return name.indexOf(nameFilter.toLowerCase()) != (-1);
         }
 
         private boolean filterEmpty() {
-            return filter.equals("");
+            return nameFilter.equals("");
         }
 
         @Override
@@ -163,10 +175,10 @@ public class SimpleDataTable {
             lab.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
             lab.setHorizontalAlignment(SwingConstants.CENTER);
 
-            if (column==0){
-                lab.setIcon(null);
+            if (column != sortedColumn) {
+                lab.setIcon(noOrderIcon);
             }
-            if (column == 1) {
+            if (column == sortedColumn) {
                 switch (sortOrder) {
                     case TO_UP: {
                         lab.setIcon(toUpIcon);
@@ -226,7 +238,7 @@ public class SimpleDataTable {
         simpleElementComparator = new SimpleElementComparator();
         content = null;
         sortOrder = NO_ORDER;
-        filter = "";
+        nameFilter = "";
     }
 
     private void createActionListeners() {
@@ -234,7 +246,7 @@ public class SimpleDataTable {
         findField.addKeyListener(new KeyAdapter() {
             @Override
             public void keyReleased(KeyEvent e) {
-                setFilter(findField.getText());
+                setNameFilter(findField.getText());
             }
         });
 
@@ -252,7 +264,7 @@ public class SimpleDataTable {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 1 & e.getButton() == MouseEvent.BUTTON1) {
                     int columnNumber = table.getTableHeader().columnAtPoint(e.getPoint());
-                    if (columnNumber!=1)return;
+                    sortedColumn = columnNumber;
                     revertSortOrder();
                 }
             }
@@ -270,10 +282,10 @@ public class SimpleDataTable {
         return selectedElement;
     }
 
-    public void setFilter(String nextFilter) {
+    public void setNameFilter(String nextFilter) {
         nextFilter = nextFilter.trim();
-        if (nextFilter.equals(filter)) return;
-        filter = nextFilter;
+        if (nextFilter.equals(nameFilter)) return;
+        nameFilter = nextFilter;
 
         //Уведомляем модель таблицы о произошедших изменениях
         model.refresh();
@@ -281,20 +293,21 @@ public class SimpleDataTable {
 
     public void removeFilter() {
         findField.setText("");
-        if (filter.equals("")) return;
-        filter = "";
+        if (nameFilter.equals("")) return;
+        nameFilter = "";
 
         //Уведомляем модель таблицы о произошедших изменениях
         model.refresh();
     }
 
     public void refresh(ArrayList<SimpleDataElement> list) {
-        refresh(list, NO_ORDER);
+        refresh(list, 1, NO_ORDER);
     }
 
-    public void refresh(ArrayList<SimpleDataElement> list, SortOrders sortOrder) {
+    public void refresh(ArrayList<SimpleDataElement> list, int sortedColumn, SortOrders sortOrder) {
         content = list;
         this.sortOrder = sortOrder;
+        this.sortedColumn = sortedColumn;
         model.refresh();
     }
 
@@ -316,7 +329,6 @@ public class SimpleDataTable {
             }
         }
         sortOrder = nextOrder;
-        content.sort(simpleElementComparator);
 
         //Уведомляем таблицу и ее модель о произошедших изменениях
         model.refresh();

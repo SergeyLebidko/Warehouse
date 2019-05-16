@@ -51,7 +51,7 @@ public class ActionHandler {
             JOptionPane.showMessageDialog(null, FAIL_CATALOG_ACCESS+" "+e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        dataTable.refresh(list, TO_UP );
+        dataTable.refresh(list, 1, TO_UP );
         contentPane.add(dataTable.getVisualComponent());
     }
 
