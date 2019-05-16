@@ -16,7 +16,6 @@ import java.io.IOException;
 import java.sql.SQLException;
 import java.util.ArrayList;
 
-
 public class ActionHandler {
 
     public static final String OPEN_CATALOG_COMMAND = "open catalog";
