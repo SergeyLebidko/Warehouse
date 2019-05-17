@@ -3,7 +3,7 @@ package warehouse.data_components;
 import java.util.ArrayList;
 import java.util.Date;
 
-public class Document {
+public class Document implements DataElement{
 
     private Integer id;
     private Date date;

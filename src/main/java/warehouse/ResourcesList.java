@@ -76,6 +76,8 @@ public class ResourcesList {
     public static final Color evenCellsColor = new Color(240, 240, 240);
     public static final Color notEvenCellsColor = new Color(255, 255, 255);
     public static final int preferredWidthNumberColumn = 80;
+    public static final int preferredWidthDateColumn = 80;
+    public static final int preferredWidthTypeColumn = 80;
 
     //Сообщения об ошибках
     public static final String failCatalogAccess = "Не удалось получить содержимое каталога. Ошибка:";

@@ -11,7 +11,7 @@ import java.util.ArrayList;
 public interface DataTable {
 
     JPanel getVisualComponent();
-    SimpleDataElement getSelectedRow();
+    DataElement getSelectedRow();
     void setIdFilter(String nextFilter);
     void refresh(ArrayList<? extends DataElement> list, String displayName, int sortedColumn, SortOrders sortOrder);
     HSSFWorkbook getExcelWorkbook();

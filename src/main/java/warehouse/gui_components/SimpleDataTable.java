@@ -32,8 +32,8 @@ public class SimpleDataTable implements DataTable {
     private JTable table;
     private SimpleElementComparator simpleElementComparator;
 
-    private JTextField nameFindField;
     private JTextField idFindField;
+    private JTextField nameFindField;
     private JButton removeFilterBtn;
     private String nameFilter;
     private String idFilter;
