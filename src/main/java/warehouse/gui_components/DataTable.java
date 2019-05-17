@@ -1,9 +1,9 @@
 package warehouse.gui_components;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import warehouse.data_access_components.DataElement;
-import warehouse.data_access_components.SimpleDataElement;
-import warehouse.data_access_components.SortOrders;
+import warehouse.data_components.DataElement;
+import warehouse.data_components.SimpleDataElement;
+import warehouse.data_components.SortOrders;
 
 import javax.swing.*;
 import java.util.ArrayList;

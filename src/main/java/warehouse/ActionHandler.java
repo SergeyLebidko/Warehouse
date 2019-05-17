@@ -4,10 +4,10 @@ import javax.swing.*;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import warehouse.gui_components.*;
-import warehouse.data_access_components.*;
+import warehouse.data_components.*;
 
 import static warehouse.ResourcesList.*;
-import static warehouse.data_access_components.SortOrders.*;
+import static warehouse.data_components.SortOrders.*;
 
 import java.awt.*;
 import java.io.File;

@@ -1,4 +1,4 @@
-package warehouse.data_access_components;
+package warehouse.data_components;
 
 public class CatalogElement implements SimpleDataElement{
 
@@ -7,6 +7,11 @@ public class CatalogElement implements SimpleDataElement{
 
     public CatalogElement(int id, String name) {
         this.id = id;
+        this.name = name;
+    }
+
+    public CatalogElement(String name) {
+        id = null;
         this.name = name;
     }
 

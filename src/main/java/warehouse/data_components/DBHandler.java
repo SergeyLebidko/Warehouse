@@ -1,4 +1,4 @@
-package warehouse.data_access_components;
+package warehouse.data_components;
 
 import java.sql.*;
 import java.util.ArrayList;

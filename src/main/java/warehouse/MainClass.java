@@ -1,6 +1,6 @@
 package warehouse;
 
-import warehouse.data_access_components.DBHandler;
+import warehouse.data_components.DBHandler;
 
 import javax.swing.*;
 

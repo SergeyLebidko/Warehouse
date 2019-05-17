@@ -1,12 +1,17 @@
-package warehouse.data_access_components;
+package warehouse.data_components;
 
-public class ContractorsElement implements SimpleDataElement{
+public class ContractorsElement implements SimpleDataElement {
 
     private Integer id;
     private String name;
 
     public ContractorsElement(int id, String name) {
         this.id = id;
+        this.name = name;
+    }
+
+    public ContractorsElement(String name) {
+        id = null;
         this.name = name;
     }
 

@@ -7,9 +7,9 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
-import warehouse.data_access_components.DataElement;
-import warehouse.data_access_components.SimpleDataElement;
-import warehouse.data_access_components.SortOrders;
+import warehouse.data_components.DataElement;
+import warehouse.data_components.SimpleDataElement;
+import warehouse.data_components.SortOrders;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -21,7 +21,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 
 import static warehouse.ResourcesList.*;
-import static warehouse.data_access_components.SortOrders.*;
+import static warehouse.data_components.SortOrders.*;
 
 public class SimpleDataTable implements DataTable {
 

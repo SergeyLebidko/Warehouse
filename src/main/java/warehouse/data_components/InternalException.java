@@ -1,3 +1,3 @@
-package warehouse.data_access_components;
+package warehouse.data_components;
 
 public class InternalException extends Exception{}
