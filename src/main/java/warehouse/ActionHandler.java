@@ -60,7 +60,7 @@ public class ActionHandler {
 
         //Экспорт данных в книгу Excel
         if (command.equals(EXPORT_TO_XLS_COMMAND)) {
-            createExcelWorkbook();
+            saveExcelWorkbook();
         }
 
     }
@@ -95,7 +95,7 @@ public class ActionHandler {
         state = CONTRACTORS_DATASET;
     }
 
-    private void createExcelWorkbook() {
+    private void saveExcelWorkbook() {
         HSSFWorkbook workbook = null;
 
         //Получаем рабочую книгу из текущего отображаемого компонента
