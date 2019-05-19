@@ -59,8 +59,6 @@ public class DBHandler {
                 "WHERE CONTRACTORS.ID=CONTRACTOR_ID " +
                 "ORDER BY DATE(DATE)";
 
-        System.out.println(query);
-
         Document document;
 
         Integer id;

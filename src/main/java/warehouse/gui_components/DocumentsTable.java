@@ -2,12 +2,10 @@ package warehouse.gui_components;
 
 import com.github.lgooddatepicker.components.DatePicker;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import warehouse.data_components.DataElement;
-import warehouse.data_components.Document;
-import warehouse.data_components.DocumentTypes;
-import warehouse.data_components.SortOrders;
+import warehouse.data_components.*;
 
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
@@ -60,19 +58,34 @@ public class DocumentsTable implements DataTable {
 
     private class Model extends AbstractTableModel {
 
+        private int rowCount;
+        private int columnCount;
+
+        public Model() {
+            rowCount = 0;
+            columnCount = 4;
+            statusLab.setText("Строки: " + rowCount);
+        }
+
+        public void refresh() {
+            rowCount = content.size();
+            fireTableDataChanged();
+        }
+
         @Override
         public int getRowCount() {
-            return 0;
+            return rowCount;
         }
 
         @Override
         public int getColumnCount() {
-            return 4;
+            return columnCount;
         }
 
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
-            return null;
+            if (content == null) return "";
+            return content.get(rowIndex);
         }
 
     }
@@ -90,7 +103,45 @@ public class DocumentsTable implements DataTable {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            JLabel lab = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            lab.setBackground(headerColor);
+
+            if (column == 0) {
+                lab.setText("Номер");
+            }
+            if (column == 1) {
+                lab.setText("Дата");
+            }
+            if (column == 2) {
+                lab.setText("Тип");
+            }
+            if (column == 3) {
+                lab.setText("Контрагент");
+            }
+
+            lab.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+            lab.setHorizontalAlignment(SwingConstants.CENTER);
+
+            if (column != sortedColumn) {
+                lab.setIcon(noOrderIcon);
+            }
+            if (column == sortedColumn) {
+                switch (sortOrder) {
+                    case TO_UP: {
+                        lab.setIcon(toUpIcon);
+                        break;
+                    }
+                    case TO_DOWN: {
+                        lab.setIcon(toDownIcon);
+                        break;
+                    }
+                    case NO_ORDER: {
+                        lab.setIcon(noOrderIcon);
+                    }
+                }
+            }
+
+            return lab;
         }
 
     }
@@ -128,10 +179,17 @@ public class DocumentsTable implements DataTable {
         nameBox.add(Box.createHorizontalGlue());
 
         idFindField = new JTextField(5);
+        idFindField.setFont(mainFont);
         beginDate = new DatePicker();
+        beginDate.getComponentDateTextField().setFont(mainFont);
+        beginDate.getComponentDateTextField().setEditable(false);
         endDate = new DatePicker();
+        endDate.getComponentDateTextField().setFont(mainFont);
+        endDate.getComponentDateTextField().setEditable(false);
         typeBox = new JComboBox(new Object[]{"Все", COM.getName(), CONS.getName()});
+        typeBox.setFont(mainFont);
         contractorsNameFindField = new JTextField();
+        contractorsNameFindField.setFont(mainFont);
         removeFilterBtn = new JButton(removeFilterBtnText, removeFilterIcon);
         removeFilterBtn.setToolTipText(removeFilterToolTip);
 
@@ -162,8 +220,8 @@ public class DocumentsTable implements DataTable {
         topPane.add(filterBox, BorderLayout.SOUTH);
 
         contentPane.add(topPane, BorderLayout.NORTH);
-        contentPane.add(new JScrollPane(table));
-        contentPane.add(statusLab);
+        contentPane.add(new JScrollPane(table), BorderLayout.CENTER);
+        contentPane.add(statusLab, BorderLayout.SOUTH);
 
         documentComparator = new DocumentComparator();
         content = null;
@@ -201,7 +259,33 @@ public class DocumentsTable implements DataTable {
 
     @Override
     public void refresh(ArrayList<? extends DataElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
+        content = new ArrayList<>();
 
+        Document document;
+        for (DataElement element: list){
+            document = (Document) element;
+            content.add(document);
+        }
+
+        this.displayName = displayName;
+        this.sortedColumn = sortedColumn;
+        this.sortOrder = sortOrder;
+
+        nameLab.setText(displayName);
+
+        idFindField.setText("");
+        beginDate.clear();
+        endDate.clear();
+        typeBox.setSelectedIndex(0);
+        contractorsNameFindField.setText("");
+
+        idFilter = "";
+        beginDateFilter = null;
+        endDateFilter = null;
+        typeFilter = null;
+        contractorNameFilter = "";
+
+        model.refresh();
     }
 
     @Override

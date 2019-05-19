@@ -82,7 +82,7 @@ public class ActionHandler {
             return;
         }
         simpleDataTable.refresh(list, "Каталог", 1, TO_UP);
-        contentPane.add(simpleDataTable.getVisualComponent());
+        contentPane.add(simpleDataTable.getVisualComponent(), BorderLayout.CENTER);
         contentPane.revalidate();
         contentPane.repaint();
         state = CATALOG_DATASET;
@@ -97,7 +97,7 @@ public class ActionHandler {
             return;
         }
         simpleDataTable.refresh(list, "Контрагенты", 1, TO_UP);
-        contentPane.add(simpleDataTable.getVisualComponent());
+        contentPane.add(simpleDataTable.getVisualComponent(), BorderLayout.CENTER);
         contentPane.revalidate();
         contentPane.repaint();
         state = CONTRACTORS_DATASET;
@@ -112,7 +112,7 @@ public class ActionHandler {
             return;
         }
         documentsTable.refresh(list, "Документы", 1, TO_UP);
-        contentPane.add(documentsTable.getVisualComponent());
+        contentPane.add(documentsTable.getVisualComponent(), BorderLayout.CENTER);
         contentPane.revalidate();
         contentPane.repaint();
         state = DOCUMENTS_LIST_DATASET;
