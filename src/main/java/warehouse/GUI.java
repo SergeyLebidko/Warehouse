@@ -13,7 +13,7 @@ import static warehouse.ResourcesList.*;
 public class GUI {
 
     private JFrame frm;
-    private JPanel contentPane;
+    private JPanel cardPane;
 
     private ActionHandler actionHandler;
 
@@ -29,6 +29,7 @@ public class GUI {
     public GUI() {
         localizationStandartDialog();
         createFrm();
+        createCardPane();
         createActionHandlerState();
         createToolbar();
         createOpenMenu();
@@ -53,13 +54,19 @@ public class GUI {
         int xPos = Toolkit.getDefaultToolkit().getScreenSize().width / 2 - FRM_WIDTH / 2;
         int yPos = Toolkit.getDefaultToolkit().getScreenSize().height / 2 - FRM_HEIGHT / 2;
         frm.setLocation(xPos, yPos);
-        contentPane = new JPanel(new BorderLayout(5, 5));
+        JPanel contentPane = new JPanel(new BorderLayout(5, 5));
         frm.setContentPane(contentPane);
+    }
+
+    private void createCardPane(){
+        cardPane = new JPanel();
+        cardPane.setLayout(new CardLayout(5,5));
+        frm.getContentPane().add(cardPane, BorderLayout.CENTER);
     }
 
     private void createActionHandlerState() {
         actionHandler = MainClass.getActionHandler();
-        actionHandler.setContentPane(contentPane);
+        actionHandler.setupCardPane(cardPane);
     }
 
     private void createToolbar() {

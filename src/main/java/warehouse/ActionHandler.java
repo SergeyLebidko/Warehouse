@@ -31,21 +31,33 @@ public class ActionHandler {
     private DBHandler dbHandler;
     private String state;
 
-    private JPanel contentPane;
+    private CardLayout cardLayout;
+    private JPanel cardPane;
 
-    private SimpleDataTable simpleDataTable;    //Компонент для отображения в главном окне простых таблиц
-    private DocumentsTable documentsTable;      //Компонент для отображения списка документов
+    private JPanel emptyPane;
+    private SimpleDataTable catalogTable;
+    private SimpleDataTable contractorsTable;
+    private DocumentsTable documentsTable;
 
     public ActionHandler() {
         dbHandler = MainClass.getDbHandler();
-        simpleDataTable = new SimpleDataTable();
+        emptyPane = new JPanel();
+        catalogTable = new SimpleDataTable();
+        contractorsTable = new SimpleDataTable();
         documentsTable = new DocumentsTable();
-        contentPane = null;
+        cardLayout = null;
         state = NO_DATASET;
     }
 
-    public void setContentPane(JPanel contentPane) {
-        this.contentPane = contentPane;
+    public void setupCardPane(JPanel cPane) {
+        cardPane = cPane;
+        cardLayout = (CardLayout) cardPane.getLayout();
+
+        cardPane.add(emptyPane, NO_DATASET);
+        cardPane.add(catalogTable.getVisualComponent(), CATALOG_DATASET);
+        cardPane.add(contractorsTable.getVisualComponent(), CONTRACTORS_DATASET);
+        cardPane.add(documentsTable.getVisualComponent(), DOCUMENTS_LIST_DATASET);
+
     }
 
     public void commandHandler(String command) {
@@ -81,11 +93,9 @@ public class ActionHandler {
             JOptionPane.showMessageDialog(null, failCatalogAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        simpleDataTable.refresh(list, "Каталог", 1, TO_UP);
-        contentPane.add(simpleDataTable.getVisualComponent(), BorderLayout.CENTER);
-        contentPane.revalidate();
-        contentPane.repaint();
+        catalogTable.refresh(list, "Каталог", 1, TO_UP);
         state = CATALOG_DATASET;
+        cardLayout.show(cardPane, state);
     }
 
     private void showContractors() {
@@ -96,11 +106,9 @@ public class ActionHandler {
             JOptionPane.showMessageDialog(null, failContractorsAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        simpleDataTable.refresh(list, "Контрагенты", 1, TO_UP);
-        contentPane.add(simpleDataTable.getVisualComponent(), BorderLayout.CENTER);
-        contentPane.revalidate();
-        contentPane.repaint();
+        contractorsTable.refresh(list, "Контрагенты", 1, TO_UP);
         state = CONTRACTORS_DATASET;
+        cardLayout.show(cardPane, state);
     }
 
     private void showDocumentList() {
@@ -112,19 +120,19 @@ public class ActionHandler {
             return;
         }
         documentsTable.refresh(list, "Документы", 1, TO_UP);
-        contentPane.add(documentsTable.getVisualComponent(), BorderLayout.CENTER);
-        contentPane.revalidate();
-        contentPane.repaint();
         state = DOCUMENTS_LIST_DATASET;
-
+        cardLayout.show(cardPane, state);
     }
 
     private void saveExcelWorkbook() {
         HSSFWorkbook workbook = null;
 
         //Получаем рабочую книгу из текущего отображаемого компонента
-        if (state.equals(CATALOG_DATASET) | state.equals(CONTRACTORS_DATASET)) {
-            workbook = simpleDataTable.getExcelWorkbook();
+        if (state.equals(CATALOG_DATASET)) {
+            workbook = catalogTable.getExcelWorkbook();
+        }
+        if (state.equals(CONTRACTORS_DATASET)){
+            workbook = contractorsTable.getExcelWorkbook();
         }
 
         if (workbook == null) return;
@@ -154,7 +162,6 @@ public class ActionHandler {
             JOptionPane.showMessageDialog(null, failOpenExportXLSFile + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
     }
 
 }
