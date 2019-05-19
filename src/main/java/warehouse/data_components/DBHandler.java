@@ -56,8 +56,10 @@ public class DBHandler {
 
         String query = "SELECT DOCUMENTS.ID, DATE, TYPE, CONTRACTORS.ID, NAME " +
                 "FROM DOCUMENTS, CONTRACTORS " +
-                "WHERE CONTRACTROS.ID=CONTRACTOR_ID " +
+                "WHERE CONTRACTORS.ID=CONTRACTOR_ID " +
                 "ORDER BY DATE(DATE)";
+
+        System.out.println(query);
 
         Document document;
 
@@ -66,7 +68,6 @@ public class DBHandler {
         DocumentTypes type = null;
         int contractorId;
         String contractorName;
-        ArrayList<Operation> operationList;
 
         ResultSet resultSet = statement.executeQuery(query);
 

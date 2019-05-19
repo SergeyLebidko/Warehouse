@@ -39,6 +39,7 @@ public class ActionHandler {
     public ActionHandler() {
         dbHandler = MainClass.getDbHandler();
         simpleDataTable = new SimpleDataTable();
+        documentsTable = new DocumentsTable();
         contentPane = null;
         state = NO_DATASET;
     }
@@ -62,7 +63,7 @@ public class ActionHandler {
 
         //Открыть список документов
         if (command.equals(OPEN_DOCUMENTS_LIST_COMMAND)) {
-            //Вставить код
+            showDocumentList();
         }
 
         //Экспорт данных в книгу Excel

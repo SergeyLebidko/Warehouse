@@ -4,7 +4,7 @@ import com.github.lgooddatepicker.components.DatePicker;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import warehouse.data_components.DataElement;
 import warehouse.data_components.Document;
-import warehouse.data_components.SimpleDataElement;
+import warehouse.data_components.DocumentTypes;
 import warehouse.data_components.SortOrders;
 
 import javax.swing.*;
@@ -13,8 +13,11 @@ import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.Date;
 
 import static warehouse.ResourcesList.*;
+import static warehouse.data_components.DocumentTypes.*;
+import static warehouse.data_components.SortOrders.*;
 
 public class DocumentsTable implements DataTable {
 
@@ -23,12 +26,19 @@ public class DocumentsTable implements DataTable {
     private CellRenderer cellRenderer;
     private HeaderRenderer headerRenderer;
     private JTable table;
+    private DocumentComparator documentComparator;
 
     private JTextField idFindField;
     private DatePicker beginDate;
     private DatePicker endDate;
     private JComboBox typeBox;
     private JTextField contractorsNameFindField;
+    private JButton removeFilterBtn;
+    private String idFilter;
+    private Date beginDateFilter;
+    private Date endDateFilter;
+    private DocumentTypes typeFilter;
+    private String contractorNameFilter;
 
     private JLabel statusLab;
     private JLabel nameLab;
@@ -36,6 +46,8 @@ public class DocumentsTable implements DataTable {
     private String displayName;
     private int sortedColumn;
     private SortOrders sortOrder;
+
+    private ArrayList<Document> content;
 
     private class DocumentComparator implements Comparator<Document> {
 
@@ -55,7 +67,7 @@ public class DocumentsTable implements DataTable {
 
         @Override
         public int getColumnCount() {
-            return 0;
+            return 4;
         }
 
         @Override
@@ -107,6 +119,62 @@ public class DocumentsTable implements DataTable {
         table.getColumnModel().getColumn(1).setMaxWidth(preferredWidthDateColumn);
         table.getColumnModel().getColumn(2).setMaxWidth(preferredWidthTypeColumn);
 
+        JPanel topPane = new JPanel(new BorderLayout(5, 5));
+
+        Box nameBox = Box.createHorizontalBox();
+        nameLab = new JLabel(displayName);
+        nameLab.setFont(mainFont);
+        nameBox.add(nameLab);
+        nameBox.add(Box.createHorizontalGlue());
+
+        idFindField = new JTextField(5);
+        beginDate = new DatePicker();
+        endDate = new DatePicker();
+        typeBox = new JComboBox(new Object[]{"Все", COM.getName(), CONS.getName()});
+        contractorsNameFindField = new JTextField();
+        removeFilterBtn = new JButton(removeFilterBtnText, removeFilterIcon);
+        removeFilterBtn.setToolTipText(removeFilterToolTip);
+
+        Box filterBox = Box.createHorizontalBox();
+        filterBox.add(new JLabel("Номер:"));
+        filterBox.add(Box.createHorizontalStrut(5));
+        filterBox.add(idFindField);
+        filterBox.add(Box.createHorizontalStrut(5));
+        filterBox.add(new JLabel("С:"));
+        filterBox.add(Box.createHorizontalStrut(5));
+        filterBox.add(beginDate);
+        filterBox.add(Box.createHorizontalStrut(5));
+        filterBox.add(new JLabel("По:"));
+        filterBox.add(Box.createHorizontalStrut(5));
+        filterBox.add(endDate);
+        filterBox.add(Box.createHorizontalStrut(5));
+        filterBox.add(new JLabel("Тип:"));
+        filterBox.add(Box.createHorizontalStrut(5));
+        filterBox.add(typeBox);
+        filterBox.add(Box.createHorizontalStrut(5));
+        filterBox.add(new JLabel("Контрагент:"));
+        filterBox.add(Box.createHorizontalStrut(5));
+        filterBox.add(contractorsNameFindField);
+        filterBox.add(Box.createHorizontalStrut(5));
+        filterBox.add(removeFilterBtn);
+
+        topPane.add(nameBox, BorderLayout.NORTH);
+        topPane.add(filterBox, BorderLayout.SOUTH);
+
+        contentPane.add(topPane, BorderLayout.NORTH);
+        contentPane.add(new JScrollPane(table));
+        contentPane.add(statusLab);
+
+        documentComparator = new DocumentComparator();
+        content = null;
+        displayName = "";
+        sortedColumn = 1;
+        sortOrder = NO_ORDER;
+        idFilter = "";
+        beginDateFilter = null;
+        endDateFilter = null;
+        typeFilter = null;
+        contractorNameFilter = "";
     }
 
     private void createAtionListeners() {
