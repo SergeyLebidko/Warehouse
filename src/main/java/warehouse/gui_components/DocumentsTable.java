@@ -9,6 +9,7 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -69,6 +70,7 @@ public class DocumentsTable implements DataTable {
 
         public void refresh() {
             rowCount = content.size();
+            statusLab.setText("Строки: " + rowCount);
             fireTableDataChanged();
         }
 
@@ -94,7 +96,29 @@ public class DocumentsTable implements DataTable {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            JLabel lab = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            lab.setFont(mainFont);
+
+            Document document = (Document) value;
+            if (column == 0) {
+                lab.setText(document.getId() + "");
+                lab.setHorizontalAlignment(SwingConstants.CENTER);
+            }
+            if (column == 1) {
+                DateFormat dateFormat = DateFormat.getDateInstance();
+                lab.setText(dateFormat.format(document.getDate()));
+                lab.setHorizontalAlignment(SwingConstants.CENTER);
+
+            }
+            if (column == 2) {
+                lab.setText(document.getType().getName());
+                lab.setHorizontalAlignment(SwingConstants.CENTER);
+            }
+            if (column == 3) {
+                lab.setText(document.getContractorName());
+            }
+
+            return lab;
         }
 
     }
@@ -166,9 +190,12 @@ public class DocumentsTable implements DataTable {
         table.setShowVerticalLines(false);
         table.setGridColor(gridColor);
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getColumnModel().getColumn(0).setMaxWidth(preferredWidthNumberColumn);
-        table.getColumnModel().getColumn(1).setMaxWidth(preferredWidthDateColumn);
-        table.getColumnModel().getColumn(2).setMaxWidth(preferredWidthTypeColumn);
+        table.getColumnModel().getColumn(0).setMaxWidth(maxWidthNumberColumn);
+        table.getColumnModel().getColumn(0).setMinWidth(minWidthNumberColumn);
+        table.getColumnModel().getColumn(1).setMaxWidth(maxWidthDateColumn);
+        table.getColumnModel().getColumn(1).setMinWidth(minWidthDateColumn);
+        table.getColumnModel().getColumn(2).setMaxWidth(maxWidthTypeColumn);
+        table.getColumnModel().getColumn(2).setMinWidth(minWidthTypeColumn);
 
         JPanel topPane = new JPanel(new BorderLayout(5, 5));
 
@@ -262,7 +289,7 @@ public class DocumentsTable implements DataTable {
         content = new ArrayList<>();
 
         Document document;
-        for (DataElement element: list){
+        for (DataElement element : list) {
             document = (Document) element;
             content.add(document);
         }

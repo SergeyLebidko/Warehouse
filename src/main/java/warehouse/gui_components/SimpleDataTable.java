@@ -234,7 +234,8 @@ public class SimpleDataTable implements DataTable {
         table.setShowVerticalLines(false);
         table.setGridColor(gridColor);
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getColumnModel().getColumn(0).setMaxWidth(preferredWidthNumberColumn);
+        table.getColumnModel().getColumn(0).setMaxWidth(maxWidthNumberColumn);
+        table.getColumnModel().getColumn(0).setMinWidth(minWidthNumberColumn);
 
         JPanel topPane = new JPanel(new BorderLayout(5,5));
 
@@ -245,7 +246,7 @@ public class SimpleDataTable implements DataTable {
         nameBox.add(Box.createHorizontalGlue());
 
         idFindField = new JTextField(5);
-        idFindField.setMaximumSize(new Dimension(preferredWidthNumberColumn, 100));
+        idFindField.setMaximumSize(new Dimension(maxWidthNumberColumn, 100));
         idFindField.setFont(mainFont);
 
         nameFindField = new JTextField();

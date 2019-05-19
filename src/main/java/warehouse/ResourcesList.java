@@ -75,9 +75,12 @@ public class ResourcesList {
     public static final Color headerColor = new Color(230, 230, 230);
     public static final Color evenCellsColor = new Color(240, 240, 240);
     public static final Color notEvenCellsColor = new Color(255, 255, 255);
-    public static final int preferredWidthNumberColumn = 80;
-    public static final int preferredWidthDateColumn = 120;
-    public static final int preferredWidthTypeColumn = 120;
+    public static final int maxWidthNumberColumn = 80;
+    public static final int minWidthNumberColumn = 50;
+    public static final int maxWidthDateColumn = 220;
+    public static final int minWidthDateColumn = 120;
+    public static final int maxWidthTypeColumn = 120;
+    public static final int minWidthTypeColumn = 100;
 
     //Сообщения об ошибках
     public static final String failCatalogAccess = "Не удалось получить содержимое каталога. Ошибка:";

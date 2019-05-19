@@ -54,13 +54,12 @@ public class DBHandler {
     public ArrayList<Document> getDocumentList() throws SQLException {
         ArrayList<Document> list = new ArrayList<>();
 
-        String query = "SELECT DOCUMENTS.ID, DATE, TYPE, CONTRACTORS.ID, NAME " +
+        String query = "SELECT DOCUMENTS.ID, DOCUMENTS.DATE, DOCUMENTS.TYPE, DOCUMENTS.CONTRACTOR_ID, CONTRACTORS.NAME " +
                 "FROM DOCUMENTS, CONTRACTORS " +
-                "WHERE CONTRACTORS.ID=CONTRACTOR_ID " +
+                "WHERE DOCUMENTS.CONTRACTOR_ID=CONTRACTORS.ID " +
                 "ORDER BY DATE(DATE)";
 
-        Document document;
-
+        //Формируем список документов
         Integer id;
         Date date;
         DocumentTypes type = null;
@@ -68,9 +67,7 @@ public class DBHandler {
         String contractorName;
 
         ResultSet resultSet = statement.executeQuery(query);
-
         int typeInt;
-        ArrayList<Operation> opList;
         while (resultSet.next()) {
             id = resultSet.getInt(1);
             date = convertStringToDate(resultSet.getString(2));
@@ -80,11 +77,14 @@ public class DBHandler {
             contractorId = resultSet.getInt(4);
             contractorName = resultSet.getString(5);
 
-            document = new Document(id, date, type, contractorId, contractorName);
-            opList = getOperationList(id);
-            document.getOperationList().addAll(opList);
+            list.add(new Document(id, date, type, contractorId, contractorName));
+        }
 
-            list.add(document);
+        //Заполняем для каждого документа список операций
+        ArrayList<Operation> opList;
+        for (Document document: list){
+            opList=getOperationList(document.getId());
+            document.getOperationList().addAll(opList);
         }
 
         return list;
@@ -95,7 +95,7 @@ public class DBHandler {
 
         String query = "SELECT OPERATIONS.ID, CATALOG.ID, NAME, COUNT " +
                 "FROM OPERATIONS, CATALOG " +
-                "WHERE DOCUMENT_ID="+documentId+" AND CATALOG_ID=CATALOG.ID " +
+                "WHERE DOCUMENT_ID=" + documentId + " AND CATALOG_ID=CATALOG.ID " +
                 "ORDER BY NAME";
 
         ResultSet resultSet = statement.executeQuery(query);
@@ -105,7 +105,7 @@ public class DBHandler {
         String catalogName;
         int count;
 
-        while (resultSet.next()){
+        while (resultSet.next()) {
             id = resultSet.getInt(1);
             catalogId = resultSet.getInt(2);
             catalogName = resultSet.getString(3);
