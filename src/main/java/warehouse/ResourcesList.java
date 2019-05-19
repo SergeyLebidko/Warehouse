@@ -84,6 +84,7 @@ public class ResourcesList {
     public static final String failContractorsAccess = "Не удалось получить доступ к списку контрагентов. Ошибка:";
     public static final String failExportFolderCreate = "Не удалось создать папку для экспорта. Ошибка:";
     public static final String failOpenExportXLSFile = "Не удалось открыть созданный файл. Ошибка:";
+    public static final String failDocumentsAccess = "Не удалось получить список документов. Ошибка:";
 
     //Шрифт для таблиц
     public static final Font mainFont = new Font("Arial", Font.PLAIN, 16);

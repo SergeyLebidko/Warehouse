@@ -252,6 +252,7 @@ public class SimpleDataTable implements DataTable {
         nameFindField.setFont(mainFont);
 
         removeFilterBtn = new JButton(removeFilterBtnText, removeFilterIcon);
+        removeFilterBtn.setToolTipText(removeFilterToolTip);
 
         Box filterBox = Box.createHorizontalBox();
         filterBox.add(new JLabel("Номер:"));

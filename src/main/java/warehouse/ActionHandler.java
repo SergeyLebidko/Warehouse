@@ -26,6 +26,7 @@ public class ActionHandler {
     private static final String NO_DATASET = "";
     private static final String CATALOG_DATASET = "catalog";
     private static final String CONTRACTORS_DATASET = "contractors";
+    private static final String DOCUMENTS_LIST_DATASET = "documents list";
 
     private DBHandler dbHandler;
     private String state;
@@ -60,7 +61,7 @@ public class ActionHandler {
         }
 
         //Открыть список документов
-        if (command.equals(OPEN_DOCUMENTS_LIST_COMMAND)){
+        if (command.equals(OPEN_DOCUMENTS_LIST_COMMAND)) {
             //Вставить код
         }
 
@@ -101,8 +102,19 @@ public class ActionHandler {
         state = CONTRACTORS_DATASET;
     }
 
-    private void showDocumentList(){
+    private void showDocumentList() {
         ArrayList<Document> list;
+        try {
+            list = dbHandler.getDocumentList();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, failDocumentsAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        documentsTable.refresh(list, "Документы", 1, TO_UP);
+        contentPane.add(documentsTable.getVisualComponent());
+        contentPane.revalidate();
+        contentPane.repaint();
+        state = DOCUMENTS_LIST_DATASET;
 
     }
 

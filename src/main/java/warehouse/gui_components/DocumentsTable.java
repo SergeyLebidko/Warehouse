@@ -107,7 +107,6 @@ public class DocumentsTable implements DataTable {
         table.getColumnModel().getColumn(1).setMaxWidth(preferredWidthDateColumn);
         table.getColumnModel().getColumn(2).setMaxWidth(preferredWidthTypeColumn);
 
-
     }
 
     private void createAtionListeners() {
