@@ -32,11 +32,12 @@ public class ActionHandler {
 
     private JPanel contentPane;
 
-    private DataTable dataTable;    //Компонент для отображения в главном окне простых таблиц
+    private SimpleDataTable simpleDataTable;    //Компонент для отображения в главном окне простых таблиц
+    private DocumentsTable documentsTable;      //Компонент для отображения списка документов
 
     public ActionHandler() {
         dbHandler = MainClass.getDbHandler();
-        dataTable = new SimpleDataTable();
+        simpleDataTable = new SimpleDataTable();
         contentPane = null;
         state = NO_DATASET;
     }
@@ -58,6 +59,11 @@ public class ActionHandler {
             return;
         }
 
+        //Открыть список документов
+        if (command.equals(OPEN_DOCUMENTS_LIST_COMMAND)){
+            //Вставить код
+        }
+
         //Экспорт данных в книгу Excel
         if (command.equals(EXPORT_TO_XLS_COMMAND)) {
             saveExcelWorkbook();
@@ -73,8 +79,8 @@ public class ActionHandler {
             JOptionPane.showMessageDialog(null, failCatalogAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        dataTable.refresh(list, "Каталог", 1, TO_UP);
-        contentPane.add(dataTable.getVisualComponent());
+        simpleDataTable.refresh(list, "Каталог", 1, TO_UP);
+        contentPane.add(simpleDataTable.getVisualComponent());
         contentPane.revalidate();
         contentPane.repaint();
         state = CATALOG_DATASET;
@@ -88,11 +94,16 @@ public class ActionHandler {
             JOptionPane.showMessageDialog(null, failContractorsAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
-        dataTable.refresh(list, "Контрагенты", 1, TO_UP);
-        contentPane.add(dataTable.getVisualComponent());
+        simpleDataTable.refresh(list, "Контрагенты", 1, TO_UP);
+        contentPane.add(simpleDataTable.getVisualComponent());
         contentPane.revalidate();
         contentPane.repaint();
         state = CONTRACTORS_DATASET;
+    }
+
+    private void showDocumentList(){
+        ArrayList<Document> list;
+
     }
 
     private void saveExcelWorkbook() {
@@ -100,7 +111,7 @@ public class ActionHandler {
 
         //Получаем рабочую книгу из текущего отображаемого компонента
         if (state.equals(CATALOG_DATASET) | state.equals(CONTRACTORS_DATASET)) {
-            workbook = dataTable.getExcelWorkbook();
+            workbook = simpleDataTable.getExcelWorkbook();
         }
 
         if (workbook == null) return;

@@ -123,6 +123,13 @@ public class GUI {
                 actionHandler.commandHandler(ActionHandler.OPEN_CONTRACTORS_COMMAND);
             }
         });
+
+        openDocumentsItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actionHandler.commandHandler(ActionHandler.OPEN_DOCUMENTS_LIST_COMMAND);
+            }
+        });
     }
 
     private void createReportMenu(){
