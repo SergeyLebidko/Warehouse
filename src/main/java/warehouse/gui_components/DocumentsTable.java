@@ -99,9 +99,64 @@ public class DocumentsTable implements DataTable {
 
             content.sort(documentComparator);
 
-            rowCount = content.size();
+            if (filterEmpty()) {
+                rowCount = content.size();
+                statusLab.setText("Строки: " + rowCount);
+                fireTableDataChanged();
+                return;
+            }
+
+            rowCount = 0;
+            for (Document document : content) {
+                if (filterCheck(document)) rowCount++;
+            }
             statusLab.setText("Строки: " + rowCount);
             fireTableDataChanged();
+        }
+
+        private boolean filterCheck(Document document) {
+            //Проверяем фильтр номера документа
+            boolean idFilterCheck;
+            String id = document.getId() + "";
+            idFilterCheck = (id.indexOf(idFilter) != (-1));
+
+            //Проверяем фильтр даты начала периода
+            boolean beginDateFilterCheck = true;
+            if (beginDateFilter != null) {
+                Date date = document.getDate();
+                beginDateFilterCheck = (date.compareTo(beginDateFilter) >= 0);
+            }
+
+            //Проверяем фильтр даты конца периода
+            boolean endDateFilterCheck = true;
+            if (endDateFilter != null) {
+                Date date = document.getDate();
+                endDateFilterCheck = (date.compareTo(endDateFilter) <= 0);
+            }
+
+            //Проверяем фильтр типов
+            boolean typeFilterCheck = true;
+            if (typeFilter != null) {
+                DocumentTypes type = document.getType();
+                typeFilterCheck = (type == typeFilter);
+            }
+
+            //Проверяем фильтр имени контрагента
+            boolean nameContractorFilterCheck;
+            String contractor = document.getContractorName();
+            contractor=contractor.toLowerCase();
+            nameContractorFilterCheck = (contractor.indexOf(contractorNameFilter.toLowerCase())!=(-1));
+
+            return idFilterCheck & beginDateFilterCheck & endDateFilterCheck & typeFilterCheck & nameContractorFilterCheck;
+        }
+
+        private boolean filterEmpty() {
+            boolean idFilterEmpty = idFilter.equals("");
+            boolean beginDateFilterEmpty = (beginDateFilter == null);
+            boolean endDateFilterEmpty = (endDateFilter == null);
+            boolean typeFilterEmpty = (typeFilter == null);
+            boolean contractorsNameFilterEmpty = (contractorNameFilter.equals(""));
+            return (idFilterEmpty & beginDateFilterEmpty & endDateFilterEmpty & typeFilterEmpty & contractorsNameFilterEmpty);
         }
 
         @Override
@@ -117,7 +172,21 @@ public class DocumentsTable implements DataTable {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             if (content == null) return "";
-            return content.get(rowIndex);
+
+            //Если фильтра нет
+            if (filterEmpty()) {
+                return content.get(rowIndex);
+            }
+
+            //Если фильтр есть
+            int index = -1;
+            for (Document document : content) {
+                if (filterCheck(document)) {
+                    index++;
+                    if (index == rowIndex) return document;
+                }
+            }
+            return "";
         }
 
     }
@@ -381,7 +450,7 @@ public class DocumentsTable implements DataTable {
     @Override
     public void setIdFilter(String nextFilter) {
         nextFilter = nextFilter.trim();
-        if (nextFilter.equals(idFilter))return;
+        if (nextFilter.equals(idFilter)) return;
         if (nextFilter.equals("")) {
             idFilter = "";
             model.refresh();
