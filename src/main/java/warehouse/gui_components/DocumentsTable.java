@@ -9,6 +9,8 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.text.DateFormat;
 import java.util.ArrayList;
 import java.util.Comparator;
@@ -52,6 +54,28 @@ public class DocumentsTable implements DataTable {
 
         @Override
         public int compare(Document o1, Document o2) {
+            if (sortedColumn == 0) {
+                Integer id1 = o1.getId();
+                Integer id2 = o2.getId();
+                return sortOrder.getMul() * id1.compareTo(id2);
+            }
+            if (sortedColumn == 1) {
+                Date date1 = o1.getDate();
+                Date date2 = o2.getDate();
+                return sortOrder.getMul() * date1.compareTo(date2);
+            }
+            if (sortedColumn == 2) {
+                DocumentTypes type1 = o1.getType();
+                DocumentTypes type2 = o2.getType();
+                if (type1 == type2) return 0;
+                if (type1 == COM & type2 == CONS) return sortOrder.getMul() * 1;
+                if (type1 == CONS & type2 == COM) return sortOrder.getMul() * (-1);
+            }
+            if (sortedColumn == 3) {
+                String contractor1 = o1.getContractorName();
+                String contractor2 = o2.getContractorName();
+                return sortOrder.getMul()* contractor1.compareTo(contractor2);
+            }
             return 0;
         }
 
@@ -69,6 +93,10 @@ public class DocumentsTable implements DataTable {
         }
 
         public void refresh() {
+            if (content == null) return;
+
+            content.sort(documentComparator);
+
             rowCount = content.size();
             statusLab.setText("Строки: " + rowCount);
             fireTableDataChanged();
@@ -116,6 +144,7 @@ public class DocumentsTable implements DataTable {
             }
             if (column == 3) {
                 lab.setText(document.getContractorName());
+                lab.setHorizontalAlignment(SwingConstants.LEFT);
             }
 
             return lab;
@@ -207,16 +236,21 @@ public class DocumentsTable implements DataTable {
 
         idFindField = new JTextField(5);
         idFindField.setFont(mainFont);
+
         beginDate = new DatePicker();
         beginDate.getComponentDateTextField().setFont(mainFont);
         beginDate.getComponentDateTextField().setEditable(false);
+
         endDate = new DatePicker();
         endDate.getComponentDateTextField().setFont(mainFont);
         endDate.getComponentDateTextField().setEditable(false);
+
         typeBox = new JComboBox(new Object[]{"Все", COM.getName(), CONS.getName()});
         typeBox.setFont(mainFont);
-        contractorsNameFindField = new JTextField();
+
+        contractorsNameFindField = new JTextField(50);
         contractorsNameFindField.setFont(mainFont);
+
         removeFilterBtn = new JButton(removeFilterBtnText, removeFilterIcon);
         removeFilterBtn.setToolTipText(removeFilterToolTip);
 
@@ -264,6 +298,17 @@ public class DocumentsTable implements DataTable {
 
     private void createAtionListeners() {
 
+        //Обработчик щелчка по заголовку столбца
+        table.getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 1 & e.getButton() == MouseEvent.BUTTON1) {
+                    int columnNumber = table.getTableHeader().columnAtPoint(e.getPoint());
+                    sortedColumn = columnNumber;
+                    revertSortOrder();
+                }
+            }
+        });
     }
 
     @Override
@@ -319,4 +364,29 @@ public class DocumentsTable implements DataTable {
     public HSSFWorkbook getExcelWorkbook() {
         return null;
     }
+
+    private void revertSortOrder() {
+        if (content == null) return;
+        SortOrders nextOrder = null;
+        switch (sortOrder) {
+            case NO_ORDER: {
+                nextOrder = TO_UP;
+                break;
+            }
+            case TO_UP: {
+                nextOrder = TO_DOWN;
+                break;
+            }
+            case TO_DOWN: {
+                nextOrder = TO_UP;
+                break;
+            }
+        }
+        sortOrder = nextOrder;
+
+        //Уведомляем таблицу и ее модель о произошедших изменениях
+        model.refresh();
+        table.getTableHeader().repaint();
+    }
+
 }
