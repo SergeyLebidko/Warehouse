@@ -92,6 +92,10 @@ public class ResourcesList {
     //Шрифт для таблиц
     public static final Font mainFont = new Font("Arial", Font.PLAIN, 16);
 
+    //Параметры выгрузки в excel
+    public static final int fontFileHeaderSize = 256;
+    public static final int fontColumnHeaderSize = 200;
+
     private static class ImageLoader {
 
         private static final String[] imageNamesList = {

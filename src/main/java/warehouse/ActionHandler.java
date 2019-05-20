@@ -134,6 +134,9 @@ public class ActionHandler {
         if (state.equals(CONTRACTORS_DATASET)){
             workbook = contractorsTable.getExcelWorkbook();
         }
+        if (state.equals(DOCUMENTS_LIST_DATASET)){
+            workbook = documentsTable.getExcelWorkbook();
+        }
 
         if (workbook == null) return;
 

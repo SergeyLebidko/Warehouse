@@ -411,7 +411,7 @@ public class SimpleDataTable implements DataTable {
         //Формируем ячейку с наименованием набора данных
         HSSFCellStyle nameStyle = workbook.createCellStyle();
         HSSFFont nameFont = workbook.createFont();
-        nameFont.setFontHeight((short) 256);
+        nameFont.setFontHeight((short) fontFileHeaderSize);
         nameFont.setBold(true);
         nameStyle.setFont(nameFont);
         nameStyle.setAlignment(HorizontalAlignment.CENTER);

@@ -3,7 +3,13 @@ package warehouse.gui_components;
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
 import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.RegionUtil;
 import warehouse.data_components.*;
 
 import javax.swing.*;
@@ -553,7 +559,123 @@ public class DocumentsTable implements DataTable {
 
     @Override
     public HSSFWorkbook getExcelWorkbook() {
-        return null;
+        //Создаем файл в памяти
+        HSSFWorkbook workbook = new HSSFWorkbook();
+
+        //Создаем лист
+        HSSFSheet sheet = workbook.createSheet("Лист1");
+
+        //Заполняем лист данными
+        //Формируем ячейку с наименованием набора данных
+        HSSFCellStyle nameStyle = workbook.createCellStyle();
+        HSSFFont nameFont = workbook.createFont();
+        nameFont.setFontHeight((short) fontFileHeaderSize);
+        nameFont.setBold(true);
+        nameStyle.setFont(nameFont);
+        nameStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        Row row = sheet.createRow(0);
+
+        Cell nameCell = row.createCell(0);
+        row.createCell(1);
+        row.createCell(2);
+        row.createCell(3);
+        row.createCell(4);
+
+        nameCell.setCellValue(displayName);
+        nameCell.setCellStyle(nameStyle);
+
+        CellRangeAddress region = new CellRangeAddress(0, 0, 0, 4);
+        sheet.addMergedRegion(region);
+
+        RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
+
+        //Формируем заголовки столбцов
+        HSSFCellStyle headerStyle = workbook.createCellStyle();
+        HSSFFont headerFont = workbook.createFont();
+        headerFont.setFontHeight((short) fontColumnHeaderSize);
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        row = sheet.createRow(1);
+        Cell cell1 = row.createCell(0);
+        Cell cell2 = row.createCell(1);
+        Cell cell3 = row.createCell(2);
+        Cell cell4 = row.createCell(3);
+        Cell cell5 = row.createCell(4);
+
+        cell1.setCellValue("№ п/п");
+        cell2.setCellValue("Номер");
+        cell3.setCellValue("Дата");
+        cell4.setCellValue("Тип");
+        cell5.setCellValue("Контрагент");
+
+        cell1.setCellStyle(headerStyle);
+        cell2.setCellStyle(headerStyle);
+        cell3.setCellStyle(headerStyle);
+        cell4.setCellStyle(headerStyle);
+        cell5.setCellStyle(headerStyle);
+
+        //Вносим данные
+        HSSFCellStyle styleTextCell = workbook.createCellStyle();
+        styleTextCell.setWrapText(true);
+
+        HSSFCellStyle styleNumericCell = workbook.createCellStyle();
+        styleNumericCell.setAlignment(HorizontalAlignment.CENTER);
+        styleNumericCell.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        HSSFCellStyle styleTypeCell = workbook.createCellStyle();
+        styleTypeCell.setAlignment(HorizontalAlignment.CENTER);
+        styleTypeCell.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        HSSFCellStyle styleDateCell = workbook.createCellStyle();
+        styleDateCell.setAlignment(HorizontalAlignment.CENTER);
+        styleDateCell.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        Cell cell;
+        int number = 1;
+        DateFormat dateFormat = DateFormat.getDateInstance();
+        Date date;
+        for (int index = 0; index < model.getRowCount(); index++) {
+            row = sheet.createRow(index + 2);
+
+            //Столбец № п/п
+            cell = row.createCell(0);
+            cell.setCellValue(number);
+            cell.setCellStyle(styleNumericCell);
+            number++;
+
+            //Столбец Номер
+            cell = row.createCell(1);
+            cell.setCellValue(((Document) model.getValueAt(index, 0)).getId());
+            cell.setCellStyle(styleNumericCell);
+
+            //Столбец Дата
+            cell = row.createCell(2);
+            date = ((Document) model.getValueAt(index, 0)).getDate();
+            cell.setCellValue(dateFormat.format(date));
+            cell.setCellStyle(styleDateCell);
+
+            //Столбец Тип
+            cell = row.createCell(3);
+            cell.setCellValue(((Document)model.getValueAt(index,0)).getType().getName());
+            cell.setCellStyle(styleTypeCell);
+
+            //Столбец Контрагент
+            cell = row.createCell(4);
+            cell.setCellValue(((Document)model.getValueAt(index,0)).getContractorName());
+            cell.setCellStyle(styleTextCell);
+        }
+
+        //Расширяем столбцы, чтобы данные полностью в них помещались
+        sheet.setColumnWidth(0, 3000);
+        sheet.setColumnWidth(1, 3000);
+        sheet.setColumnWidth(2, 3000);
+        sheet.setColumnWidth(3, 3000);
+        sheet.setColumnWidth(4, 10000);
+
+        return workbook;
     }
 
     private void revertSortOrder() {
