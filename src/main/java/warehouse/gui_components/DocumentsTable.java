@@ -1,6 +1,8 @@
 package warehouse.gui_components;
 
 import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
+import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import warehouse.data_components.*;
 
@@ -9,9 +11,9 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.text.DateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
@@ -74,7 +76,7 @@ public class DocumentsTable implements DataTable {
             if (sortedColumn == 3) {
                 String contractor1 = o1.getContractorName();
                 String contractor2 = o2.getContractorName();
-                return sortOrder.getMul()* contractor1.compareTo(contractor2);
+                return sortOrder.getMul() * contractor1.compareTo(contractor2);
             }
             return 0;
         }
@@ -297,6 +299,58 @@ public class DocumentsTable implements DataTable {
     }
 
     private void createAtionListeners() {
+        //Обработчик строки поиска по номеру
+        idFindField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                setIdFilter(idFindField.getText());
+            }
+        });
+
+        //Обработчик изменения даты начала временного интервала
+        beginDate.addDateChangeListener(new DateChangeListener() {
+            @Override
+            public void dateChanged(DateChangeEvent event) {
+                LocalDate localDate = event.getNewDate();
+                setBeginDateFilter(convertLocalDateToDate(localDate));
+            }
+        });
+
+        //Обработчик изменения даты окончания временного интервала
+        endDate.addDateChangeListener(new DateChangeListener() {
+            @Override
+            public void dateChanged(DateChangeEvent event) {
+                LocalDate localDate = event.getNewDate();
+                setEndDateFilter(convertLocalDateToDate(localDate));
+            }
+        });
+
+        //Обработчик изменения типа документа
+        typeBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                DocumentTypes nextType = null;
+                if (typeBox.getSelectedIndex() == 1) nextType = COM;
+                if (typeBox.getSelectedIndex() == 2) nextType = CONS;
+                setTypeFilter(nextType);
+            }
+        });
+
+        //Обработчик строки поиска по наименованию контрагента
+        contractorsNameFindField.addKeyListener(new KeyAdapter() {
+            @Override
+            public void keyReleased(KeyEvent e) {
+                setContractorNameFilter(contractorsNameFindField.getText());
+            }
+        });
+
+        //Обработчик кнопки очистки фильтра поиска
+        removeFilterBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                removeFilter();
+            }
+        });
 
         //Обработчик щелчка по заголовку столбца
         table.getTableHeader().addMouseListener(new MouseAdapter() {
@@ -326,7 +380,75 @@ public class DocumentsTable implements DataTable {
 
     @Override
     public void setIdFilter(String nextFilter) {
+        nextFilter = nextFilter.trim();
+        if (nextFilter.equals(idFilter))return;
+        if (nextFilter.equals("")) {
+            idFilter = "";
+            model.refresh();
+            return;
+        }
 
+        //Проверяем возможность конвертирования строки с номером в число
+        try {
+            Integer.parseInt(nextFilter);
+        } catch (Exception ex) {
+            return;
+        }
+
+        idFilter = nextFilter;
+
+        //Уведомляем модель таблицы о произошедших изменениях
+        model.refresh();
+    }
+
+    private void setBeginDateFilter(Date nextDate) {
+        if (beginDateFilter == null & nextDate == null) return;
+        beginDateFilter = nextDate;
+        model.refresh();
+    }
+
+    private void setEndDateFilter(Date nextDate) {
+        if (endDateFilter == null & nextDate == null) return;
+        endDateFilter = nextDate;
+        model.refresh();
+    }
+
+    private void setTypeFilter(DocumentTypes nextType) {
+        if (typeFilter == nextType) return;
+        typeFilter = nextType;
+        model.refresh();
+    }
+
+    private void setContractorNameFilter(String nextFilter) {
+        nextFilter = nextFilter.trim();
+        if (nextFilter.equals(contractorNameFilter)) return;
+        contractorNameFilter = nextFilter;
+
+        //Уведомляем модель таблицы о произошедших изменениях
+        model.refresh();
+    }
+
+    private void removeFilter() {
+        idFindField.setText("");
+        beginDate.clear();
+        endDate.clear();
+        typeBox.setSelectedIndex(0);
+        contractorsNameFindField.setText("");
+
+        if (idFilter.equals("") &
+                beginDateFilter == null &
+                endDateFilter == null &
+                typeFilter == null &
+                contractorNameFilter.equals("")) return;
+
+        idFilter = "";
+        beginDateFilter = null;
+        endDateFilter = null;
+        typeFilter = null;
+        contractorNameFilter = "";
+
+        //Уведомляем модель таблицы о произошедших изменениях
+        model.refresh();
     }
 
     @Override
@@ -387,6 +509,14 @@ public class DocumentsTable implements DataTable {
         //Уведомляем таблицу и ее модель о произошедших изменениях
         model.refresh();
         table.getTableHeader().repaint();
+    }
+
+    private Date convertLocalDateToDate(LocalDate localDate) {
+        if (localDate == null) return null;
+        int year = localDate.getYear() - 1900;
+        int month = localDate.getMonthValue() - 1;
+        int day = localDate.getDayOfMonth();
+        return new Date(year, month, day);
     }
 
 }

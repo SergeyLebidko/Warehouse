@@ -24,6 +24,10 @@ public class Operation implements DataElement {
         this.count = count;
     }
 
+    public Integer getId() {
+        return id;
+    }
+
     public int getDocumentId() {
         return documentId;
     }

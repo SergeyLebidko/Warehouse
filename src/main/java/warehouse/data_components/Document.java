@@ -30,10 +30,6 @@ public class Document implements DataElement{
         this.contractorName = contractorName;
     }
 
-    public ArrayList<Operation> getOperationList() {
-        return operationList;
-    }
-
     public Integer getId() {
         return id;
     }
@@ -53,4 +49,9 @@ public class Document implements DataElement{
     public String getContractorName() {
         return contractorName;
     }
+
+    public ArrayList<Operation> getOperationList() {
+        return operationList;
+    }
+
 }

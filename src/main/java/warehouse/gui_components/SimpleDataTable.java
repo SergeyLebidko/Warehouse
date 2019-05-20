@@ -336,8 +336,8 @@ public class SimpleDataTable implements DataTable {
     @Override
     public void setIdFilter(String nextFilter) {
         nextFilter = nextFilter.trim();
+        if (nextFilter.equals(idFilter))return;
         if (nextFilter.equals("")) {
-            if (idFilter.equals("")) return;
             idFilter = "";
             model.refresh();
             return;
@@ -356,7 +356,7 @@ public class SimpleDataTable implements DataTable {
         model.refresh();
     }
 
-    public void setNameFilter(String nextFilter) {
+    private void setNameFilter(String nextFilter) {
         nextFilter = nextFilter.trim();
         if (nextFilter.equals(nameFilter)) return;
         nameFilter = nextFilter;
@@ -365,7 +365,7 @@ public class SimpleDataTable implements DataTable {
         model.refresh();
     }
 
-    public void removeFilter() {
+    private void removeFilter() {
         idFindField.setText("");
         nameFindField.setText("");
 

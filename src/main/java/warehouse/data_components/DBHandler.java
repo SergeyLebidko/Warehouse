@@ -83,14 +83,14 @@ public class DBHandler {
         //Заполняем для каждого документа список операций
         ArrayList<Operation> opList;
         for (Document document: list){
-            opList=getOperationList(document.getId());
+            opList= getDocumentOperations(document.getId());
             document.getOperationList().addAll(opList);
         }
 
         return list;
     }
 
-    public ArrayList<Operation> getOperationList(int documentId) throws SQLException {
+    private ArrayList<Operation> getDocumentOperations(int documentId) throws SQLException {
         ArrayList<Operation> list = new ArrayList<>();
 
         String query = "SELECT OPERATIONS.ID, CATALOG.ID, NAME, COUNT " +
