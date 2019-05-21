@@ -80,7 +80,7 @@ public class ActionHandler {
 
         //Экспорт данных в книгу Excel
         if (command.equals(EXPORT_TO_XLS_COMMAND)) {
-            saveExcelWorkbook();
+            saveAndOpenExcelWorkbook();
         }
 
     }
@@ -114,7 +114,7 @@ public class ActionHandler {
     private void showDocumentList() {
         ArrayList<Document> list;
         try {
-            list = dbHandler.getDocumentList();
+            list = dbHandler.getDocuments();
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, failDocumentsAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
@@ -124,7 +124,7 @@ public class ActionHandler {
         cardLayout.show(cardPane, state);
     }
 
-    private void saveExcelWorkbook() {
+    private void saveAndOpenExcelWorkbook() {
         HSSFWorkbook workbook = null;
 
         //Получаем рабочую книгу из текущего отображаемого компонента

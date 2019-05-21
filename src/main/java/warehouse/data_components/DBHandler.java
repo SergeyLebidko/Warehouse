@@ -51,7 +51,7 @@ public class DBHandler {
         return list;
     }
 
-    public ArrayList<Document> getDocumentList() throws SQLException {
+    public ArrayList<Document> getDocuments() throws SQLException {
         ArrayList<Document> list = new ArrayList<>();
 
         String query = "SELECT DOCUMENTS.ID, DOCUMENTS.DATE, DOCUMENTS.TYPE, DOCUMENTS.CONTRACTOR_ID, CONTRACTORS.NAME " +
