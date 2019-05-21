@@ -177,6 +177,10 @@ public class OperationsTable {
         table.setShowVerticalLines(false);
         table.setGridColor(gridColor);
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.getColumnModel().getColumn(0).setMaxWidth(maxWidthOperationNumberColumn);
+        table.getColumnModel().getColumn(0).setMinWidth(minWidthOperationNumberColumn);
+        table.getColumnModel().getColumn(2).setMaxWidth(maxWidthOperationNumberColumn);
+        table.getColumnModel().getColumn(2).setMinWidth(minWidthOperationNumberColumn);
 
         contentPane.add(new JScrollPane(table), BorderLayout.CENTER);
 

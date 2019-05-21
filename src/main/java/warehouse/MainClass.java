@@ -20,6 +20,9 @@ public class MainClass {
             System.exit(0);
         }
 
+        //Создаем класс реализующий логику приложения
+        actionHandler = new ActionHandler();
+
         //Если подключение успешно получено, то запускаем создание интерфейса
         try {
             SwingUtilities.invokeAndWait(new Runnable() {
@@ -33,8 +36,7 @@ public class MainClass {
             System.exit(0);
         }
 
-        //Создаем класс реализующий логику приложения
-        actionHandler = new ActionHandler();
+        //После создания интерфейса инициализируем объект actionHandler
         actionHandler.init();
     }
 

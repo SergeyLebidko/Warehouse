@@ -300,12 +300,12 @@ public class DocumentsTable {
         table.setShowVerticalLines(false);
         table.setGridColor(gridColor);
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getColumnModel().getColumn(0).setMaxWidth(maxWidthNumberColumn);
-        table.getColumnModel().getColumn(0).setMinWidth(minWidthNumberColumn);
-        table.getColumnModel().getColumn(1).setMaxWidth(maxWidthDateColumn);
-        table.getColumnModel().getColumn(1).setMinWidth(minWidthDateColumn);
-        table.getColumnModel().getColumn(2).setMaxWidth(maxWidthTypeColumn);
-        table.getColumnModel().getColumn(2).setMinWidth(minWidthTypeColumn);
+        table.getColumnModel().getColumn(0).setMaxWidth(maxWidthDocumentNumberColumn);
+        table.getColumnModel().getColumn(0).setMinWidth(minWidthDocumentNumberColumn);
+        table.getColumnModel().getColumn(1).setMaxWidth(maxWidthDocumentDateColumn);
+        table.getColumnModel().getColumn(1).setMinWidth(minWidthDocumentDateColumn);
+        table.getColumnModel().getColumn(2).setMaxWidth(maxWidthDocumentTypeColumn);
+        table.getColumnModel().getColumn(2).setMinWidth(minWidthDocumentTypeColumn);
 
         JPanel topPane = new JPanel(new BorderLayout(5, 5));
 
@@ -319,11 +319,9 @@ public class DocumentsTable {
         idFindField.setFont(mainFont);
 
         beginDate = new DatePicker();
-        beginDate.getComponentDateTextField().setFont(mainFont);
         beginDate.getComponentDateTextField().setEditable(false);
 
         endDate = new DatePicker();
-        endDate.getComponentDateTextField().setFont(mainFont);
         endDate.getComponentDateTextField().setEditable(false);
 
         typeBox = new JComboBox(new Object[]{"Все", COM.getName(), CONS.getName()});

@@ -6,6 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+
 import static warehouse.ResourcesList.*;
 
 public class GUI {
@@ -56,9 +57,9 @@ public class GUI {
         frm.setContentPane(contentPane);
     }
 
-    private void createCardPane(){
+    private void createCardPane() {
         cardPane = new JPanel();
-        cardPane.setLayout(new CardLayout(5,5));
+        cardPane.setLayout(new CardLayout(5, 5));
         frm.getContentPane().add(cardPane, BorderLayout.CENTER);
     }
 
@@ -104,11 +105,14 @@ public class GUI {
         frm.add(toolBar, BorderLayout.NORTH);
     }
 
-    private void createOpenMenu(){
+    private void createOpenMenu() {
         openMenu = new JPopupMenu("Открыть:");
         JMenuItem openCatalogItem = new JMenuItem(openCatalogItemText);
+        openCatalogItem.setFont(mainFont);
         JMenuItem openContractorsItem = new JMenuItem(openContractorsItemText);
+        openContractorsItem.setFont(mainFont);
         JMenuItem openDocumentsItem = new JMenuItem(openDocumentsItemText);
+        openDocumentsItem.setFont(mainFont);
 
         openMenu.add(openCatalogItem);
         openMenu.add(openContractorsItem);
@@ -136,11 +140,11 @@ public class GUI {
         });
     }
 
-    private void createReportMenu(){
+    private void createReportMenu() {
         //Вставить код
     }
 
-    private void createBtnListeners(){
+    private void createBtnListeners() {
         //Кнопка Открыть
         openBtn.addMouseListener(new MouseAdapter() {
             @Override
@@ -162,8 +166,12 @@ public class GUI {
         frm.setVisible(true);
     }
 
-    public JPanel getCardPane(){
+    public JPanel getCardPane() {
         return cardPane;
+    }
+
+    public JFrame getFrm() {
+        return frm;
     }
 
 }

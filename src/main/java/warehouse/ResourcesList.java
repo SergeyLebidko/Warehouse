@@ -51,12 +51,18 @@ public class ResourcesList {
     public static final String removeFilterBtnText = "";
     public static final String removeFilterToolTip = "Очистить фильтр";
 
-    //Параметры главного окна
+    //Размеры главного окна
     public static final String frmTitle = "Warehouse";
     public static final int FRM_WIDTH = 1200;
     public static final int FRM_HEIGHT = 900;
     public static final int MIN_FRM_WIDTH = 800;
     public static final int MIN_FRM_HEIGHT = 600;
+
+    //Размеры диалогового окна Документы
+    public static final int DOCUMENT_DIALOG_WIDTH = 800;
+    public static final int DOCUMENT_DIALOG_HEIGHT = 600;
+    public static final int MIN_DOCUMENT_DIALOG_WIDTH = 650;
+    public static final int MIN_DOCUMENT_DIALOG_HEIGHT = 450;
 
     //Русские варианты надписей в стандартных диалоговых окнах
     public static final String yesButtonText = "Да";
@@ -69,18 +75,28 @@ public class ResourcesList {
     public static final String openContractorsItemText = "Контрагенты";
     public static final String openDocumentsItemText = "Документы";
 
-    //Параметры табличного компонента
+    //Общие параметры для табличных компонентов
     public static final int rowHeight = 40;
     public static final Color gridColor = Color.LIGHT_GRAY;
     public static final Color headerColor = new Color(230, 230, 230);
     public static final Color evenCellsColor = new Color(240, 240, 240);
     public static final Color notEvenCellsColor = new Color(255, 255, 255);
-    public static final int maxWidthNumberColumn = 80;
-    public static final int minWidthNumberColumn = 50;
-    public static final int maxWidthDateColumn = 220;
-    public static final int minWidthDateColumn = 120;
-    public static final int maxWidthTypeColumn = 120;
-    public static final int minWidthTypeColumn = 100;
+
+    //Параметры ширины столбцов для отображения документов
+    public static final int maxWidthDocumentNumberColumn = 100;
+    public static final int minWidthDocumentNumberColumn = 50;
+    public static final int maxWidthDocumentDateColumn = 220;
+    public static final int minWidthDocumentDateColumn = 120;
+    public static final int maxWidthDocumentTypeColumn = 120;
+    public static final int minWidthDocumentTypeColumn = 100;
+
+    //Параметры ширины столбцов для отображения простых списоков (Каталог и Контрагенты)
+    public static final int maxWidthSimpleTableNumberColumn = 100;
+    public static final int minWidthSimpleTableNumberColumn = 50;
+
+    //Параметры ширины столбцов для отображения списка операций
+    public static final int maxWidthOperationNumberColumn = 150;
+    public static final int minWidthOperationNumberColumn = 100;
 
     //Сообщения об ошибках
     public static final String failCatalogAccess = "Не удалось получить содержимое каталога. Ошибка:";
@@ -89,7 +105,7 @@ public class ResourcesList {
     public static final String failOpenExportXLSFile = "Не удалось открыть созданный файл. Ошибка:";
     public static final String failDocumentsAccess = "Не удалось получить список документов. Ошибка:";
 
-    //Шрифт для таблиц
+    //Главный шрифт приложения (для таблиц, полей ввода и меню)
     public static final Font mainFont = new Font("Arial", Font.PLAIN, 16);
 
     //Параметры выгрузки в excel
