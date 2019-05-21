@@ -3,10 +3,8 @@ package warehouse.gui_components;
 import com.github.lgooddatepicker.components.DatePicker;
 import warehouse.MainClass;
 import warehouse.data_components.Document;
-
 import static warehouse.data_components.SortOrders.*;
 import static warehouse.ResourcesList.*;
-
 import javax.swing.*;
 import java.awt.*;
 import java.text.DateFormat;

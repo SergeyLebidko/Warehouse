@@ -121,21 +121,21 @@ public class GUI {
         openCatalogItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                actionHandler.commandHandler(ActionHandler.OPEN_CATALOG_COMMAND);
+                actionHandler.showCatalog();
             }
         });
 
         openContractorsItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                actionHandler.commandHandler(ActionHandler.OPEN_CONTRACTORS_COMMAND);
+                actionHandler.showContractors();
             }
         });
 
         openDocumentsItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                actionHandler.commandHandler(ActionHandler.OPEN_DOCUMENTS_LIST_COMMAND);
+                actionHandler.showDocumentList();
             }
         });
     }

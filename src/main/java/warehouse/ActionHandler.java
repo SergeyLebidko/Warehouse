@@ -93,7 +93,7 @@ public class ActionHandler {
 
     }
 
-    private void showCatalog() {
+    public void showCatalog() {
         ArrayList<SimpleDataElement> list;
         try {
             list = dbHandler.getCatalog();
@@ -106,7 +106,7 @@ public class ActionHandler {
         cardLayout.show(cardPane, state);
     }
 
-    private void showContractors() {
+    public void showContractors() {
         ArrayList<SimpleDataElement> list;
         try {
             list = dbHandler.getContractors();
@@ -119,7 +119,7 @@ public class ActionHandler {
         cardLayout.show(cardPane, state);
     }
 
-    private void showDocumentList() {
+    public void showDocumentList() {
         ArrayList<Document> list;
         try {
             list = dbHandler.getDocuments();
@@ -132,7 +132,7 @@ public class ActionHandler {
         cardLayout.show(cardPane, state);
     }
 
-    private void openDocument(){
+    public void openDocument(){
         if (!state.equals(DOCUMENTS_LIST_DATASET))return;
         Document document = documentsTable.getSelectedRow();
         if (document==null)return;
@@ -140,7 +140,7 @@ public class ActionHandler {
         documentDialog.showDocument(document);
     }
 
-    private void saveAndOpenExcelWorkbook() {
+    public void saveAndOpenExcelWorkbook() {
         HSSFWorkbook workbook = null;
 
         //Получаем рабочую книгу из текущего отображаемого компонента
