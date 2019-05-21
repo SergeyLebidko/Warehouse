@@ -10,7 +10,6 @@ import org.apache.poi.ss.util.RegionUtil;
 import warehouse.data_components.DataElement;
 import warehouse.data_components.SimpleDataElement;
 import warehouse.data_components.SortOrders;
-
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
@@ -19,7 +18,6 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Comparator;
-
 import static warehouse.ResourcesList.*;
 import static warehouse.data_components.SortOrders.*;
 

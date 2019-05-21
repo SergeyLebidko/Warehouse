@@ -10,8 +10,9 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
+import warehouse.ActionHandler;
+import warehouse.MainClass;
 import warehouse.data_components.*;
-
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
@@ -23,12 +24,13 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
-
 import static warehouse.ResourcesList.*;
 import static warehouse.data_components.DocumentTypes.*;
 import static warehouse.data_components.SortOrders.*;
 
 public class DocumentsTable {
+
+    private ActionHandler actionHandler;
 
     private JPanel contentPane;
     private Model model;
@@ -282,6 +284,8 @@ public class DocumentsTable {
     }
 
     private void createFields() {
+        actionHandler = MainClass.getActionHandler();
+
         contentPane = new JPanel(new BorderLayout(5, 5));
         contentPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         statusLab = new JLabel("");
@@ -435,6 +439,15 @@ public class DocumentsTable {
                     int columnNumber = table.getTableHeader().columnAtPoint(e.getPoint());
                     sortedColumn = columnNumber;
                     revertSortOrder();
+                }
+            }
+        });
+
+        table.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 2 & e.getButton() == MouseEvent.BUTTON1){
+                    actionHandler.commandHandler(ActionHandler.OPEN_DOCUMENT_COMMAND);
                 }
             }
         });

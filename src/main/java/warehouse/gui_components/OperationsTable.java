@@ -2,7 +2,6 @@ package warehouse.gui_components;
 
 import warehouse.data_components.Operation;
 import warehouse.data_components.SortOrders;
-
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
@@ -12,7 +11,6 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
-
 import static warehouse.ResourcesList.*;
 import static warehouse.data_components.SortOrders.*;
 
@@ -35,6 +33,21 @@ public class OperationsTable {
 
         @Override
         public int compare(Operation o1, Operation o2) {
+            if (sortedColumn==0){
+                Integer id1 = o1.getCatalogId();
+                Integer id2 = o2.getCatalogId();
+                return sortOrder.getMul()*id1.compareTo(id2);
+            }
+            if (sortedColumn==1){
+                String name1 = o1.getCatalogName();
+                String name2 = o2.getCatalogName();
+                return sortOrder.getMul()*name1.compareTo(name2);
+            }
+            if (sortedColumn==2){
+                Integer count1 = o1.getCount();
+                Integer count2 = o2.getCount();
+                return sortOrder.getMul()*count1.compareTo(count2);
+            }
             return 0;
         }
 
@@ -164,6 +177,8 @@ public class OperationsTable {
         table.setShowVerticalLines(false);
         table.setGridColor(gridColor);
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        contentPane.add(new JScrollPane(table), BorderLayout.CENTER);
 
         content = null;
         sortedColumn = 1;

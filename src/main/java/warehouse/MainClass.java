@@ -3,11 +3,13 @@ package warehouse;
 import warehouse.data_components.DBHandler;
 
 import javax.swing.*;
+import java.lang.reflect.InvocationTargetException;
 
 public class MainClass {
 
     private static DBHandler dbHandler;
     private static ActionHandler actionHandler;
+    private static GUI gui;
 
     public static void main(String[] args) {
         //Пытаемся получить подключение к базе данных
@@ -15,20 +17,37 @@ public class MainClass {
             dbHandler = new DBHandler();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Ошибка подключения к базе данных. Приложение будет закрыто.", "", JOptionPane.ERROR_MESSAGE);
-            return;
+            System.exit(0);
         }
 
-        //Создаем класс логики приложения
-        actionHandler = new ActionHandler();
-
         //Если подключение успешно получено, то запускаем создание интерфейса
-        new GUI();
+        try {
+            SwingUtilities.invokeAndWait(new Runnable() {
+                @Override
+                public void run() {
+                    gui = new GUI();
+                }
+            });
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "Не удалось создать главное окно. Приложение будет закрыто.", "", JOptionPane.ERROR_MESSAGE);
+            System.exit(0);
+        }
+
+        //Создаем класс реализующий логику приложения
+        actionHandler = new ActionHandler();
+        actionHandler.init();
     }
 
     public static DBHandler getDbHandler() {
         return dbHandler;
     }
 
-    public static ActionHandler getActionHandler(){return actionHandler;};
+    public static ActionHandler getActionHandler() {
+        return actionHandler;
+    }
+
+    public static GUI getGui() {
+        return gui;
+    }
 
 }

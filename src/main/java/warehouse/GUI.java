@@ -6,9 +6,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-
 import static warehouse.ResourcesList.*;
-
 
 public class GUI {
 
@@ -30,7 +28,7 @@ public class GUI {
         localizationStandartDialog();
         createFrm();
         createCardPane();
-        createActionHandlerState();
+        createActionHandler();
         createToolbar();
         createOpenMenu();
         createReportMenu();
@@ -64,9 +62,8 @@ public class GUI {
         frm.getContentPane().add(cardPane, BorderLayout.CENTER);
     }
 
-    private void createActionHandlerState() {
+    private void createActionHandler() {
         actionHandler = MainClass.getActionHandler();
-        actionHandler.setupCardPane(cardPane);
     }
 
     private void createToolbar() {
@@ -163,6 +160,10 @@ public class GUI {
 
     private void showFrm() {
         frm.setVisible(true);
+    }
+
+    public JPanel getCardPane(){
+        return cardPane;
     }
 
 }
