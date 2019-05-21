@@ -23,7 +23,7 @@ import java.util.Comparator;
 import static warehouse.ResourcesList.*;
 import static warehouse.data_components.SortOrders.*;
 
-public class SimpleDataTable implements DataTable {
+public class SimpleDataTable {
 
     private JPanel contentPane;
     private Model model;
@@ -320,12 +320,10 @@ public class SimpleDataTable implements DataTable {
         });
     }
 
-    @Override
     public JPanel getVisualComponent() {
         return contentPane;
     }
 
-    @Override
     public SimpleDataElement getSelectedRow() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow == (-1)) return null;
@@ -333,7 +331,6 @@ public class SimpleDataTable implements DataTable {
         return selectedElement;
     }
 
-    @Override
     public void setIdFilter(String nextFilter) {
         nextFilter = nextFilter.trim();
         if (nextFilter.equals(idFilter))return;
@@ -378,7 +375,6 @@ public class SimpleDataTable implements DataTable {
         model.refresh();
     }
 
-    @Override
     public void refresh(ArrayList<? extends DataElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
         content = new ArrayList<>();
 
@@ -399,7 +395,6 @@ public class SimpleDataTable implements DataTable {
         model.refresh();
     }
 
-    @Override
     public HSSFWorkbook getExcelWorkbook() {
         //Создаем файл в памяти
         HSSFWorkbook workbook = new HSSFWorkbook();

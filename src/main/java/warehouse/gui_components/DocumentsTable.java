@@ -28,7 +28,7 @@ import static warehouse.ResourcesList.*;
 import static warehouse.data_components.DocumentTypes.*;
 import static warehouse.data_components.SortOrders.*;
 
-public class DocumentsTable implements DataTable {
+public class DocumentsTable {
 
     private JPanel contentPane;
     private Model model;
@@ -440,12 +440,10 @@ public class DocumentsTable implements DataTable {
         });
     }
 
-    @Override
     public JPanel getVisualComponent() {
         return contentPane;
     }
 
-    @Override
     public Document getSelectedRow() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow == (-1)) return null;
@@ -453,7 +451,6 @@ public class DocumentsTable implements DataTable {
         return selectedElement;
     }
 
-    @Override
     public void setIdFilter(String nextFilter) {
         nextFilter = nextFilter.trim();
         if (nextFilter.equals(idFilter)) return;
@@ -526,7 +523,6 @@ public class DocumentsTable implements DataTable {
         model.refresh();
     }
 
-    @Override
     public void refresh(ArrayList<? extends DataElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
         content = new ArrayList<>();
 
@@ -557,7 +553,6 @@ public class DocumentsTable implements DataTable {
         model.refresh();
     }
 
-    @Override
     public HSSFWorkbook getExcelWorkbook() {
         //Создаем файл в памяти
         HSSFWorkbook workbook = new HSSFWorkbook();
