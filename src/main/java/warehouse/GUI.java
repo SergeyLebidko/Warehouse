@@ -157,7 +157,7 @@ public class GUI {
         xlsBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                actionHandler.commandHandler(ActionHandler.EXPORT_TO_XLS_COMMAND);
+                actionHandler.exportToExcelFromCurrentComponent();
             }
         });
     }

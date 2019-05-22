@@ -14,7 +14,6 @@ public class ResourcesList {
 
     //Параметры файла для экспорта данных в excel
     public static final String exportFolder = "xls";
-    public static final String exportFileName = "export.xls";
 
     //Ресурсы для кнопок
     private static ImageLoader imageLoader = new ImageLoader();

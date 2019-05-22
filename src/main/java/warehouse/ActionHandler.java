@@ -1,25 +1,25 @@
 package warehouse;
 
 import javax.swing.*;
+
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import warehouse.gui_components.*;
 import warehouse.data_components.*;
+
 import static warehouse.ResourcesList.*;
 import static warehouse.data_components.SortOrders.*;
+
 import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 
 public class ActionHandler {
-
-    public static final String OPEN_CATALOG_COMMAND = "open catalog";
-    public static final String OPEN_CONTRACTORS_COMMAND = "open contractors";
-    public static final String OPEN_DOCUMENTS_LIST_COMMAND = "open documents list";
-    public static final String EXPORT_TO_XLS_COMMAND = "export to excel";
-    public static final String OPEN_DOCUMENT_COMMAND = "open document";
 
     private static final String NO_DATASET = "";
     private static final String CATALOG_DATASET = "catalog";
@@ -43,7 +43,7 @@ public class ActionHandler {
         dbHandler = MainClass.getDbHandler();
     }
 
-    public void init(){
+    public void init() {
         //Создаем панели главного онка
         emptyPane = new JPanel();
         catalogTable = new SimpleDataTable();
@@ -61,36 +61,6 @@ public class ActionHandler {
 
         //Создаем объекты диалоговых окон
         documentDialog = new DocumentDialog();
-    }
-
-    public void commandHandler(String command) {
-        //Открыть каталог
-        if (command.equals(OPEN_CATALOG_COMMAND)) {
-            showCatalog();
-            return;
-        }
-
-        //Открыть список контрагентов
-        if (command.equals(OPEN_CONTRACTORS_COMMAND)) {
-            showContractors();
-            return;
-        }
-
-        //Открыть список документов
-        if (command.equals(OPEN_DOCUMENTS_LIST_COMMAND)) {
-            showDocumentList();
-        }
-
-        //Экспорт данных в книгу Excel
-        if (command.equals(EXPORT_TO_XLS_COMMAND)) {
-            saveAndOpenExcelWorkbook();
-        }
-
-        //Открытие документа
-        if (command.equals(OPEN_DOCUMENT_COMMAND)){
-            openDocument();
-        }
-
     }
 
     public void showCatalog() {
@@ -132,29 +102,39 @@ public class ActionHandler {
         cardLayout.show(cardPane, state);
     }
 
-    public void openDocument(){
-        if (!state.equals(DOCUMENTS_LIST_DATASET))return;
-        Document document = documentsTable.getSelectedRow();
-        if (document==null)return;
-
+    public void openDocument(Document document) {
+        if (document == null) return;
         documentDialog.showDocument(document);
     }
 
-    public void saveAndOpenExcelWorkbook() {
-        HSSFWorkbook workbook = null;
+    public void exportToExcelFromCurrentComponent() {
+        if (state.equals(NO_DATASET)) return;
 
-        //Получаем рабочую книгу из текущего отображаемого компонента
+        HSSFWorkbook workbook = null;
+        String name = "";
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy.MM.dd HH-mm");
+
+        //Определяем текущую отображаемую панель
         if (state.equals(CATALOG_DATASET)) {
             workbook = catalogTable.getExcelWorkbook();
+            name = "Каталог";
         }
-        if (state.equals(CONTRACTORS_DATASET)){
+        if (state.equals(CONTRACTORS_DATASET)) {
             workbook = contractorsTable.getExcelWorkbook();
+            name = "Контрагенты";
         }
-        if (state.equals(DOCUMENTS_LIST_DATASET)){
+        if (state.equals(DOCUMENTS_LIST_DATASET)) {
             workbook = documentsTable.getExcelWorkbook();
+            name = "Документы";
         }
 
-        if (workbook == null) return;
+        name += " " + dateFormat.format(new Date());
+
+        saveAndOpenExcelWorkbook(workbook, name);
+    }
+
+    public void saveAndOpenExcelWorkbook(HSSFWorkbook workbook, String name) {
+        File exportFile = new File(exportFolder + File.separator + name + ".xls");
 
         //Проверяем наличие папки, в которую будем экспортировать файл. Если ее нет - создаем
         File exportDir = new File(exportFolder);
@@ -167,7 +147,7 @@ public class ActionHandler {
         }
 
         //Пытаемся записать книгу на диск
-        try (FileOutputStream out = new FileOutputStream(exportFolder + File.separator + exportFileName)) {
+        try (FileOutputStream out = new FileOutputStream(exportFile)) {
             workbook.write(out);
 
         } catch (IOException e) {
@@ -176,7 +156,7 @@ public class ActionHandler {
 
         //Затем открываем её
         try {
-            Desktop.getDesktop().open(new File(exportFolder + File.separator + exportFileName));
+            Desktop.getDesktop().open(exportFile);
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, failOpenExportXLSFile + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;

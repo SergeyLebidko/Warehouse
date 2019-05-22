@@ -322,7 +322,7 @@ public class SimpleDataTable {
         return contentPane;
     }
 
-    public SimpleDataElement getSelectedRow() {
+    public SimpleDataElement getSelectedElement() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow == (-1)) return null;
         SimpleDataElement selectedElement = (SimpleDataElement) model.getValueAt(selectedRow, 1);

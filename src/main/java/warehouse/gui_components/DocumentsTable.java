@@ -441,11 +441,13 @@ public class DocumentsTable {
             }
         });
 
+        //Обработчик двойного щелчка по строке таблицы
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2 & e.getButton() == MouseEvent.BUTTON1){
-                    actionHandler.commandHandler(ActionHandler.OPEN_DOCUMENT_COMMAND);
+                    Document document = getSelectedElement();
+                    actionHandler.openDocument(document);
                 }
             }
         });
@@ -455,7 +457,7 @@ public class DocumentsTable {
         return contentPane;
     }
 
-    public Document getSelectedRow() {
+    public Document getSelectedElement() {
         int selectedRow = table.getSelectedRow();
         if (selectedRow == (-1)) return null;
         Document selectedElement = (Document) model.getValueAt(selectedRow, 1);
