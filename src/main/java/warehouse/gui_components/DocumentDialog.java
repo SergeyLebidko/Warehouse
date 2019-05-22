@@ -1,6 +1,7 @@
 package warehouse.gui_components;
 
 import com.github.lgooddatepicker.components.DatePicker;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import warehouse.ActionHandler;
 import warehouse.MainClass;
@@ -176,7 +177,13 @@ public class DocumentDialog {
     }
 
     private HSSFWorkbook createExcelWorkbook(Document document){
-        return null;
+        //Создаем файл в памяти
+        HSSFWorkbook workbook = new HSSFWorkbook();
+
+        //Создаем лист
+        HSSFSheet sheet = workbook.createSheet("Лист1");
+
+        return workbook;
     }
 
     private LocalDate convertDateToLocalDate(Date date) {

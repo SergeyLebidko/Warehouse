@@ -447,7 +447,7 @@ public class DocumentsTable {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2 & e.getButton() == MouseEvent.BUTTON1){
                     Document document = getSelectedElement();
-                    actionHandler.showDocument(document);
+                    actionHandler.showDocumentWithEditOption(document);
                 }
             }
         });
@@ -455,85 +455,6 @@ public class DocumentsTable {
 
     public JPanel getVisualComponent() {
         return contentPane;
-    }
-
-    public Document getSelectedElement() {
-        int selectedRow = table.getSelectedRow();
-        if (selectedRow == (-1)) return null;
-        Document selectedElement = (Document) model.getValueAt(selectedRow, 1);
-        return selectedElement;
-    }
-
-    public void setIdFilter(String nextFilter) {
-        nextFilter = nextFilter.trim();
-        if (nextFilter.equals(idFilter)) return;
-        if (nextFilter.equals("")) {
-            idFilter = "";
-            model.refresh();
-            return;
-        }
-
-        //Проверяем возможность конвертирования строки с номером в число
-        try {
-            Integer.parseInt(nextFilter);
-        } catch (Exception ex) {
-            return;
-        }
-
-        idFilter = nextFilter;
-
-        //Уведомляем модель таблицы о произошедших изменениях
-        model.refresh();
-    }
-
-    private void setBeginDateFilter(Date nextDate) {
-        if (beginDateFilter == null & nextDate == null) return;
-        beginDateFilter = nextDate;
-        model.refresh();
-    }
-
-    private void setEndDateFilter(Date nextDate) {
-        if (endDateFilter == null & nextDate == null) return;
-        endDateFilter = nextDate;
-        model.refresh();
-    }
-
-    private void setTypeFilter(DocumentTypes nextType) {
-        if (typeFilter == nextType) return;
-        typeFilter = nextType;
-        model.refresh();
-    }
-
-    private void setContractorNameFilter(String nextFilter) {
-        nextFilter = nextFilter.trim();
-        if (nextFilter.equals(contractorNameFilter)) return;
-        contractorNameFilter = nextFilter;
-
-        //Уведомляем модель таблицы о произошедших изменениях
-        model.refresh();
-    }
-
-    private void removeFilter() {
-        idFindField.setText("");
-        beginDate.clear();
-        endDate.clear();
-        typeBox.setSelectedIndex(0);
-        contractorsNameFindField.setText("");
-
-        if (idFilter.equals("") &
-                beginDateFilter == null &
-                endDateFilter == null &
-                typeFilter == null &
-                contractorNameFilter.equals("")) return;
-
-        idFilter = "";
-        beginDateFilter = null;
-        endDateFilter = null;
-        typeFilter = null;
-        contractorNameFilter = "";
-
-        //Уведомляем модель таблицы о произошедших изменениях
-        model.refresh();
     }
 
     public void refresh(ArrayList<? extends DataElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
@@ -548,21 +469,7 @@ public class DocumentsTable {
         this.displayName = displayName;
         this.sortedColumn = sortedColumn;
         this.sortOrder = sortOrder;
-
         nameLab.setText(displayName);
-
-        idFindField.setText("");
-        beginDate.clear();
-        endDate.clear();
-        typeBox.setSelectedIndex(0);
-        contractorsNameFindField.setText("");
-
-        idFilter = "";
-        beginDateFilter = null;
-        endDateFilter = null;
-        typeFilter = null;
-        contractorNameFilter = "";
-
         model.refresh();
     }
 
@@ -684,6 +591,85 @@ public class DocumentsTable {
         sheet.setColumnWidth(4, 10000);
 
         return workbook;
+    }
+
+    public Document getSelectedElement() {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow == (-1)) return null;
+        Document selectedElement = (Document) model.getValueAt(selectedRow, 1);
+        return selectedElement;
+    }
+
+    private void setIdFilter(String nextFilter) {
+        nextFilter = nextFilter.trim();
+        if (nextFilter.equals(idFilter)) return;
+        if (nextFilter.equals("")) {
+            idFilter = "";
+            model.refresh();
+            return;
+        }
+
+        //Проверяем возможность конвертирования строки с номером в число
+        try {
+            Integer.parseInt(nextFilter);
+        } catch (Exception ex) {
+            return;
+        }
+
+        idFilter = nextFilter;
+
+        //Уведомляем модель таблицы о произошедших изменениях
+        model.refresh();
+    }
+
+    private void setBeginDateFilter(Date nextDate) {
+        if (beginDateFilter == null & nextDate == null) return;
+        beginDateFilter = nextDate;
+        model.refresh();
+    }
+
+    private void setEndDateFilter(Date nextDate) {
+        if (endDateFilter == null & nextDate == null) return;
+        endDateFilter = nextDate;
+        model.refresh();
+    }
+
+    private void setTypeFilter(DocumentTypes nextType) {
+        if (typeFilter == nextType) return;
+        typeFilter = nextType;
+        model.refresh();
+    }
+
+    private void setContractorNameFilter(String nextFilter) {
+        nextFilter = nextFilter.trim();
+        if (nextFilter.equals(contractorNameFilter)) return;
+        contractorNameFilter = nextFilter;
+
+        //Уведомляем модель таблицы о произошедших изменениях
+        model.refresh();
+    }
+
+    private void removeFilter() {
+        idFindField.setText("");
+        beginDate.clear();
+        endDate.clear();
+        typeBox.setSelectedIndex(0);
+        contractorsNameFindField.setText("");
+
+        if (idFilter.equals("") &
+                beginDateFilter == null &
+                endDateFilter == null &
+                typeFilter == null &
+                contractorNameFilter.equals("")) return;
+
+        idFilter = "";
+        beginDateFilter = null;
+        endDateFilter = null;
+        typeFilter = null;
+        contractorNameFilter = "";
+
+        //Уведомляем модель таблицы о произошедших изменениях
+        model.refresh();
     }
 
     private void revertSortOrder() {

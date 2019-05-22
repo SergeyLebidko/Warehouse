@@ -322,57 +322,6 @@ public class SimpleDataTable {
         return contentPane;
     }
 
-    public SimpleDataElement getSelectedElement() {
-        int selectedRow = table.getSelectedRow();
-        if (selectedRow == (-1)) return null;
-        SimpleDataElement selectedElement = (SimpleDataElement) model.getValueAt(selectedRow, 1);
-        return selectedElement;
-    }
-
-    public void setIdFilter(String nextFilter) {
-        nextFilter = nextFilter.trim();
-        if (nextFilter.equals(idFilter))return;
-        if (nextFilter.equals("")) {
-            idFilter = "";
-            model.refresh();
-            return;
-        }
-
-        //Проверяем возможность конвертирования строки с номером в число
-        try {
-            Integer.parseInt(nextFilter);
-        } catch (Exception ex) {
-            return;
-        }
-
-        idFilter = nextFilter;
-
-        //Уведомляем модель таблицы о произошедших изменениях
-        model.refresh();
-    }
-
-    private void setNameFilter(String nextFilter) {
-        nextFilter = nextFilter.trim();
-        if (nextFilter.equals(nameFilter)) return;
-        nameFilter = nextFilter;
-
-        //Уведомляем модель таблицы о произошедших изменениях
-        model.refresh();
-    }
-
-    private void removeFilter() {
-        idFindField.setText("");
-        nameFindField.setText("");
-
-        if (idFilter.equals("") & nameFilter.equals("")) return;
-
-        nameFilter = "";
-        idFilter = "";
-
-        //Уведомляем модель таблицы о произошедших изменениях
-        model.refresh();
-    }
-
     public void refresh(ArrayList<? extends DataElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
         content = new ArrayList<>();
 
@@ -386,10 +335,6 @@ public class SimpleDataTable {
         this.sortedColumn = sortedColumn;
         this.displayName = displayName;
         nameLab.setText(displayName);
-        idFindField.setText("");
-        nameFindField.setText("");
-        nameFilter = "";
-        idFilter = "";
         model.refresh();
     }
 
@@ -480,6 +425,57 @@ public class SimpleDataTable {
         sheet.setColumnWidth(2, 10000);
 
         return workbook;
+    }
+
+    public SimpleDataElement getSelectedElement() {
+        int selectedRow = table.getSelectedRow();
+        if (selectedRow == (-1)) return null;
+        SimpleDataElement selectedElement = (SimpleDataElement) model.getValueAt(selectedRow, 1);
+        return selectedElement;
+    }
+
+    private void setIdFilter(String nextFilter) {
+        nextFilter = nextFilter.trim();
+        if (nextFilter.equals(idFilter))return;
+        if (nextFilter.equals("")) {
+            idFilter = "";
+            model.refresh();
+            return;
+        }
+
+        //Проверяем возможность конвертирования строки с номером в число
+        try {
+            Integer.parseInt(nextFilter);
+        } catch (Exception ex) {
+            return;
+        }
+
+        idFilter = nextFilter;
+
+        //Уведомляем модель таблицы о произошедших изменениях
+        model.refresh();
+    }
+
+    private void setNameFilter(String nextFilter) {
+        nextFilter = nextFilter.trim();
+        if (nextFilter.equals(nameFilter)) return;
+        nameFilter = nextFilter;
+
+        //Уведомляем модель таблицы о произошедших изменениях
+        model.refresh();
+    }
+
+    private void removeFilter() {
+        idFindField.setText("");
+        nameFindField.setText("");
+
+        if (idFilter.equals("") & nameFilter.equals("")) return;
+
+        nameFilter = "";
+        idFilter = "";
+
+        //Уведомляем модель таблицы о произошедших изменениях
+        model.refresh();
     }
 
     private void revertSortOrder() {
