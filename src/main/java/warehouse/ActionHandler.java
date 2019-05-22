@@ -102,9 +102,9 @@ public class ActionHandler {
         cardLayout.show(cardPane, state);
     }
 
-    public void openDocument(Document document) {
+    public void showDocument(Document document) {
         if (document == null) return;
-        documentDialog.showDocument(document);
+        documentDialog.showDocument(document, true);
     }
 
     public void exportToExcelFromCurrentComponent() {

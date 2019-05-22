@@ -28,6 +28,10 @@ public class ResourcesList {
     public static final ImageIcon toUpIcon = imageLoader.getImageIcon("to_up");
     public static final ImageIcon toDownIcon = imageLoader.getImageIcon("to_down");
     public static final ImageIcon noOrderIcon = imageLoader.getImageIcon("no_order");
+    public static final ImageIcon editIconSmall = imageLoader.getImageIcon("edit_small");
+    public static final ImageIcon excelIconSmall = imageLoader.getImageIcon("excel_small");
+    public static final ImageIcon addIconSmall = imageLoader.getImageIcon("add_small");
+    public static final ImageIcon removeIconSmall = imageLoader.getImageIcon("remove_small");
 
     public static final String openBtnText = "";
     public static final String openBtnToolTip = "Открыть";
@@ -60,8 +64,6 @@ public class ResourcesList {
     //Размеры диалогового окна Документы
     public static final int DOCUMENT_DIALOG_WIDTH = 800;
     public static final int DOCUMENT_DIALOG_HEIGHT = 600;
-    public static final int MIN_DOCUMENT_DIALOG_WIDTH = 650;
-    public static final int MIN_DOCUMENT_DIALOG_HEIGHT = 450;
 
     //Русские варианты надписей в стандартных диалоговых окнах
     public static final String yesButtonText = "Да";
@@ -124,7 +126,11 @@ public class ResourcesList {
                 "excel",
                 "to_up",
                 "to_down",
-                "no_order"
+                "no_order",
+                "edit_small",
+                "excel_small",
+                "add_small",
+                "remove_small"
         };
 
         private HashMap<String, Image> imageMap = new HashMap<>();
