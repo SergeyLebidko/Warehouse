@@ -3,10 +3,14 @@ package warehouse.gui_components;
 import com.github.lgooddatepicker.components.DatePicker;
 import warehouse.MainClass;
 import warehouse.data_components.Document;
+
 import static warehouse.data_components.SortOrders.*;
 import static warehouse.ResourcesList.*;
+
 import javax.swing.*;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.text.DateFormat;
 import java.time.LocalDate;
 import java.util.Date;
@@ -22,6 +26,8 @@ public class DocumentDialog {
     private JTextField typeField;
     private OperationsTable operationsTable;
 
+    private JButton okBtn;
+
     public DocumentDialog() {
         //Создаем диалоговое окно
         JFrame frm = MainClass.getGui().getFrm();
@@ -35,7 +41,7 @@ public class DocumentDialog {
 
         //Создаем элементы диалогового окна
         contentPane = new JPanel();
-        contentPane.setLayout(new BorderLayout(5, 5));
+        contentPane.setLayout(new BorderLayout());
         idField = new JTextField();
         idField.setFont(mainFont);
         idField.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -49,6 +55,7 @@ public class DocumentDialog {
         typeField.setFont(mainFont);
         typeField.setHorizontalAlignment(SwingConstants.RIGHT);
         operationsTable = new OperationsTable();
+        okBtn = new JButton("Oк");
 
         //Создаем вспомогательные панели
         Box topBox = Box.createVerticalBox();
@@ -58,6 +65,8 @@ public class DocumentDialog {
         dateBox.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         Box typeBox = Box.createHorizontalBox();
         typeBox.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+        JPanel btnPane = new JPanel();
+        btnPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
         //Добавляем созданные элементы в панели содержимого
         idBox.add(new JLabel("№ документа:"));
@@ -73,6 +82,7 @@ public class DocumentDialog {
         typeBox.add(Box.createHorizontalStrut(5));
         typeBox.add(typeField);
         typeBox.add(Box.createHorizontalStrut((int) (DOCUMENT_DIALOG_WIDTH * 0.6)));
+        btnPane.add(okBtn);
 
         topBox.add(idBox);
         topBox.add(dateBox);
@@ -80,6 +90,7 @@ public class DocumentDialog {
 
         contentPane.add(topBox, BorderLayout.NORTH);
         contentPane.add(operationsTable.getVisualComponent(), BorderLayout.CENTER);
+        contentPane.add(btnPane, BorderLayout.SOUTH);
 
         //Добавляем созданные элементы в окно
         dialog.setContentPane(contentPane);
@@ -98,6 +109,15 @@ public class DocumentDialog {
         dateField.setText(dateFormat.format(document.getDate()));
         typeField.setText(document.getType().getName());
         operationsTable.refresh(document.getOperationList(), 1, TO_UP);
+
+        //Настраиваем кнопки
+        okBtn.setVisible(true);
+        okBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                dialog.setVisible(false);
+            }
+        });
 
         //Выводим окно диалога на экран
         dialog.setVisible(true);
