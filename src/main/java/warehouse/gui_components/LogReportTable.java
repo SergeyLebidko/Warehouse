@@ -5,6 +5,7 @@ import warehouse.MainClass;
 import warehouse.data_components.LogElement;
 
 import javax.swing.*;
+import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
@@ -43,8 +44,8 @@ public class LogReportTable {
         }
 
         public void refresh() {
-            if (content==null)return;
-            rowCount=content.size();
+            if (content == null) return;
+            rowCount = content.size();
             fireTableDataChanged();
         }
 
@@ -79,7 +80,32 @@ public class LogReportTable {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            JLabel lab = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            lab.setBackground(headerColor);
+
+            if (column == 0) {
+                lab.setText("№ док.");
+            }
+            if (column == 1) {
+                lab.setText("Дата");
+            }
+            if (column == 2) {
+                lab.setText("Контрагент");
+            }
+            if (column == 3) {
+                lab.setText("Тип");
+            }
+            if (column == 4) {
+                lab.setText("Наименование");
+            }
+            if (column == 5) {
+                lab.setText("Количество");
+            }
+
+            lab.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
+            lab.setHorizontalAlignment(SwingConstants.CENTER);
+
+            return lab;
         }
 
     }
@@ -108,7 +134,7 @@ public class LogReportTable {
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         JPanel topPane = new JPanel();
-        topPane.setLayout(new BorderLayout(5,5));
+        topPane.setLayout(new BorderLayout(5, 5));
 
         Box nameBox = Box.createHorizontalBox();
         nameLab = new JLabel("");
@@ -139,8 +165,8 @@ public class LogReportTable {
     }
 
     public void refresh(ArrayList<LogElement> list, String displayName) {
-        content=list;
-        this.displayName=displayName;
+        content = list;
+        this.displayName = displayName;
         nameLab.setText(displayName);
         model.refresh();
     }

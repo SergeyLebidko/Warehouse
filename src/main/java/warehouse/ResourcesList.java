@@ -65,9 +65,9 @@ public class ResourcesList {
     public static final int MIN_FRM_WIDTH = 800;
     public static final int MIN_FRM_HEIGHT = 600;
 
-    //Размеры диалогового окна Документы
-    public static final int DOCUMENT_DIALOG_WIDTH = 800;
-    public static final int DOCUMENT_DIALOG_HEIGHT = 600;
+    //Размеры вспомогательных диалоговых окон
+    public static final int DIALOG_WIDTH = 800;
+    public static final int DIALOG_HEIGHT = 600;
 
     //Русские варианты надписей в стандартных диалоговых окнах
     public static final String yesButtonText = "Да";
@@ -87,22 +87,6 @@ public class ResourcesList {
     public static final Color headerColor = new Color(230, 230, 230);
     public static final Color evenCellsColor = new Color(240, 240, 240);
     public static final Color notEvenCellsColor = new Color(255, 255, 255);
-
-    //Параметры ширины столбцов для отображения документов
-    public static final int maxWidthDocumentNumberColumn = 100;
-    public static final int minWidthDocumentNumberColumn = 50;
-    public static final int maxWidthDocumentDateColumn = 220;
-    public static final int minWidthDocumentDateColumn = 120;
-    public static final int maxWidthDocumentTypeColumn = 120;
-    public static final int minWidthDocumentTypeColumn = 100;
-
-    //Параметры ширины столбцов для отображения простых списоков (Каталог и Контрагенты)
-    public static final int maxWidthSimpleTableNumberColumn = 100;
-    public static final int minWidthSimpleTableNumberColumn = 50;
-
-    //Параметры ширины столбцов для отображения списка операций
-    public static final int maxWidthOperationNumberColumn = 150;
-    public static final int minWidthOperationNumberColumn = 100;
 
     //Сообщения об ошибках
     public static final String failCatalogAccess = "Не удалось получить содержимое каталога. Ошибка:";

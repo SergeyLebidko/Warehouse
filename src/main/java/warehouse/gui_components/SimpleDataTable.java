@@ -12,8 +12,6 @@ import warehouse.data_components.SimpleDataElement;
 import warehouse.data_components.SortOrders;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
@@ -24,6 +22,9 @@ import static warehouse.ResourcesList.*;
 import static warehouse.data_components.SortOrders.*;
 
 public class SimpleDataTable {
+
+    public static final int MAX_WIDTH_NUMBER_COLUMN = 100;
+    public static final int MIN_WIDTH_NUMBER_COLUMN = 50;
 
     private JPanel contentPane;
     private Model model;
@@ -234,8 +235,8 @@ public class SimpleDataTable {
         table.setShowVerticalLines(false);
         table.setGridColor(gridColor);
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getColumnModel().getColumn(0).setMaxWidth(maxWidthSimpleTableNumberColumn);
-        table.getColumnModel().getColumn(0).setMinWidth(minWidthSimpleTableNumberColumn);
+        table.getColumnModel().getColumn(0).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(0).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
 
         JPanel topPane = new JPanel(new BorderLayout(5,5));
 
@@ -246,7 +247,7 @@ public class SimpleDataTable {
         nameBox.add(Box.createHorizontalGlue());
 
         idFindField = new JTextField(5);
-        idFindField.setMaximumSize(new Dimension(maxWidthDocumentNumberColumn, 100));
+        idFindField.setMaximumSize(new Dimension(MAX_WIDTH_NUMBER_COLUMN, 100));
         idFindField.setFont(mainFont);
 
         nameFindField = new JTextField();

@@ -16,6 +16,9 @@ import static warehouse.data_components.SortOrders.*;
 
 public class OperationsTable {
 
+    public static final int MAX_WIDTH_NUMBER_COLUMN = 150;
+    public static final int MIN_WIDTH_NUMBER_COLUMN = 100;
+
     private JPanel contentPane;
     private Model model;
     private CellRenderer cellRenderer;
@@ -177,10 +180,10 @@ public class OperationsTable {
         table.setShowVerticalLines(false);
         table.setGridColor(gridColor);
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getColumnModel().getColumn(0).setMaxWidth(maxWidthOperationNumberColumn);
-        table.getColumnModel().getColumn(0).setMinWidth(minWidthOperationNumberColumn);
-        table.getColumnModel().getColumn(2).setMaxWidth(maxWidthOperationNumberColumn);
-        table.getColumnModel().getColumn(2).setMinWidth(minWidthOperationNumberColumn);
+        table.getColumnModel().getColumn(0).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(0).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(2).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(2).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
 
         contentPane.add(new JScrollPane(table), BorderLayout.CENTER);
 

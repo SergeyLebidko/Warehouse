@@ -30,6 +30,13 @@ import static warehouse.data_components.SortOrders.*;
 
 public class DocumentsTable {
 
+    private static final int MAX_WIDTH_NUMBER_COLUMN = 100;
+    private static final int MIN_WIDTH_NUMBER_COLUMN = 50;
+    private static final int MAX_WIDTH_DATE_COLUMN = 220;
+    private static final int MIN_WIDTH_DATE_COLUMN = 120;
+    private static final int MAX_WIDTH_TYPE_COLUMN = 120;
+    private static final int MIN_WIDTH_TYPE_COLUMN = 100;
+
     private ActionHandler actionHandler;
 
     private JPanel contentPane;
@@ -300,12 +307,12 @@ public class DocumentsTable {
         table.setShowVerticalLines(false);
         table.setGridColor(gridColor);
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
-        table.getColumnModel().getColumn(0).setMaxWidth(maxWidthDocumentNumberColumn);
-        table.getColumnModel().getColumn(0).setMinWidth(minWidthDocumentNumberColumn);
-        table.getColumnModel().getColumn(1).setMaxWidth(maxWidthDocumentDateColumn);
-        table.getColumnModel().getColumn(1).setMinWidth(minWidthDocumentDateColumn);
-        table.getColumnModel().getColumn(2).setMaxWidth(maxWidthDocumentTypeColumn);
-        table.getColumnModel().getColumn(2).setMinWidth(minWidthDocumentTypeColumn);
+        table.getColumnModel().getColumn(0).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(0).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(1).setMaxWidth(MAX_WIDTH_DATE_COLUMN);
+        table.getColumnModel().getColumn(1).setMinWidth(MIN_WIDTH_DATE_COLUMN);
+        table.getColumnModel().getColumn(2).setMaxWidth(MAX_WIDTH_TYPE_COLUMN);
+        table.getColumnModel().getColumn(2).setMinWidth(MIN_WIDTH_TYPE_COLUMN);
 
         JPanel topPane = new JPanel(new BorderLayout(5, 5));
 

@@ -65,10 +65,10 @@ public class DocumentDialog {
         JFrame frm = MainClass.getGui().getFrm();
         dialog = new JDialog(frm, true);
         dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        dialog.setSize(new Dimension(DOCUMENT_DIALOG_WIDTH, DOCUMENT_DIALOG_HEIGHT));
+        dialog.setSize(new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT));
         dialog.setResizable(false);
-        int xPos = Toolkit.getDefaultToolkit().getScreenSize().width / 2 - DOCUMENT_DIALOG_WIDTH / 2;
-        int yPos = Toolkit.getDefaultToolkit().getScreenSize().height / 2 - DOCUMENT_DIALOG_HEIGHT / 2;
+        int xPos = Toolkit.getDefaultToolkit().getScreenSize().width / 2 - DIALOG_WIDTH / 2;
+        int yPos = Toolkit.getDefaultToolkit().getScreenSize().height / 2 - DIALOG_HEIGHT / 2;
         dialog.setLocation(xPos, yPos);
 
         //Создаем элементы диалогового окна
@@ -130,18 +130,18 @@ public class DocumentDialog {
         idBox.add(new JLabel("№ документа:"));
         idBox.add(Box.createHorizontalStrut(5));
         idBox.add(idField);
-        idBox.add(Box.createHorizontalStrut((int) (DOCUMENT_DIALOG_WIDTH * 0.6)));
+        idBox.add(Box.createHorizontalStrut((int) (DIALOG_WIDTH * 0.6)));
 
         dateBox.add(new JLabel("Дата:"));
         dateBox.add(Box.createHorizontalStrut(5));
         dateBox.add(datePicker);
         dateBox.add(dateField);
-        dateBox.add(Box.createHorizontalStrut((int) (DOCUMENT_DIALOG_WIDTH * 0.6)));
+        dateBox.add(Box.createHorizontalStrut((int) (DIALOG_WIDTH * 0.6)));
 
         typeBox.add(new JLabel("Тип:"));
         typeBox.add(Box.createHorizontalStrut(5));
         typeBox.add(typeField);
-        typeBox.add(Box.createHorizontalStrut((int) (DOCUMENT_DIALOG_WIDTH * 0.6)));
+        typeBox.add(Box.createHorizontalStrut((int) (DIALOG_WIDTH * 0.6)));
 
         middlePane.add(addBtn);
         middlePane.add(removeBtn);
