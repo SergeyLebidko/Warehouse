@@ -13,7 +13,7 @@ public class ResourcesList {
     public static final String databaseConnectionString = "jdbc:sqlite:database\\database.db";
 
     //Параметры файла для экспорта данных в excel
-    public static final String exportFolder = "xls";
+    public static final String exportFolder = "export";
 
     //Ресурсы для кнопок
     private static ImageLoader imageLoader = new ImageLoader();
@@ -105,6 +105,7 @@ public class ResourcesList {
     public static final String failExportFolderCreate = "Не удалось создать папку для экспорта. Ошибка:";
     public static final String failOpenExportXLSFile = "Не удалось открыть созданный файл. Ошибка:";
     public static final String failDocumentsAccess = "Не удалось получить список документов. Ошибка:";
+    public static final String failExportXLSFile = "Не удалось записать файл на диск. Ошибка:";
 
     //Главный шрифт приложения (для таблиц, полей ввода и меню)
     public static final Font mainFont = new Font("Arial", Font.PLAIN, 16);

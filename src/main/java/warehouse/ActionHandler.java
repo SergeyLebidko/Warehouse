@@ -102,14 +102,9 @@ public class ActionHandler {
         cardLayout.show(cardPane, state);
     }
 
-    public void showDocumentWithEditOption(Document document) {
+    public void showDocument(Document document) {
         if (document == null) return;
-        documentDialog.showDocument(document, true);
-    }
-
-    public void showDocumentWithoutEditOption(Document document) {
-        if (document == null) return;
-        documentDialog.showDocument(document, false);
+        documentDialog.showDocument(document);
     }
 
     public void exportToExcelFromCurrentComponent() {
@@ -154,14 +149,15 @@ public class ActionHandler {
         //Пытаемся записать книгу на диск
         try (FileOutputStream out = new FileOutputStream(exportFile)) {
             workbook.write(out);
-
         } catch (IOException e) {
-            System.out.println("Возникла ошибка при записи: " + e.getMessage());
+            JOptionPane.showMessageDialog(null, failExportXLSFile+" "+e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            return;
         }
 
         //Затем открываем её
         try {
             Desktop.getDesktop().open(exportFile);
+            System.out.println();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, failOpenExportXLSFile + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;

@@ -447,7 +447,7 @@ public class DocumentsTable {
             public void mouseClicked(MouseEvent e) {
                 if (e.getClickCount() == 2 & e.getButton() == MouseEvent.BUTTON1){
                     Document document = getSelectedElement();
-                    actionHandler.showDocumentWithEditOption(document);
+                    actionHandler.showDocument(document);
                 }
             }
         });

@@ -12,6 +12,8 @@ import warehouse.data_components.SimpleDataElement;
 import warehouse.data_components.SortOrders;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
