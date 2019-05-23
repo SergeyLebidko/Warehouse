@@ -28,6 +28,7 @@ public class ResourcesList {
     public static final ImageIcon toUpIcon = imageLoader.getImageIcon("to_up");
     public static final ImageIcon toDownIcon = imageLoader.getImageIcon("to_down");
     public static final ImageIcon noOrderIcon = imageLoader.getImageIcon("no_order");
+    public static final ImageIcon toFormIcon = imageLoader.getImageIcon("to_form");
     public static final ImageIcon editIconSmall = imageLoader.getImageIcon("edit_small");
     public static final ImageIcon excelIconSmall = imageLoader.getImageIcon("excel_small");
     public static final ImageIcon addIconSmall = imageLoader.getImageIcon("add_small");
@@ -54,6 +55,9 @@ public class ResourcesList {
     public static final String removeFilterBtnText = "";
     public static final String removeFilterToolTip = "Очистить фильтр";
 
+    public static final String toFormBtnText = "";
+    public static final String getToFormBtnToolTip = "Сформировать";
+
     //Размеры главного окна
     public static final String frmTitle = "Warehouse";
     public static final int FRM_WIDTH = 1200;
@@ -75,6 +79,7 @@ public class ResourcesList {
     public static final String openCatalogItemText = "Каталог";
     public static final String openContractorsItemText = "Контрагенты";
     public static final String openDocumentsItemText = "Документы";
+    public static final String reportLogItemText = "Журнал операций";
 
     //Общие параметры для табличных компонентов
     public static final int rowHeight = 40;
@@ -106,6 +111,7 @@ public class ResourcesList {
     public static final String failOpenExportXLSFile = "Не удалось открыть созданный файл. Ошибка:";
     public static final String failDocumentsAccess = "Не удалось получить список документов. Ошибка:";
     public static final String failExportXLSFile = "Не удалось записать файл на диск. Ошибка:";
+    public static final String failLogReportAccess = "Не удалось получить данные Журнала операций. Ошибка:";
 
     //Главный шрифт приложения (для таблиц, полей ввода и меню)
     public static final Font mainFont = new Font("Arial", Font.PLAIN, 16);
@@ -131,7 +137,8 @@ public class ResourcesList {
                 "edit_small",
                 "excel_small",
                 "add_small",
-                "remove_small"
+                "remove_small",
+                "to_form"
         };
 
         private HashMap<String, Image> imageMap = new HashMap<>();

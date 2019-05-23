@@ -24,6 +24,7 @@ public class GUI {
     private JButton reportBtn;
 
     JPopupMenu openMenu;
+    JPopupMenu reportMenu;
 
     public GUI() {
         localizationStandartDialog();
@@ -106,7 +107,7 @@ public class GUI {
     }
 
     private void createOpenMenu() {
-        openMenu = new JPopupMenu("Открыть:");
+        openMenu = new JPopupMenu();
         JMenuItem openCatalogItem = new JMenuItem(openCatalogItemText);
         openCatalogItem.setFont(mainFont);
         JMenuItem openContractorsItem = new JMenuItem(openContractorsItemText);
@@ -141,7 +142,18 @@ public class GUI {
     }
 
     private void createReportMenu() {
-        //Вставить код
+        reportMenu = new JPopupMenu();
+        JMenuItem reportLogItem = new JMenuItem(reportLogItemText);
+        reportLogItem.setFont(mainFont);
+
+        reportMenu.add(reportLogItem);
+
+        reportLogItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actionHandler.showLogReport();
+            }
+        });
     }
 
     private void createBtnListeners() {
@@ -158,6 +170,14 @@ public class GUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 actionHandler.exportToExcelFromCurrentComponent();
+            }
+        });
+
+        //Кнопка Отчет
+        reportBtn.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseReleased(MouseEvent e) {
+                reportMenu.show(reportBtn, e.getX(), e.getY());
             }
         });
     }

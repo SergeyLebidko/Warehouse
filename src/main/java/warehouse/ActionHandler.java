@@ -25,6 +25,7 @@ public class ActionHandler {
     private static final String CATALOG_DATASET = "catalog";
     private static final String CONTRACTORS_DATASET = "contractors";
     private static final String DOCUMENTS_LIST_DATASET = "documents list";
+    private static final String LOG_REPORT_DATASET = "log report";
 
     private DBHandler dbHandler;
     private String state;
@@ -36,6 +37,7 @@ public class ActionHandler {
     private SimpleDataTable catalogTable;
     private SimpleDataTable contractorsTable;
     private DocumentsTable documentsTable;
+    private LogReportTable logReportTable;
 
     private DocumentDialog documentDialog;
 
@@ -49,6 +51,7 @@ public class ActionHandler {
         catalogTable = new SimpleDataTable();
         contractorsTable = new SimpleDataTable();
         documentsTable = new DocumentsTable();
+        logReportTable = new LogReportTable();
 
         //Добавляем созданные панели в менеджер расположения
         cardPane = MainClass.getGui().getCardPane();
@@ -57,6 +60,7 @@ public class ActionHandler {
         cardPane.add(catalogTable.getVisualComponent(), CATALOG_DATASET);
         cardPane.add(contractorsTable.getVisualComponent(), CONTRACTORS_DATASET);
         cardPane.add(documentsTable.getVisualComponent(), DOCUMENTS_LIST_DATASET);
+        cardPane.add(logReportTable.getVisualComponent(), LOG_REPORT_DATASET);
         state = NO_DATASET;
 
         //Создаем объекты диалоговых окон
@@ -105,6 +109,25 @@ public class ActionHandler {
     public void showDocument(Document document) {
         if (document == null) return;
         documentDialog.showDocument(document);
+    }
+
+    public void showLogReport(){
+        ArrayList<LogElement> list = new ArrayList<>();
+        logReportTable.refresh(list, "Журнал операций");
+        state = LOG_REPORT_DATASET;
+        cardLayout.show(cardPane, state);
+    }
+
+    public void showLogReportWithSettings(LogRequestSettings logRequestSettings){
+        ArrayList<LogElement> list;
+        try{
+            list = dbHandler.getLogElements(logRequestSettings);
+        }catch (SQLException e){
+            JOptionPane.showMessageDialog(null, failLogReportAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        logReportTable.refresh(list, "Журнал операций");
     }
 
     public void exportToExcelFromCurrentComponent() {

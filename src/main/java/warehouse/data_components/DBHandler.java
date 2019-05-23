@@ -3,7 +3,6 @@ package warehouse.data_components;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
-
 import static warehouse.ResourcesList.*;
 import static warehouse.data_components.DocumentTypes.*;
 
@@ -86,6 +85,14 @@ public class DBHandler {
             opList= getDocumentOperations(document.getId());
             document.getOperationList().addAll(opList);
         }
+
+        return list;
+    }
+
+    public ArrayList<LogElement> getLogElements(LogRequestSettings requestSettings) throws SQLException{
+        ArrayList<LogElement> list = new ArrayList<>();
+
+        //Вставить код получения данных из БД
 
         return list;
     }
