@@ -233,6 +233,15 @@ public class DocumentsTable {
                 lab.setHorizontalAlignment(SwingConstants.LEFT);
             }
 
+            if (!isSelected) {
+                if ((row % 2) == 0) {
+                    lab.setBackground(evenCellsColor);
+                }
+                if ((row % 2) != 0) {
+                    lab.setBackground(notEvenCellsColor);
+                }
+            }
+
             return lab;
         }
 

@@ -111,18 +111,18 @@ public class ActionHandler {
         documentDialog.showDocument(document);
     }
 
-    public void showLogReport(){
+    public void showLogReport() {
         ArrayList<LogElement> list = new ArrayList<>();
         logReportTable.refresh(list, "Журнал операций");
         state = LOG_REPORT_DATASET;
         cardLayout.show(cardPane, state);
     }
 
-    public void showLogReportWithSettings(LogRequestSettings logRequestSettings){
+    public void showLogReportWithSettings(LogRequestSettings logRequestSettings) {
         ArrayList<LogElement> list;
-        try{
+        try {
             list = dbHandler.getLogElements(logRequestSettings);
-        }catch (SQLException e){
+        } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, failLogReportAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -173,7 +173,7 @@ public class ActionHandler {
         try (FileOutputStream out = new FileOutputStream(exportFile)) {
             workbook.write(out);
         } catch (IOException e) {
-            JOptionPane.showMessageDialog(null, failExportXLSFile+" "+e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, failExportXLSFile + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
 

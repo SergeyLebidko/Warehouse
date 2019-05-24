@@ -9,11 +9,21 @@ import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.text.DateFormat;
 import java.util.ArrayList;
 
 import static warehouse.ResourcesList.*;
 
 public class LogReportTable {
+
+    private static final int MAX_WIDTH_NUMBER_COLUMN = 140;
+    private static final int MIN_WIDTH_NUMBER_COLUMN = 100;
+    private static final int MAX_WIDTH_DATE_COLUMN = 220;
+    private static final int MIN_WIDTH_DATE_COLUMN = 120;
+    private static final int MAX_WIDTH_TYPE_COLUMN = 120;
+    private static final int MIN_WIDTH_TYPE_COLUMN = 100;
 
     private ActionHandler actionHandler;
 
@@ -46,6 +56,7 @@ public class LogReportTable {
         public void refresh() {
             if (content == null) return;
             rowCount = content.size();
+            statusLab.setText("Строки: " + rowCount);
             fireTableDataChanged();
         }
 
@@ -62,7 +73,7 @@ public class LogReportTable {
         @Override
         public Object getValueAt(int rowIndex, int columnIndex) {
             if (content == null) return "";
-            return "";
+            return content.get(rowIndex);
         }
 
     }
@@ -71,7 +82,45 @@ public class LogReportTable {
 
         @Override
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
-            return super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+            JLabel lab = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
+
+            DateFormat dateFormat = DateFormat.getDateInstance();
+            LogElement element = (LogElement) value;
+            if (column == 0) {
+                lab.setText(element.getDocumentId() + "");
+                lab.setHorizontalAlignment(SwingConstants.CENTER);
+            }
+            if (column == 1) {
+                lab.setText(dateFormat.format(element.getDate()));
+                lab.setHorizontalAlignment(SwingConstants.CENTER);
+            }
+            if (column == 2) {
+                lab.setText(element.getContractorName());
+                lab.setHorizontalAlignment(SwingConstants.LEFT);
+            }
+            if (column == 3) {
+                lab.setText(element.getDocumentType().getName());
+                lab.setHorizontalAlignment(SwingConstants.CENTER);
+            }
+            if (column == 4) {
+                lab.setText(element.getCatalogName());
+                lab.setHorizontalAlignment(SwingConstants.LEFT);
+            }
+            if (column == 5) {
+                lab.setText(element.getCount() + "");
+                lab.setHorizontalAlignment(SwingConstants.CENTER);
+            }
+
+            if (!isSelected) {
+                if ((row % 2) == 0) {
+                    lab.setBackground(evenCellsColor);
+                }
+                if ((row % 2) != 0) {
+                    lab.setBackground(notEvenCellsColor);
+                }
+            }
+
+            return lab;
         }
 
     }
@@ -121,6 +170,7 @@ public class LogReportTable {
         contentPane = new JPanel(new BorderLayout(5, 5));
         contentPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
         statusLab = new JLabel("");
+
         model = new Model();
         table = new JTable(model);
         cellRenderer = new CellRenderer();
@@ -128,10 +178,19 @@ public class LogReportTable {
         table.setDefaultRenderer(Object.class, cellRenderer);
         table.getTableHeader().setDefaultRenderer(headerRenderer);
         table.getTableHeader().setReorderingAllowed(false);
+        table.setFont(mainFont);
         table.setRowHeight(rowHeight);
         table.setShowVerticalLines(false);
         table.setGridColor(gridColor);
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+        table.getColumnModel().getColumn(0).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(0).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(1).setMaxWidth(MAX_WIDTH_DATE_COLUMN);
+        table.getColumnModel().getColumn(1).setMinWidth(MIN_WIDTH_DATE_COLUMN);
+        table.getColumnModel().getColumn(3).setMaxWidth(MAX_WIDTH_TYPE_COLUMN);
+        table.getColumnModel().getColumn(3).setMinWidth(MIN_WIDTH_TYPE_COLUMN);
+        table.getColumnModel().getColumn(5).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(5).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
 
         JPanel topPane = new JPanel();
         topPane.setLayout(new BorderLayout(5, 5));
@@ -157,7 +216,12 @@ public class LogReportTable {
     }
 
     private void createActionListeners() {
-
+        startBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actionHandler.showLogReportWithSettings(null);
+            }
+        });
     }
 
     public JPanel getVisualComponent() {

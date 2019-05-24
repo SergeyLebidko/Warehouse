@@ -3,6 +3,7 @@ package warehouse.data_components;
 import java.sql.*;
 import java.util.ArrayList;
 import java.util.Date;
+
 import static warehouse.ResourcesList.*;
 import static warehouse.data_components.DocumentTypes.*;
 
@@ -81,18 +82,45 @@ public class DBHandler {
 
         //Заполняем для каждого документа список операций
         ArrayList<Operation> opList;
-        for (Document document: list){
-            opList= getDocumentOperations(document.getId());
+        for (Document document : list) {
+            opList = getDocumentOperations(document.getId());
             document.getOperationList().addAll(opList);
         }
 
         return list;
     }
 
-    public ArrayList<LogElement> getLogElements(LogRequestSettings requestSettings) throws SQLException{
+    public ArrayList<LogElement> getLogElements(LogRequestSettings requestSettings) throws SQLException {
         ArrayList<LogElement> list = new ArrayList<>();
+        String query = "SELECT DOCUMENTS.ID, DOCUMENTS.DATE, CONTRACTORS.NAME, DOCUMENTS.TYPE, CATALOG.NAME, OPERATIONS.COUNT " +
+                "FROM DOCUMENTS, CONTRACTORS, CATALOG, OPERATIONS " +
+                "WHERE OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID AND " +
+                "OPERATIONS.CATALOG_ID=CATALOG.ID AND " +
+                "DOCUMENTS.CONTRACTOR_ID=CONTRACTORS.ID";
 
-        //Вставить код получения данных из БД
+        query += " ORDER BY DATE(DOCUMENTS.DATE)";
+
+        ResultSet resultSet = statement.executeQuery(query);
+
+        int documentId;
+        Date date;
+        String contractorName;
+        DocumentTypes documentType;
+        String catalogName;
+        int count;
+
+        LogElement element;
+        while (resultSet.next()) {
+            documentId = resultSet.getInt(1);
+            date = convertStringToDate(resultSet.getString(2));
+            contractorName = resultSet.getString(3);
+            documentType = DocumentTypes.getType(resultSet.getInt(4));
+            catalogName = resultSet.getString(5);
+            count = resultSet.getInt(6);
+
+            element = new LogElement(documentId, date, contractorName, documentType, catalogName, count);
+            list.add(element);
+        }
 
         return list;
     }
