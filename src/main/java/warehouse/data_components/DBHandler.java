@@ -1,6 +1,9 @@
 package warehouse.data_components;
 
+import org.sqlite.date.DateFormatUtils;
+
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -96,9 +99,38 @@ public class DBHandler {
                 "FROM DOCUMENTS, CONTRACTORS, CATALOG, OPERATIONS " +
                 "WHERE OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID AND " +
                 "OPERATIONS.CATALOG_ID=CATALOG.ID AND " +
-                "DOCUMENTS.CONTRACTOR_ID=CONTRACTORS.ID";
+                "DOCUMENTS.CONTRACTOR_ID=CONTRACTORS.ID ";
 
-        query += " ORDER BY DATE(DOCUMENTS.DATE)";
+        if (requestSettings != null) {
+
+            Date beginDate = requestSettings.getBeginDate();
+            if (beginDate != null) {
+                query += "AND DATE(DOCUMENTS.DATE)>=DATE(\"" + DateFormatUtils.format(beginDate, "yyyy-MM-dd") + "\") ";
+            }
+
+            Date endDate = requestSettings.getEndDate();
+            if (endDate != null) {
+                query += "AND DATE(DOCUMENTS.DATE)<=DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\") ";
+            }
+
+            Integer contractorId = requestSettings.getContractorId();
+            if (contractorId != null) {
+                query += "AND CONTRACTORS.ID=" + contractorId + " ";
+            }
+
+            DocumentTypes type = requestSettings.getDocumentType();
+            if (type != null) {
+                query += " AND DOCUMENTS.TYPE=" + type.getMul() + " ";
+            }
+
+            Integer catalogId = requestSettings.getCatalogId();
+            if (catalogId != null) {
+                query += " AND CATALOG.ID=" + catalogId + " ";
+            }
+
+        }
+
+        query += "ORDER BY DATE(DOCUMENTS.DATE)";
 
         ResultSet resultSet = statement.executeQuery(query);
 

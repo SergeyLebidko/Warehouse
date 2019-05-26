@@ -1,19 +1,27 @@
 package warehouse.gui_components;
 
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
+import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
 import warehouse.ActionHandler;
 import warehouse.MainClass;
+import warehouse.data_components.CatalogElement;
+import warehouse.data_components.ContractorsElement;
 import warehouse.data_components.LogElement;
+import warehouse.data_components.LogRequestSettings;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.text.DateFormat;
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Date;
 
+import static warehouse.data_components.DocumentTypes.*;
 import static warehouse.ResourcesList.*;
 
 public class LogReportTable {
@@ -32,6 +40,16 @@ public class LogReportTable {
     private CellRenderer cellRenderer;
     private HeaderRenderer headerRenderer;
     private JTable table;
+    private SEChoiсeDialog seChoiсeDialog;
+
+    private DatePicker beginDatePicker;
+    private DatePicker endDatePicker;
+    private JTextField contractorField;
+    private JButton clearContractorBtn;
+    private JComboBox typeBox;
+    private JTextField catalogField;
+    private JButton clearCatalogBtn;
+    private LogRequestSettings logRequestSettings;
 
     private JButton startBtn;
 
@@ -166,6 +184,8 @@ public class LogReportTable {
 
     private void createFields() {
         actionHandler = MainClass.getActionHandler();
+        seChoiсeDialog = new SEChoiсeDialog();
+        logRequestSettings = new LogRequestSettings();
 
         contentPane = new JPanel(new BorderLayout(5, 5));
         contentPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -202,9 +222,52 @@ public class LogReportTable {
 
         Box parametersBox = Box.createHorizontalBox();
 
+        beginDatePicker = new DatePicker();
+        beginDatePicker.getComponentDateTextField().setEditable(false);
+
+        endDatePicker = new DatePicker();
+        endDatePicker.getComponentDateTextField().setEditable(false);
+
+        contractorField = new JTextField(20);
+        contractorField.setEditable(false);
+        contractorField.setFont(mainFont);
+
+        clearContractorBtn = new JButton(removeFilterIcon);
+
+        typeBox = new JComboBox(new Object[]{"Все", COM.getName(), CONS.getName()});
+
+        catalogField = new JTextField(20);
+        catalogField.setEditable(false);
+        catalogField.setFont(mainFont);
+
+        clearCatalogBtn = new JButton(removeFilterIcon);
+
         startBtn = new JButton(toFormBtnText, toFormIcon);
         startBtn.setToolTipText(getToFormBtnToolTip);
 
+        parametersBox.add(new JLabel("С:"));
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(beginDatePicker);
+        parametersBox.add(new JLabel("По:"));
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(endDatePicker);
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(new JLabel("Контрагент:"));
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(contractorField);
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(clearContractorBtn);
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(new JLabel("Тип:"));
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(typeBox);
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(new JLabel("Наименование:"));
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(catalogField);
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(clearCatalogBtn);
+        parametersBox.add(Box.createHorizontalStrut(15));
         parametersBox.add(startBtn);
 
         topPane.add(nameBox, BorderLayout.NORTH);
@@ -216,10 +279,92 @@ public class LogReportTable {
     }
 
     private void createActionListeners() {
+
+        beginDatePicker.addDateChangeListener(new DateChangeListener() {
+            @Override
+            public void dateChanged(DateChangeEvent dateChangeEvent) {
+                logRequestSettings.setBeginDate(convertLocalDateToDate(dateChangeEvent.getNewDate()));
+            }
+        });
+
+        endDatePicker.addDateChangeListener(new DateChangeListener() {
+            @Override
+            public void dateChanged(DateChangeEvent dateChangeEvent) {
+                logRequestSettings.setEndDate(convertLocalDateToDate(dateChangeEvent.getNewDate()));
+            }
+        });
+
+        contractorField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() != 1) return;
+                ContractorsElement contractorElement = seChoiсeDialog.showContractorsChoice();
+                if (contractorElement == null) {
+                    contractorField.setText("");
+                    logRequestSettings.setContractorId(null);
+                    return;
+                }
+
+                contractorField.setText(contractorElement.getName());
+                logRequestSettings.setContractorId(contractorElement.getId());
+            }
+        });
+
+        clearContractorBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                contractorField.setText("");
+                logRequestSettings.setContractorId(null);
+            }
+        });
+
+        typeBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectVal = typeBox.getSelectedIndex();
+                if (selectVal == 0) {
+                    logRequestSettings.setDocumentType(null);
+                    return;
+                }
+                if (selectVal == 1) {
+                    logRequestSettings.setDocumentType(COM);
+                    return;
+                }
+                if (selectVal == 2) {
+                    logRequestSettings.setDocumentType(CONS);
+                    return;
+                }
+            }
+        });
+
+        catalogField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() != 1) return;
+                CatalogElement catalogElement = seChoiсeDialog.showCatalogChoice();
+                if (catalogElement == null) {
+                    catalogField.setText("");
+                    logRequestSettings.setCatalogId(null);
+                    return;
+                }
+
+                catalogField.setText(catalogElement.getName());
+                logRequestSettings.setCatalogId(catalogElement.getId());
+            }
+        });
+
+        clearCatalogBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                catalogField.setText("");
+                logRequestSettings.setCatalogId(null);
+            }
+        });
+
         startBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                actionHandler.showLogReportWithSettings(null);
+                actionHandler.showLogReportWithSettings(logRequestSettings);
             }
         });
     }
@@ -233,6 +378,17 @@ public class LogReportTable {
         this.displayName = displayName;
         nameLab.setText(displayName);
         model.refresh();
+    }
+
+    private Date convertLocalDateToDate(LocalDate localDate) {
+        Date date = null;
+        if (localDate != null) {
+            int year = localDate.getYear() - 1900;
+            int month = localDate.getMonthValue() - 1;
+            int day = localDate.getDayOfMonth();
+            date = new Date(year, month, day);
+        }
+        return date;
     }
 
 }

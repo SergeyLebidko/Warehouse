@@ -99,8 +99,8 @@ public class DocumentDialog {
 
         operationsTable = new OperationsTable();
 
-        cancelBtn = new JButton("Отмена");
         okBtn = new JButton("Oк");
+        cancelBtn = new JButton("Отмена");
 
         //Создаем вспомогательные панели
         Box topBox = Box.createVerticalBox();

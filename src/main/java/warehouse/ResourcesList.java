@@ -62,7 +62,7 @@ public class ResourcesList {
     public static final String frmTitle = "Warehouse";
     public static final int FRM_WIDTH = 1200;
     public static final int FRM_HEIGHT = 900;
-    public static final int MIN_FRM_WIDTH = 800;
+    public static final int MIN_FRM_WIDTH = 900;
     public static final int MIN_FRM_HEIGHT = 600;
 
     //Размеры вспомогательных диалоговых окон
