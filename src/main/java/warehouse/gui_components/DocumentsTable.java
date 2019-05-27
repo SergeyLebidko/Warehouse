@@ -13,6 +13,7 @@ import org.apache.poi.ss.util.RegionUtil;
 import warehouse.ActionHandler;
 import warehouse.MainClass;
 import warehouse.data_components.*;
+
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
@@ -24,6 +25,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
+
 import static warehouse.ResourcesList.*;
 import static warehouse.data_components.DocumentTypes.*;
 import static warehouse.data_components.SortOrders.*;
@@ -159,8 +161,8 @@ public class DocumentsTable {
             //Проверяем фильтр имени контрагента
             boolean nameContractorFilterCheck;
             String contractor = document.getContractorName();
-            contractor=contractor.toLowerCase();
-            nameContractorFilterCheck = (contractor.indexOf(contractorNameFilter.toLowerCase())!=(-1));
+            contractor = contractor.toLowerCase();
+            nameContractorFilterCheck = (contractor.indexOf(contractorNameFilter.toLowerCase()) != (-1));
 
             return idFilterCheck & beginDateFilterCheck & endDateFilterCheck & typeFilterCheck & nameContractorFilterCheck;
         }
@@ -461,7 +463,7 @@ public class DocumentsTable {
         table.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
-                if (e.getClickCount() == 2 & e.getButton() == MouseEvent.BUTTON1){
+                if (e.getClickCount() == 2 & e.getButton() == MouseEvent.BUTTON1) {
                     Document document = getSelectedElement();
                     actionHandler.showDocument(document);
                 }
@@ -507,16 +509,20 @@ public class DocumentsTable {
 
         Row row = sheet.createRow(0);
 
-        Cell nameCell = row.createCell(0);
-        row.createCell(1);
-        row.createCell(2);
-        row.createCell(3);
-        row.createCell(4);
+        int headerWidth = 5;
+        Cell nameCell = null;
+        for (int i = 0; i < headerWidth; i++) {
+            if (i == 0) {
+                nameCell = row.createCell(0);
+                continue;
+            }
+            row.createCell(i);
+        }
 
         nameCell.setCellValue(displayName);
         nameCell.setCellStyle(nameStyle);
 
-        CellRangeAddress region = new CellRangeAddress(0, 0, 0, 4);
+        CellRangeAddress region = new CellRangeAddress(0, 0, 0, headerWidth - 1);
         sheet.addMergedRegion(region);
 
         RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
@@ -530,23 +536,14 @@ public class DocumentsTable {
         headerStyle.setAlignment(HorizontalAlignment.CENTER);
 
         row = sheet.createRow(1);
-        Cell cell1 = row.createCell(0);
-        Cell cell2 = row.createCell(1);
-        Cell cell3 = row.createCell(2);
-        Cell cell4 = row.createCell(3);
-        Cell cell5 = row.createCell(4);
+        String[] columnNames = {"№ п/п", "Номер", "Дата", "Тип", "Контрагент"};
+        Cell[] headerCells = new Cell[columnNames.length];
 
-        cell1.setCellValue("№ п/п");
-        cell2.setCellValue("Номер");
-        cell3.setCellValue("Дата");
-        cell4.setCellValue("Тип");
-        cell5.setCellValue("Контрагент");
-
-        cell1.setCellStyle(headerStyle);
-        cell2.setCellStyle(headerStyle);
-        cell3.setCellStyle(headerStyle);
-        cell4.setCellStyle(headerStyle);
-        cell5.setCellStyle(headerStyle);
+        for (int i = 0; i < columnNames.length; i++) {
+            headerCells[i] = row.createCell(i);
+            headerCells[i].setCellValue(columnNames[i]);
+            headerCells[i].setCellStyle(headerStyle);
+        }
 
         //Вносим данные
         HSSFCellStyle styleTextCell = workbook.createCellStyle();
@@ -565,11 +562,13 @@ public class DocumentsTable {
         styleDateCell.setVerticalAlignment(VerticalAlignment.CENTER);
 
         Cell cell;
+        Document document;
         int number = 1;
         DateFormat dateFormat = DateFormat.getDateInstance();
         Date date;
         for (int index = 0; index < model.getRowCount(); index++) {
             row = sheet.createRow(index + 2);
+            document = (Document) model.getValueAt(index, 0);
 
             //Столбец № п/п
             cell = row.createCell(0);
@@ -579,23 +578,23 @@ public class DocumentsTable {
 
             //Столбец Номер
             cell = row.createCell(1);
-            cell.setCellValue(((Document) model.getValueAt(index, 0)).getId());
+            cell.setCellValue(document.getId());
             cell.setCellStyle(styleNumericCell);
 
             //Столбец Дата
             cell = row.createCell(2);
-            date = ((Document) model.getValueAt(index, 0)).getDate();
+            date = (document.getDate());
             cell.setCellValue(dateFormat.format(date));
             cell.setCellStyle(styleDateCell);
 
             //Столбец Тип
             cell = row.createCell(3);
-            cell.setCellValue(((Document)model.getValueAt(index,0)).getType().getName());
+            cell.setCellValue(document.getType().getName());
             cell.setCellStyle(styleTypeCell);
 
             //Столбец Контрагент
             cell = row.createCell(4);
-            cell.setCellValue(((Document)model.getValueAt(index,0)).getContractorName());
+            cell.setCellValue(document.getContractorName());
             cell.setCellStyle(styleTextCell);
         }
 

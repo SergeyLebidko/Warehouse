@@ -3,12 +3,16 @@ package warehouse.gui_components;
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
 import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.RegionUtil;
 import warehouse.ActionHandler;
 import warehouse.MainClass;
-import warehouse.data_components.CatalogElement;
-import warehouse.data_components.ContractorsElement;
-import warehouse.data_components.LogElement;
-import warehouse.data_components.LogRequestSettings;
+import warehouse.data_components.*;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
@@ -19,10 +23,12 @@ import java.awt.event.*;
 import java.text.DateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.Date;
 
 import static warehouse.data_components.DocumentTypes.*;
 import static warehouse.ResourcesList.*;
+import static warehouse.data_components.SortOrders.*;
 
 public class LogReportTable {
 
@@ -57,8 +63,52 @@ public class LogReportTable {
     private JLabel nameLab;
 
     private String displayName;
+    private int sortedColumn;
+    private SortOrders sortOrder;
+    private LogElementComparator logElementComparator;
 
     private ArrayList<LogElement> content;
+
+    private class LogElementComparator implements Comparator<LogElement> {
+
+        @Override
+        public int compare(LogElement o1, LogElement o2) {
+            if (sortedColumn == 0) {
+                Integer documentId1 = o1.getDocumentId();
+                Integer documentId2 = o2.getDocumentId();
+                return sortOrder.getMul() * documentId1.compareTo(documentId2);
+            }
+            if (sortedColumn == 1) {
+                Date date1 = o1.getDate();
+                Date date2 = o2.getDate();
+                return sortOrder.getMul() * date1.compareTo(date2);
+            }
+            if (sortedColumn == 2) {
+                String contractorName1 = o1.getContractorName();
+                String contractorName2 = o2.getContractorName();
+                return sortOrder.getMul() * contractorName1.compareTo(contractorName2);
+            }
+            if (sortedColumn == 3) {
+                DocumentTypes type1 = o1.getDocumentType();
+                DocumentTypes type2 = o2.getDocumentType();
+                if (type1 == type2) return 0;
+                if (type1 == COM & type2 == CONS) return sortOrder.getMul() * 1;
+                if (type1 == CONS & type2 == COM) return sortOrder.getMul() * (-1);
+            }
+            if (sortedColumn == 4) {
+                String catalogName1 = o1.getCatalogName();
+                String catalogName2 = o2.getCatalogName();
+                return sortOrder.getMul() * catalogName1.compareTo(catalogName2);
+            }
+            if (sortedColumn == 5) {
+                Integer count1 = o1.getCount();
+                Integer count2 = o2.getCount();
+                return sortOrder.getMul() * count1.compareTo(count2);
+            }
+            return 0;
+        }
+
+    }
 
     private class Model extends AbstractTableModel {
 
@@ -73,6 +123,9 @@ public class LogReportTable {
 
         public void refresh() {
             if (content == null) return;
+
+            content.sort(logElementComparator);
+
             rowCount = content.size();
             statusLab.setText("Строки: " + rowCount);
             fireTableDataChanged();
@@ -171,6 +224,25 @@ public class LogReportTable {
 
             lab.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
             lab.setHorizontalAlignment(SwingConstants.CENTER);
+
+            if (column != sortedColumn) {
+                lab.setIcon(noOrderIcon);
+            }
+            if (column == sortedColumn) {
+                switch (sortOrder) {
+                    case TO_UP: {
+                        lab.setIcon(toUpIcon);
+                        break;
+                    }
+                    case TO_DOWN: {
+                        lab.setIcon(toDownIcon);
+                        break;
+                    }
+                    case NO_ORDER: {
+                        lab.setIcon(noOrderIcon);
+                    }
+                }
+            }
 
             return lab;
         }
@@ -276,6 +348,11 @@ public class LogReportTable {
         contentPane.add(topPane, BorderLayout.NORTH);
         contentPane.add(new JScrollPane(table), BorderLayout.CENTER);
         contentPane.add(statusLab, BorderLayout.SOUTH);
+
+        displayName = "";
+        sortedColumn = 0;
+        sortOrder = NO_ORDER;
+        logElementComparator = new LogElementComparator();
     }
 
     private void createActionListeners() {
@@ -367,17 +444,184 @@ public class LogReportTable {
                 actionHandler.showLogReportWithSettings(logRequestSettings);
             }
         });
+
+        //Обработчик щелчка по заголовку столбца
+        table.getTableHeader().addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 1 & e.getButton() == MouseEvent.BUTTON1) {
+                    int columnNumber = table.getTableHeader().columnAtPoint(e.getPoint());
+                    sortedColumn = columnNumber;
+                    revertSortOrder();
+                }
+            }
+        });
     }
 
     public JPanel getVisualComponent() {
         return contentPane;
     }
 
-    public void refresh(ArrayList<LogElement> list, String displayName) {
+    public void refresh(ArrayList<LogElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
         content = list;
         this.displayName = displayName;
+        this.sortedColumn = sortedColumn;
+        this.sortOrder = sortOrder;
         nameLab.setText(displayName);
         model.refresh();
+        table.getTableHeader().repaint();
+    }
+
+    public HSSFWorkbook getExcelWorkbook() {
+        //Создаем файл в памяти
+        HSSFWorkbook workbook = new HSSFWorkbook();
+
+        //Создаем лист
+        HSSFSheet sheet = workbook.createSheet("Лист1");
+
+        //Заполняем лист данными
+        //Формируем ячейку с наименованием набора данных
+        HSSFCellStyle nameStyle = workbook.createCellStyle();
+        HSSFFont nameFont = workbook.createFont();
+        nameFont.setFontHeight((short) fontFileHeaderSize);
+        nameFont.setBold(true);
+        nameStyle.setFont(nameFont);
+        nameStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        Row row = sheet.createRow(0);
+
+        int headerWidth = 7;
+        Cell nameCell = null;
+        for (int i = 0; i < headerWidth; i++) {
+            if (i == 0) {
+                nameCell = row.createCell(0);
+                continue;
+            }
+            row.createCell(i);
+        }
+
+        nameCell.setCellValue(displayName);
+        nameCell.setCellStyle(nameStyle);
+
+        CellRangeAddress region = new CellRangeAddress(0, 0, 0, headerWidth - 1);
+        sheet.addMergedRegion(region);
+
+        RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
+
+        //Формируем заголовки столбцов
+        HSSFCellStyle headerStyle = workbook.createCellStyle();
+        HSSFFont headerFont = workbook.createFont();
+        headerFont.setFontHeight((short) fontColumnHeaderSize);
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        row = sheet.createRow(1);
+        String[] columnNames = {"№ п/п", "№ док.", "Дата", "Контрагент", "Тип", "Наименование", "Количество"};
+        Cell[] headerCells = new Cell[columnNames.length];
+
+        for (int i = 0; i < columnNames.length; i++) {
+            headerCells[i] = row.createCell(i);
+            headerCells[i].setCellValue(columnNames[i]);
+            headerCells[i].setCellStyle(headerStyle);
+        }
+
+        //Вносим данные
+        HSSFCellStyle styleTextCell = workbook.createCellStyle();
+        styleTextCell.setWrapText(true);
+
+        HSSFCellStyle styleNumericCell = workbook.createCellStyle();
+        styleNumericCell.setAlignment(HorizontalAlignment.CENTER);
+        styleNumericCell.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        HSSFCellStyle styleTypeCell = workbook.createCellStyle();
+        styleTypeCell.setAlignment(HorizontalAlignment.CENTER);
+        styleTypeCell.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        HSSFCellStyle styleDateCell = workbook.createCellStyle();
+        styleDateCell.setAlignment(HorizontalAlignment.CENTER);
+        styleDateCell.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        Cell cell;
+        LogElement logElement;
+        int number = 1;
+        DateFormat dateFormat = DateFormat.getDateInstance();
+        Date date;
+        for (int index = 0; index < model.getRowCount(); index++) {
+            row = sheet.createRow(index + 2);
+            logElement = (LogElement)model.getValueAt(index,0);
+
+            //Столбец № п/п
+            cell = row.createCell(0);
+            cell.setCellValue(number);
+            cell.setCellStyle(styleNumericCell);
+            number++;
+
+            //Столбец № док.
+            cell = row.createCell(1);
+            cell.setCellValue(logElement.getDocumentId());
+            cell.setCellStyle(styleNumericCell);
+
+            //Столбец Дата документа
+            cell = row.createCell(2);
+            cell.setCellValue(dateFormat.format(logElement.getDate()));
+            cell.setCellStyle(styleDateCell);
+
+            //Столбец Контрагент
+            cell = row.createCell(3);
+            cell.setCellValue(logElement.getContractorName());
+            cell.setCellStyle(styleTextCell);
+
+            //Столбец Тип
+            cell = row.createCell(4);
+            cell.setCellValue(logElement.getDocumentType().getName());
+            cell.setCellStyle(styleTypeCell);
+
+            //Столбец Наименование
+            cell = row.createCell(5);
+            cell.setCellValue(logElement.getCatalogName());
+            cell.setCellStyle(styleTextCell);
+
+            //Столбец Количество
+            cell = row.createCell(6);
+            cell.setCellValue(logElement.getCount());
+            cell.setCellStyle(styleNumericCell);
+        }
+
+        //Расширяем столбцы, чтобы данные полностью в них помещались
+        sheet.setColumnWidth(0, 3000);
+        sheet.setColumnWidth(1, 3000);
+        sheet.setColumnWidth(2, 3000);
+        sheet.setColumnWidth(3, 10000);
+        sheet.setColumnWidth(4, 3000);
+        sheet.setColumnWidth(5, 10000);
+        sheet.setColumnWidth(6, 4000);
+
+        return workbook;
+    }
+
+    private void revertSortOrder() {
+        if (content == null) return;
+        SortOrders nextOrder = null;
+        switch (sortOrder) {
+            case NO_ORDER: {
+                nextOrder = TO_UP;
+                break;
+            }
+            case TO_UP: {
+                nextOrder = TO_DOWN;
+                break;
+            }
+            case TO_DOWN: {
+                nextOrder = TO_UP;
+                break;
+            }
+        }
+        sortOrder = nextOrder;
+
+        //Уведомляем таблицу и ее модель о произошедших изменениях
+        model.refresh();
+        table.getTableHeader().repaint();
     }
 
     private Date convertLocalDateToDate(LocalDate localDate) {

@@ -255,23 +255,17 @@ public class DocumentDialog {
         operationHeaderStyle.setWrapText(true);
         operationHeaderStyle.setAlignment(HorizontalAlignment.CENTER);
         operationHeaderStyle.setBorderBottom(BorderStyle.THIN);
+
         row = sheet.createRow(4);
 
-        cell = row.createCell(0);
-        cell.setCellValue("№ п/п");
-        cell.setCellStyle(operationHeaderStyle);
+        String[] columnNames = {"№ п/п", "Номер в каталоге", "Наименование", "Количество"};
+        Cell[] headerCells = new Cell[columnNames.length];
 
-        cell = row.createCell(1);
-        cell.setCellValue("Номер в каталоге");
-        cell.setCellStyle(operationHeaderStyle);
-
-        cell = row.createCell(2);
-        cell.setCellValue("Наименование");
-        cell.setCellStyle(operationHeaderStyle);
-
-        cell = row.createCell(3);
-        cell.setCellValue("Количество");
-        cell.setCellStyle(operationHeaderStyle);
+        for (int i = 0; i < columnNames.length; i++) {
+            headerCells[i] = row.createCell(i);
+            headerCells[i].setCellValue(columnNames[i]);
+            headerCells[i].setCellStyle(operationHeaderStyle);
+        }
 
         //Вносим данные операций
         //Вначале создаем стили для ячеек

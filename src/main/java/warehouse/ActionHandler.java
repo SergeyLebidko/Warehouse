@@ -113,7 +113,7 @@ public class ActionHandler {
 
     public void showLogReport() {
         ArrayList<LogElement> list = new ArrayList<>();
-        logReportTable.refresh(list, "Журнал операций");
+        logReportTable.refresh(list, "Журнал операций", 0, NO_ORDER);
         state = LOG_REPORT_DATASET;
         cardLayout.show(cardPane, state);
     }
@@ -126,8 +126,9 @@ public class ActionHandler {
             JOptionPane.showMessageDialog(null, failLogReportAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
-
-        logReportTable.refresh(list, "Журнал операций");
+        state = LOG_REPORT_DATASET;
+        cardLayout.show(cardPane, state);
+        logReportTable.refresh(list, "Журнал операций", 1, TO_UP);
     }
 
     public void exportToExcelFromCurrentComponent() {
@@ -149,6 +150,10 @@ public class ActionHandler {
         if (state.equals(DOCUMENTS_LIST_DATASET)) {
             workbook = documentsTable.getExcelWorkbook();
             name = "Документы";
+        }
+        if (state.equals(LOG_REPORT_DATASET)){
+            workbook = logReportTable.getExcelWorkbook();
+            name = "Журнал операций";
         }
 
         name += " " + dateFormat.format(new Date());
