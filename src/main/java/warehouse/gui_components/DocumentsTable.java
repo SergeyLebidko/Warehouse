@@ -475,14 +475,8 @@ public class DocumentsTable {
         return contentPane;
     }
 
-    public void refresh(ArrayList<? extends DataElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
-        content = new ArrayList<>();
-
-        Document document;
-        for (DataElement element : list) {
-            document = (Document) element;
-            content.add(document);
-        }
+    public void refresh(ArrayList<Document> list, String displayName, int sortedColumn, SortOrders sortOrder) {
+        content = list;
 
         this.displayName = displayName;
         this.sortedColumn = sortedColumn;

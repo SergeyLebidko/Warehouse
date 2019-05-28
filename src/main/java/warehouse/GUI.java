@@ -143,10 +143,20 @@ public class GUI {
 
     private void createReportMenu() {
         reportMenu = new JPopupMenu();
+        JMenuItem reportRemainderItem = new JMenuItem(reportRemainderItemText);
+        reportRemainderItem.setFont(mainFont);
         JMenuItem reportLogItem = new JMenuItem(reportLogItemText);
         reportLogItem.setFont(mainFont);
 
+        reportMenu.add(reportRemainderItem);
         reportMenu.add(reportLogItem);
+
+        reportRemainderItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actionHandler.showRemaindReport();
+            }
+        });
 
         reportLogItem.addActionListener(new ActionListener() {
             @Override

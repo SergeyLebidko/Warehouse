@@ -456,6 +456,7 @@ public class LogReportTable {
                 }
             }
         });
+
     }
 
     public JPanel getVisualComponent() {
