@@ -1,6 +1,6 @@
 package warehouse.data_components;
 
-public class TurnElement implements DataElement{
+public class TurnElement implements DataElement {
 
     private Integer catalogId;
     private String catalogName;

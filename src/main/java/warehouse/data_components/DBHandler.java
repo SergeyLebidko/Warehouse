@@ -4,6 +4,7 @@ import org.sqlite.date.DateFormatUtils;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
 import static warehouse.ResourcesList.*;
@@ -103,7 +104,7 @@ public class DBHandler {
             query += " AND CATALOG.ID=" + catalogId;
         }
         if (endDate != null) {
-            query += " AND DATE(DOCUMENTS.DATE)<=DATE(\""+DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
+            query += " AND DATE(DOCUMENTS.DATE)<=DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
         }
 
         query += " GROUP BY CATALOG.ID, CATALOG.NAME ORDER BY CATALOG.NAME";
@@ -123,8 +124,89 @@ public class DBHandler {
         return list;
     }
 
-    public ArrayList<TurnElement> getTurnElements(Date beginDate, Date endDate, Integer catalogId) throws SQLException{
-        return null;
+    public ArrayList<TurnElement> getTurnElements(Date beginDate, Date endDate, Integer catalogId) throws SQLException {
+        //Сперва получаем список позиций из каталога, по которым в указанном промежутке времени есть хоть одна операция
+        ArrayList<CatalogElement> catalogElements = new ArrayList<>();
+        String query = "SELECT CATALOG.ID, CATALOG.NAME" +
+                " FROM CATALOG" +
+                " WHERE EXISTS" +
+                " (SELECT OPERATIONS.ID" +
+                " FROM OPERATIONS, DOCUMENTS" +
+                " WHERE OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
+                " AND OPERATIONS.CATALOG_ID=CATALOG.ID" +
+                " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(\"" + DateFormatUtils.format(beginDate, "yyyy-MM-dd") + "\") AND DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\"))";
+
+        if (catalogId != null) {
+            query += " AND CATALOG.ID=" + catalogId;
+        }
+
+        ResultSet resultSet = statement.executeQuery(query);
+        while (resultSet.next()) {
+            catalogElements.add(new CatalogElement(resultSet.getInt(1), resultSet.getString(2)));
+        }
+
+        //Теперь для каждой найденной на предыдущем этапе позиции каталога формируем данные по оборотам
+        ArrayList<TurnElement> list = new ArrayList<>();
+
+        String catalogName;
+        Integer beginCount;
+        Integer incCount;
+        Integer decCount;
+        Integer endCount;
+
+        //Дата, на которую будем рассчитывать начальные остатки
+        Date previosDate;
+        Calendar calendar = Calendar.getInstance();
+        calendar.setTime(beginDate);
+        calendar.add(Calendar.DAY_OF_MONTH, -1);
+        previosDate = calendar.getTime();
+
+        ArrayList<RemaindElement> remaindElements;
+
+        for (CatalogElement currentCatalogElement : catalogElements) {
+            //Сперва рассчитываем начальные остатки
+            remaindElements = getRemaindElements(currentCatalogElement.getId(), previosDate);
+            if (remaindElements.size() > 0) {
+                beginCount = remaindElements.get(0).getCount();
+            } else {
+                beginCount = 0;
+            }
+
+            //Затем рассчитываем приход
+            incCount = null;
+            query = "SELECT SUM(OPERATIONS.COUNT)" +
+                    " FROM OPERATIONS, DOCUMENTS" +
+                    " WHERE OPERATIONS.CATALOG_ID=" + currentCatalogElement.getId() + "" +
+                    " AND OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
+                    " AND DOCUMENTS.TYPE=" + COM.getMul() + "" +
+                    " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(\"" + DateFormatUtils.format(beginDate, "yyyy-MM-dd") + "\") AND DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
+            resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+                incCount = resultSet.getInt(1);
+            }
+
+            //Затем рассчитываем расход
+            decCount = null;
+            query = "SELECT SUM(OPERATIONS.COUNT)" +
+                    " FROM OPERATIONS, DOCUMENTS" +
+                    " WHERE OPERATIONS.CATALOG_ID=" + currentCatalogElement.getId() + "" +
+                    " AND OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
+                    " AND DOCUMENTS.TYPE=" + CONS.getMul() + "" +
+                    " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(\"" + DateFormatUtils.format(beginDate, "yyyy-MM-dd") + "\") AND DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
+            resultSet = statement.executeQuery(query);
+            if (resultSet.next()) {
+                decCount = resultSet.getInt(1);
+            }
+
+            //Рассчитываем итог на конец периода
+            endCount = beginCount + (incCount == null ? 0 : incCount) - (decCount == null ? 0 : decCount);
+
+            //Вносим данные в результирующий список
+            list.add(new TurnElement(currentCatalogElement.getId(), currentCatalogElement.getName(), beginCount, incCount, decCount, endCount));
+
+        }
+
+        return list;
     }
 
     public ArrayList<LogElement> getLogElements(LogRequestSettings requestSettings) throws SQLException {

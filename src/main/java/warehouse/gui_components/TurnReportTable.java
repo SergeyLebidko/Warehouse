@@ -16,6 +16,7 @@ import warehouse.MainClass;
 import warehouse.data_components.CatalogElement;
 import warehouse.data_components.SortOrders;
 import warehouse.data_components.TurnElement;
+
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
@@ -76,6 +77,36 @@ public class TurnReportTable {
 
         @Override
         public int compare(TurnElement o1, TurnElement o2) {
+            if (sortedColumn == 0) {
+                Integer id1 = o1.getCatalogId();
+                Integer id2 = o2.getCatalogId();
+                return sortOrder.getMul() * id1.compareTo(id2);
+            }
+            if (sortedColumn == 1){
+                String name1 = o1.getCatalogName();
+                String name2 = o2.getCatalogName();
+                return sortOrder.getMul()*name1.compareTo(name2);
+            }
+            if (sortedColumn == 2){
+                Integer i1=o1.getBeginCount();
+                Integer i2=o2.getBeginCount();
+                return sortOrder.getMul()*i1.compareTo(i2);
+            }
+            if (sortedColumn == 3){
+                Integer i1=o1.getIncCount();
+                Integer i2=o2.getIncCount();
+                return sortOrder.getMul()*i1.compareTo(i2);
+            }
+            if (sortedColumn == 4){
+                Integer i1=o1.getDecCount();
+                Integer i2=o2.getDecCount();
+                return sortOrder.getMul()*i1.compareTo(i2);
+            }
+            if (sortedColumn == 5){
+                Integer i1=o1.getEndCount();
+                Integer i2=o2.getEndCount();
+                return sortOrder.getMul()*i1.compareTo(i2);
+            }
             return 0;
         }
 
@@ -89,10 +120,10 @@ public class TurnReportTable {
         public Model() {
             rowCount = 0;
             columnCount = 6;
-            statusLab.setText("Строки: "+rowCount);
+            statusLab.setText("Строки: " + rowCount);
         }
 
-        public void refresh(){
+        public void refresh() {
             if (content == null) return;
 
             content.sort(turnElementComparator);
@@ -140,11 +171,11 @@ public class TurnReportTable {
                 lab.setHorizontalAlignment(SwingConstants.CENTER);
             }
             if (column == 3) {
-                lab.setText(element.getIncCount() + "");
+                lab.setText((element.getIncCount() == null ? "" : element.getIncCount()) + "");
                 lab.setHorizontalAlignment(SwingConstants.CENTER);
             }
             if (column == 4) {
-                lab.setText(element.getDecCount() + "");
+                lab.setText((element.getDecCount() == null ? "" : element.getDecCount()) + "");
                 lab.setHorizontalAlignment(SwingConstants.CENTER);
             }
             if (column == 5) {
@@ -268,8 +299,10 @@ public class TurnReportTable {
         DatePickerSettings beginDatePickerSettings = new DatePickerSettings();
         beginDatePickerSettings.setAllowEmptyDates(false);
 
+        LocalDate firstDayOfMonth = LocalDate.now().withDayOfMonth(1);
+
         beginDatePicker = new DatePicker(beginDatePickerSettings);
-        beginDatePicker.setDateToToday();
+        beginDatePicker.setDate(firstDayOfMonth);
         beginDatePicker.getComponentDateTextField().setEditable(false);
 
         DatePickerSettings endDatePickerSettings = new DatePickerSettings();
@@ -314,7 +347,7 @@ public class TurnReportTable {
         displayName = "";
         sortedColumn = 0;
         catalogId = null;
-        beginDate = new Date();
+        beginDate = convertLocalDateToDate(firstDayOfMonth);
         endDate = new Date();
         sortOrder = NO_ORDER;
         turnElementComparator = new TurnElementComparator();
