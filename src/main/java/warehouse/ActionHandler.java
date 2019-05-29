@@ -5,19 +5,17 @@ import javax.swing.*;
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import warehouse.gui_components.*;
 import warehouse.data_components.*;
-
-import static warehouse.ResourcesList.*;
-import static warehouse.data_components.SortOrders.*;
-
 import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+
+import static warehouse.ResourcesList.*;
+import static warehouse.data_components.SortOrders.*;
 
 public class ActionHandler {
 
@@ -25,8 +23,9 @@ public class ActionHandler {
     private static final String CATALOG_DATASET = "catalog";
     private static final String CONTRACTORS_DATASET = "contractors";
     private static final String DOCUMENTS_LIST_DATASET = "documents list";
-    private static final String LOG_REPORT_DATASET = "log report";
     private static final String REMAIND_REPORT_DATASET = "remaind report";
+    private static final String TURN_REPORT_DATASET = "turn report";
+    private static final String LOG_REPORT_DATASET = "log report";
 
     private DBHandler dbHandler;
     private String state;
@@ -39,6 +38,7 @@ public class ActionHandler {
     private SimpleDataTable contractorsTable;
     private DocumentsTable documentsTable;
     private RemaindReportTable remaindReportTable;
+    private TurnReportTable turnReportTable;
     private LogReportTable logReportTable;
 
     private DocumentDialog documentDialog;
@@ -54,6 +54,7 @@ public class ActionHandler {
         contractorsTable = new SimpleDataTable();
         documentsTable = new DocumentsTable();
         remaindReportTable = new RemaindReportTable();
+        turnReportTable = new TurnReportTable();
         logReportTable = new LogReportTable();
 
         //Добавляем созданные панели в менеджер расположения
@@ -64,6 +65,7 @@ public class ActionHandler {
         cardPane.add(contractorsTable.getVisualComponent(), CONTRACTORS_DATASET);
         cardPane.add(documentsTable.getVisualComponent(), DOCUMENTS_LIST_DATASET);
         cardPane.add(remaindReportTable.getVisualComponent(), REMAIND_REPORT_DATASET);
+        cardPane.add(turnReportTable.getVisualComponent(), TURN_REPORT_DATASET);
         cardPane.add(logReportTable.getVisualComponent(), LOG_REPORT_DATASET);
         state = NO_DATASET;
 
@@ -135,6 +137,26 @@ public class ActionHandler {
         remaindReportTable.refresh(list, "Остатки", 1, TO_UP);
     }
 
+    public void showTurnReport(){
+        ArrayList<TurnElement> list = new ArrayList<>();
+        turnReportTable.refresh(list, "Обороты", 0, NO_ORDER);
+        state = TURN_REPORT_DATASET;
+        cardLayout.show(cardPane, state);
+    }
+
+    public void showTurnReportWithSettings(Date beginDate, Date endDate, Integer catalogId){
+        ArrayList<TurnElement> list;
+        try{
+            list = dbHandler.getTurnElements(beginDate, endDate, catalogId);
+        }catch (SQLException e){
+            JOptionPane.showMessageDialog(null, failRemaindReportAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        state = TURN_REPORT_DATASET;
+        cardLayout.show(cardPane, state);
+        turnReportTable.refresh(list, "Обороты", 1, TO_UP);
+    }
+
     public void showLogReport() {
         ArrayList<LogElement> list = new ArrayList<>();
         logReportTable.refresh(list, "Журнал операций", 0, NO_ORDER);
@@ -175,13 +197,17 @@ public class ActionHandler {
             workbook = documentsTable.getExcelWorkbook();
             name = "Документы";
         }
-        if (state.equals(LOG_REPORT_DATASET)){
-            workbook = logReportTable.getExcelWorkbook();
-            name = "Журнал операций";
-        }
         if (state.equals(REMAIND_REPORT_DATASET)){
             workbook = remaindReportTable.getExcelWorkbook();
             name = "Остатки";
+        }
+        if (state.equals(TURN_REPORT_DATASET)){
+            workbook = turnReportTable.getExcelWorkbook();
+            name = "Обороты";
+        }
+        if (state.equals(LOG_REPORT_DATASET)){
+            workbook = logReportTable.getExcelWorkbook();
+            name = "Журнал операций";
         }
 
         name += " " + dateFormat.format(new Date());

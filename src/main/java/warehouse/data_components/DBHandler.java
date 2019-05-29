@@ -3,7 +3,6 @@ package warehouse.data_components;
 import org.sqlite.date.DateFormatUtils;
 
 import java.sql.*;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -93,6 +92,41 @@ public class DBHandler {
         return list;
     }
 
+    public ArrayList<RemaindElement> getRemaindElements(Integer catalogId, Date endDate) throws SQLException {
+        ArrayList<RemaindElement> list = new ArrayList<>();
+        String query = "SELECT CATALOG.ID, CATALOG.NAME, SUM(DOCUMENTS.TYPE * OPERATIONS.COUNT) " +
+                "FROM CATALOG, DOCUMENTS, OPERATIONS " +
+                "WHERE OPERATIONS.CATALOG_ID=CATALOG.ID AND " +
+                "OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID ";
+
+        if (catalogId != null) {
+            query += " AND CATALOG.ID=" + catalogId;
+        }
+        if (endDate != null) {
+            query += " AND DATE(DOCUMENTS.DATE)<=DATE(\""+DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
+        }
+
+        query += " GROUP BY CATALOG.ID, CATALOG.NAME ORDER BY CATALOG.NAME";
+
+        ResultSet resultSet = statement.executeQuery(query);
+
+        int idTmp;
+        String nameTmp;
+        int countTmp;
+        while (resultSet.next()) {
+            idTmp = resultSet.getInt(1);
+            nameTmp = resultSet.getString(2);
+            countTmp = resultSet.getInt(3);
+            list.add(new RemaindElement(idTmp, nameTmp, countTmp));
+        }
+
+        return list;
+    }
+
+    public ArrayList<TurnElement> getTurnElements(Date beginDate, Date endDate, Integer catalogId) throws SQLException{
+        return null;
+    }
+
     public ArrayList<LogElement> getLogElements(LogRequestSettings requestSettings) throws SQLException {
         ArrayList<LogElement> list = new ArrayList<>();
         String query = "SELECT DOCUMENTS.ID, DOCUMENTS.DATE, CONTRACTORS.NAME, DOCUMENTS.TYPE, CATALOG.NAME, OPERATIONS.COUNT " +
@@ -152,37 +186,6 @@ public class DBHandler {
 
             element = new LogElement(documentId, date, contractorName, documentType, catalogName, count);
             list.add(element);
-        }
-
-        return list;
-    }
-
-    public ArrayList<RemaindElement> getRemaindElements(Integer catalogId, Date endDate) throws SQLException {
-        ArrayList<RemaindElement> list = new ArrayList<>();
-        String query = "SELECT CATALOG.ID, CATALOG.NAME, SUM(DOCUMENTS.TYPE * OPERATIONS.COUNT) " +
-                "FROM CATALOG, DOCUMENTS, OPERATIONS " +
-                "WHERE OPERATIONS.CATALOG_ID=CATALOG.ID AND " +
-                "OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID ";
-
-        if (catalogId != null) {
-            query += " AND CATALOG.ID=" + catalogId;
-        }
-        if (endDate != null) {
-            query += " AND DATE(DOCUMENTS.DATE)<=DATE(\""+DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
-        }
-
-        query += " GROUP BY CATALOG.ID, CATALOG.NAME ORDER BY CATALOG.NAME";
-
-        ResultSet resultSet = statement.executeQuery(query);
-
-        int idTmp;
-        String nameTmp;
-        int countTmp;
-        while (resultSet.next()) {
-            idTmp = resultSet.getInt(1);
-            nameTmp = resultSet.getString(2);
-            countTmp = resultSet.getInt(3);
-            list.add(new RemaindElement(idTmp, nameTmp, countTmp));
         }
 
         return list;

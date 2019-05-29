@@ -11,6 +11,7 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
 import java.util.Comparator;
+
 import static warehouse.ResourcesList.*;
 import static warehouse.data_components.SortOrders.*;
 

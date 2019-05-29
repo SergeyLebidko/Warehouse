@@ -14,8 +14,8 @@ import org.apache.poi.ss.util.RegionUtil;
 import warehouse.ActionHandler;
 import warehouse.MainClass;
 import warehouse.data_components.CatalogElement;
-import warehouse.data_components.RemaindElement;
 import warehouse.data_components.SortOrders;
+import warehouse.data_components.TurnElement;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
@@ -33,10 +33,14 @@ import java.util.Date;
 import static warehouse.data_components.SortOrders.*;
 import static warehouse.ResourcesList.*;
 
-public class RemaindReportTable {
+public class TurnReportTable {
 
-    private static final int MAX_WIDTH_NUMBER_COLUMN = 170;
-    private static final int MIN_WIDTH_NUMBER_COLUMN = 130;
+    private static final int MAX_WIDTH_NUMBER_COLUMN = 140;
+    private static final int MIN_WIDTH_NUMBER_COLUMN = 100;
+    private static final int MAX_WIDTH_START_VAL_COLUMN = 170;
+    private static final int MIN_WIDTH_START_VAL_COLUMN = 140;
+    private static final int MAX_WIDTH_END_VAL_COLUMN = 170;
+    private static final int MIN_WIDTH_END_VAL_COLUMN = 140;
 
     private ActionHandler actionHandler;
 
@@ -47,12 +51,14 @@ public class RemaindReportTable {
     private JTable table;
     private SEChoiсeDialog seChoiсeDialog;
 
+    private DatePicker beginDatePicker;
     private DatePicker endDatePicker;
     private JTextField catalogNameField;
+    private JButton clearCatalogNameBtn;
 
+    private Date beginDate;
     private Date endDate;
     private Integer catalogId;
-    private JButton clearCatalogNameBtn;
 
     private JButton startBtn;
 
@@ -62,29 +68,14 @@ public class RemaindReportTable {
     private String displayName;
     private int sortedColumn;
     private SortOrders sortOrder;
-    private RemaindElementComparator remaindElementComparator;
+    private TurnElementComparator turnElementComparator;
 
-    private ArrayList<RemaindElement> content;
+    private ArrayList<TurnElement> content;
 
-    private class RemaindElementComparator implements Comparator<RemaindElement> {
+    private class TurnElementComparator implements Comparator<TurnElement> {
 
         @Override
-        public int compare(RemaindElement o1, RemaindElement o2) {
-            if (sortedColumn == 0) {
-                Integer id1 = o1.getCatalogId();
-                Integer id2 = o2.getCatalogId();
-                return sortOrder.getMul() * id1.compareTo(id2);
-            }
-            if (sortedColumn == 1) {
-                String name1 = o1.getCatalogName();
-                String name2 = o2.getCatalogName();
-                return sortOrder.getMul() * name1.compareTo(name2);
-            }
-            if (sortedColumn == 2) {
-                Integer count1 = o1.getCount();
-                Integer count2 = o2.getCount();
-                return sortOrder.getMul() * count1.compareTo(count2);
-            }
+        public int compare(TurnElement o1, TurnElement o2) {
             return 0;
         }
 
@@ -97,14 +88,14 @@ public class RemaindReportTable {
 
         public Model() {
             rowCount = 0;
-            columnCount = 3;
-            statusLab.setText("Строки: " + rowCount);
+            columnCount = 6;
+            statusLab.setText("Строки: "+rowCount);
         }
 
-        public void refresh() {
+        public void refresh(){
             if (content == null) return;
 
-            content.sort(remaindElementComparator);
+            content.sort(turnElementComparator);
 
             rowCount = content.size();
             statusLab.setText("Строки: " + rowCount);
@@ -135,7 +126,7 @@ public class RemaindReportTable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JLabel lab = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            RemaindElement element = (RemaindElement) value;
+            TurnElement element = (TurnElement) value;
             if (column == 0) {
                 lab.setText(element.getCatalogId() + "");
                 lab.setHorizontalAlignment(SwingConstants.CENTER);
@@ -145,9 +136,22 @@ public class RemaindReportTable {
                 lab.setHorizontalAlignment(SwingConstants.LEFT);
             }
             if (column == 2) {
-                lab.setText(element.getCount() + "");
+                lab.setText(element.getBeginCount() + "");
                 lab.setHorizontalAlignment(SwingConstants.CENTER);
             }
+            if (column == 3) {
+                lab.setText(element.getIncCount() + "");
+                lab.setHorizontalAlignment(SwingConstants.CENTER);
+            }
+            if (column == 4) {
+                lab.setText(element.getDecCount() + "");
+                lab.setHorizontalAlignment(SwingConstants.CENTER);
+            }
+            if (column == 5) {
+                lab.setText(element.getEndCount() + "");
+                lab.setHorizontalAlignment(SwingConstants.CENTER);
+            }
+
 
             if (!isSelected) {
                 if ((row % 2) == 0) {
@@ -177,7 +181,16 @@ public class RemaindReportTable {
                 lab.setText("Наименование");
             }
             if (column == 2) {
-                lab.setText("Количество");
+                lab.setText("Ост. на начало");
+            }
+            if (column == 3) {
+                lab.setText("Приход");
+            }
+            if (column == 4) {
+                lab.setText("Расход");
+            }
+            if (column == 5) {
+                lab.setText("Ост. на конец");
             }
 
             lab.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
@@ -207,7 +220,7 @@ public class RemaindReportTable {
 
     }
 
-    public RemaindReportTable() {
+    public TurnReportTable() {
         createFields();
         createActionListeners();
     }
@@ -231,11 +244,16 @@ public class RemaindReportTable {
         table.setRowHeight(rowHeight);
         table.setShowVerticalLines(false);
         table.setGridColor(gridColor);
-        table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getColumnModel().getColumn(0).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
         table.getColumnModel().getColumn(0).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
-        table.getColumnModel().getColumn(2).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
-        table.getColumnModel().getColumn(2).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(2).setMaxWidth(MAX_WIDTH_START_VAL_COLUMN);
+        table.getColumnModel().getColumn(2).setMinWidth(MIN_WIDTH_START_VAL_COLUMN);
+        table.getColumnModel().getColumn(3).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(3).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(4).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(4).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(5).setMaxWidth(MAX_WIDTH_END_VAL_COLUMN);
+        table.getColumnModel().getColumn(5).setMinWidth(MIN_WIDTH_END_VAL_COLUMN);
 
         JPanel topPane = new JPanel();
         topPane.setLayout(new BorderLayout(5, 5));
@@ -247,22 +265,34 @@ public class RemaindReportTable {
 
         Box parametersBox = Box.createHorizontalBox();
 
-        DatePickerSettings datePickerSettings = new DatePickerSettings();
-        datePickerSettings.setAllowEmptyDates(false);
-        endDatePicker = new DatePicker(datePickerSettings);
+        DatePickerSettings beginDatePickerSettings = new DatePickerSettings();
+        beginDatePickerSettings.setAllowEmptyDates(false);
+
+        beginDatePicker = new DatePicker(beginDatePickerSettings);
+        beginDatePicker.setDateToToday();
+        beginDatePicker.getComponentDateTextField().setEditable(false);
+
+        DatePickerSettings endDatePickerSettings = new DatePickerSettings();
+        endDatePickerSettings.setAllowEmptyDates(false);
+
+        endDatePicker = new DatePicker(endDatePickerSettings);
         endDatePicker.setDateToToday();
         endDatePicker.getComponentDateTextField().setEditable(false);
 
         catalogNameField = new JTextField(50);
-        catalogNameField.setFont(mainFont);
         catalogNameField.setEditable(false);
+        catalogNameField.setFont(mainFont);
 
         clearCatalogNameBtn = new JButton(removeFilterIcon);
 
         startBtn = new JButton(toFormBtnText, toFormIcon);
         startBtn.setToolTipText(getToFormBtnToolTip);
 
-        parametersBox.add(new JLabel("На дату:"));
+        parametersBox.add(new JLabel("С:"));
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(beginDatePicker);
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(new JLabel("По:"));
         parametersBox.add(Box.createHorizontalStrut(5));
         parametersBox.add(endDatePicker);
         parametersBox.add(Box.createHorizontalStrut(5));
@@ -284,14 +314,23 @@ public class RemaindReportTable {
         displayName = "";
         sortedColumn = 0;
         catalogId = null;
+        beginDate = new Date();
         endDate = new Date();
         sortOrder = NO_ORDER;
-        remaindElementComparator = new RemaindElementComparator();
+        turnElementComparator = new TurnElementComparator();
     }
 
     private void createActionListeners() {
 
-        //Обработчик изменения даты
+        //Обработчик изменения даты начала
+        beginDatePicker.addDateChangeListener(new DateChangeListener() {
+            @Override
+            public void dateChanged(DateChangeEvent event) {
+                beginDate = convertLocalDateToDate(event.getNewDate());
+            }
+        });
+
+        //Обработчик изменения даты окончания
         endDatePicker.addDateChangeListener(new DateChangeListener() {
             @Override
             public void dateChanged(DateChangeEvent event) {
@@ -299,7 +338,7 @@ public class RemaindReportTable {
             }
         });
 
-        //Обработчик щелчка по полю с именем из Каталога
+        //Обработчик выбора наименования из каталога
         catalogNameField.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
@@ -328,7 +367,7 @@ public class RemaindReportTable {
         startBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                actionHandler.showRemaindReportWithSettings(catalogId, endDate);
+                actionHandler.showTurnReportWithSettings(beginDate, endDate, catalogId);
             }
         });
 
@@ -350,11 +389,12 @@ public class RemaindReportTable {
         return contentPane;
     }
 
-    public void refresh(ArrayList<RemaindElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
+    public void refresh(ArrayList<TurnElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
         content = list;
         this.displayName = displayName;
         this.sortedColumn = sortedColumn;
         this.sortOrder = sortOrder;
+
         nameLab.setText(displayName);
         model.refresh();
         table.getTableHeader().repaint();
@@ -378,7 +418,7 @@ public class RemaindReportTable {
 
         Row row = sheet.createRow(0);
 
-        int headerWidth = 4;
+        int headerWidth = 6;
         Cell nameCell = null;
         for (int i = 0; i < headerWidth; i++) {
             if (i == 0) {
@@ -395,70 +435,6 @@ public class RemaindReportTable {
         sheet.addMergedRegion(region);
 
         RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
-
-        //Формируем заголовки столбцов
-        HSSFCellStyle headerStyle = workbook.createCellStyle();
-        HSSFFont headerFont = workbook.createFont();
-        headerFont.setFontHeight((short) fontColumnHeaderSize);
-        headerFont.setBold(true);
-        headerStyle.setFont(headerFont);
-        headerStyle.setAlignment(HorizontalAlignment.CENTER);
-
-        row = sheet.createRow(1);
-        String[] columnNames = {"№ п/п", "№ в кат.", "Наименование", "Остаток"};
-        Cell[] headerCells = new Cell[columnNames.length];
-
-        for (int i = 0; i < columnNames.length; i++) {
-            headerCells[i] = row.createCell(i);
-            headerCells[i].setCellValue(columnNames[i]);
-            headerCells[i].setCellStyle(headerStyle);
-        }
-
-        //Вносим данные
-        //Вносим данные
-        HSSFCellStyle styleTextCell = workbook.createCellStyle();
-        styleTextCell.setWrapText(true);
-
-        HSSFCellStyle styleNumericCell = workbook.createCellStyle();
-        styleNumericCell.setAlignment(HorizontalAlignment.CENTER);
-        styleNumericCell.setVerticalAlignment(VerticalAlignment.CENTER);
-
-        HSSFCellStyle styleRemaindCell = workbook.createCellStyle();
-        styleRemaindCell.setVerticalAlignment(VerticalAlignment.CENTER);
-
-        Cell cell;
-        int number = 1;
-        RemaindElement element;
-        for (int index = 0; index < model.getRowCount(); index++) {
-            row = sheet.createRow(index + 2);
-            element = (RemaindElement) model.getValueAt(index, 0);
-
-            //Столбец № п/п
-            cell = row.createCell(0);
-            cell.setCellValue(number);
-            cell.setCellStyle(styleNumericCell);
-            number++;
-
-            //Столбец Номер в каталоге
-            cell = row.createCell(1);
-            cell.setCellValue(element.getCatalogId());
-            cell.setCellStyle(styleNumericCell);
-
-            //Столбец Наименование
-            cell = row.createCell(2);
-            cell.setCellValue(element.getCatalogName());
-            cell.setCellStyle(styleTextCell);
-
-            //Столбец Остаток
-            cell = row.createCell(3);
-            cell.setCellValue(element.getCount());
-            cell.setCellStyle(styleRemaindCell);
-        }
-
-        sheet.setColumnWidth(0, 3000);
-        sheet.setColumnWidth(1, 3000);
-        sheet.setColumnWidth(2, 10000);
-        sheet.setColumnWidth(3, 3000);
 
         return workbook;
     }
@@ -497,6 +473,5 @@ public class RemaindReportTable {
         }
         return date;
     }
-
 
 }

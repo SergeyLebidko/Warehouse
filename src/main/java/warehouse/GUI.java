@@ -145,16 +145,26 @@ public class GUI {
         reportMenu = new JPopupMenu();
         JMenuItem reportRemainderItem = new JMenuItem(reportRemainderItemText);
         reportRemainderItem.setFont(mainFont);
+        JMenuItem reportTurnItem = new JMenuItem(reportTurnItemText);
+        reportTurnItem.setFont(mainFont);
         JMenuItem reportLogItem = new JMenuItem(reportLogItemText);
         reportLogItem.setFont(mainFont);
 
         reportMenu.add(reportRemainderItem);
+        reportMenu.add(reportTurnItem);
         reportMenu.add(reportLogItem);
 
         reportRemainderItem.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 actionHandler.showRemaindReport();
+            }
+        });
+
+        reportTurnItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actionHandler.showTurnReport();
             }
         });
 

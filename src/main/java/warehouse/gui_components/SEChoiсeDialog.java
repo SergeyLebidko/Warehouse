@@ -2,16 +2,15 @@ package warehouse.gui_components;
 
 import warehouse.MainClass;
 import warehouse.data_components.*;
-
-import static warehouse.ResourcesList.*;
-import static warehouse.data_components.SortOrders.*;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.sql.SQLException;
 import java.util.ArrayList;
+
+import static warehouse.ResourcesList.*;
+import static warehouse.data_components.SortOrders.*;
 
 public class SEChoiсeDialog {
 

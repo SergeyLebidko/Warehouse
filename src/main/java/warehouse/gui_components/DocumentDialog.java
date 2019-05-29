@@ -10,10 +10,6 @@ import warehouse.ActionHandler;
 import warehouse.MainClass;
 import warehouse.data_components.Document;
 import warehouse.data_components.Operation;
-
-import static warehouse.data_components.SortOrders.*;
-import static warehouse.ResourcesList.*;
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
@@ -21,6 +17,9 @@ import java.awt.event.ActionListener;
 import java.text.DateFormat;
 import java.time.LocalDate;
 import java.util.Date;
+
+import static warehouse.data_components.SortOrders.*;
+import static warehouse.ResourcesList.*;
 
 public class DocumentDialog {
 

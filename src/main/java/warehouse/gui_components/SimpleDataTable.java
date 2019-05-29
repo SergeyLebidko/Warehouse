@@ -18,6 +18,7 @@ import java.awt.*;
 import java.awt.event.*;
 import java.util.ArrayList;
 import java.util.Comparator;
+
 import static warehouse.ResourcesList.*;
 import static warehouse.data_components.SortOrders.*;
 
