@@ -168,7 +168,7 @@ public class DBHandler {
             query += " AND CATALOG.ID=" + catalogId;
         }
         if (endDate != null) {
-            query += " AND DATE(DOCUMENTS.DATE)<="+DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
+            query += " AND DATE(DOCUMENTS.DATE)<=DATE(\""+DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
         }
 
         query += " GROUP BY CATALOG.ID, CATALOG.NAME ORDER BY CATALOG.NAME";

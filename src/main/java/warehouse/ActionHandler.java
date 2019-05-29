@@ -179,6 +179,10 @@ public class ActionHandler {
             workbook = logReportTable.getExcelWorkbook();
             name = "Журнал операций";
         }
+        if (state.equals(REMAIND_REPORT_DATASET)){
+            workbook = remaindReportTable.getExcelWorkbook();
+            name = "Остатки";
+        }
 
         name += " " + dateFormat.format(new Date());
 
