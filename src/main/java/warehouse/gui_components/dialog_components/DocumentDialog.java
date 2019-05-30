@@ -42,6 +42,7 @@ public class DocumentDialog {
     private JTextField idField;
     private DatePicker datePicker;
     private JTextField dateField;
+    private JTextField contractorField;
     private JTextField typeField;
     private OperationsTable operationsTable;
 
@@ -89,7 +90,13 @@ public class DocumentDialog {
 
         dateField = new JTextField();
         dateField.setFont(mainFont);
+        dateField.setEditable(false);
         dateField.setHorizontalAlignment(SwingConstants.RIGHT);
+
+        contractorField = new JTextField();
+        contractorField.setFont(mainFont);
+        contractorField.setEditable(false);
+        contractorField.setHorizontalAlignment(SwingConstants.RIGHT);
 
         typeField = new JTextField();
         typeField.setFont(mainFont);
@@ -115,6 +122,9 @@ public class DocumentDialog {
         Box dateBox = Box.createHorizontalBox();
         dateBox.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
+        Box contractorBox = Box.createHorizontalBox();
+        contractorBox.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
+
         Box typeBox = Box.createHorizontalBox();
         typeBox.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
@@ -139,6 +149,11 @@ public class DocumentDialog {
         dateBox.add(dateField);
         dateBox.add(Box.createHorizontalStrut((int) (DIALOG_WIDTH * 0.6)));
 
+        contractorBox.add(new JLabel("Контрагент:"));
+        contractorBox.add(Box.createHorizontalStrut(5));
+        contractorBox.add(contractorField);
+        contractorBox.add(Box.createHorizontalStrut((int) (DIALOG_WIDTH * 0.6)));
+
         typeBox.add(new JLabel("Тип:"));
         typeBox.add(Box.createHorizontalStrut(5));
         typeBox.add(typeField);
@@ -153,6 +168,7 @@ public class DocumentDialog {
         topBox.add(topBtnPane);
         topBox.add(idBox);
         topBox.add(dateBox);
+        topBox.add(contractorBox);
         topBox.add(typeBox);
         topBox.add(middlePane);
 
@@ -198,6 +214,7 @@ public class DocumentDialog {
         idField.setText((currentDocument.getId() == null) ? "..." : (document.getId() + ""));
         DateFormat dateFormat = DateFormat.getDateInstance();
         dateField.setText(dateFormat.format(currentDocument.getDate()));
+        contractorField.setText(document.getContractorName());
         typeField.setText(currentDocument.getType().getName());
         operationsTable.refresh(currentDocument.getOperationList(), 1, TO_UP);
 
@@ -244,6 +261,14 @@ public class DocumentDialog {
 
         row = sheet.createRow(2);
         cell = row.createCell(0);
+        cell.setCellValue("Контрагент");
+        cell.setCellStyle(headerStyle);
+        cell = row.createCell(1);
+        cell.setCellValue(document.getContractorName());
+        cell.setCellStyle(headerStyle);
+
+        row = sheet.createRow(3);
+        cell = row.createCell(0);
         cell.setCellValue("Тип:");
         cell.setCellStyle(headerStyle);
         cell = row.createCell(1);
@@ -257,7 +282,7 @@ public class DocumentDialog {
         operationHeaderStyle.setAlignment(HorizontalAlignment.CENTER);
         operationHeaderStyle.setBorderBottom(BorderStyle.THIN);
 
-        row = sheet.createRow(4);
+        row = sheet.createRow(5);
 
         String[] columnNames = {"№ п/п", "Номер в каталоге", "Наименование", "Количество"};
         Cell[] headerCells = new Cell[columnNames.length];
@@ -278,8 +303,8 @@ public class DocumentDialog {
         styleTextCell.setWrapText(true);
 
         int number = 1;
-        for (Operation operation: currentDocument.getOperationList()){
-            row = sheet.createRow(number+4);
+        for (Operation operation : currentDocument.getOperationList()) {
+            row = sheet.createRow(number + 5);
 
             cell = row.createCell(0);
             cell.setCellValue(number++);
