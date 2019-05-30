@@ -169,11 +169,11 @@ public class DBHandler {
             if (remaindElements.size() > 0) {
                 beginCount = remaindElements.get(0).getCount();
             } else {
-                beginCount = 0;
+                beginCount = null;
             }
 
             //Затем рассчитываем приход
-            incCount = null;
+            incCount = 0;
             query = "SELECT SUM(OPERATIONS.COUNT)" +
                     " FROM OPERATIONS, DOCUMENTS" +
                     " WHERE OPERATIONS.CATALOG_ID=" + currentCatalogElement.getId() + "" +
@@ -184,9 +184,10 @@ public class DBHandler {
             if (resultSet.next()) {
                 incCount = resultSet.getInt(1);
             }
+            if (incCount == 0) incCount = null;
 
             //Затем рассчитываем расход
-            decCount = null;
+            decCount = 0;
             query = "SELECT SUM(OPERATIONS.COUNT)" +
                     " FROM OPERATIONS, DOCUMENTS" +
                     " WHERE OPERATIONS.CATALOG_ID=" + currentCatalogElement.getId() + "" +
@@ -197,9 +198,10 @@ public class DBHandler {
             if (resultSet.next()) {
                 decCount = resultSet.getInt(1);
             }
+            if (decCount==0)decCount=null;
 
             //Рассчитываем итог на конец периода
-            endCount = beginCount + (incCount == null ? 0 : incCount) - (decCount == null ? 0 : decCount);
+            endCount = (beginCount==null?0:beginCount) + (incCount == null ? 0 : incCount) - (decCount == null ? 0 : decCount);
 
             //Вносим данные в результирующий список
             list.add(new TurnElement(currentCatalogElement.getId(), currentCatalogElement.getName(), beginCount, incCount, decCount, endCount));

@@ -415,7 +415,6 @@ public class RemaindReportTable {
         }
 
         //Вносим данные
-        //Вносим данные
         HSSFCellStyle styleTextCell = workbook.createCellStyle();
         styleTextCell.setWrapText(true);
 

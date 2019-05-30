@@ -167,7 +167,7 @@ public class TurnReportTable {
                 lab.setHorizontalAlignment(SwingConstants.LEFT);
             }
             if (column == 2) {
-                lab.setText(element.getBeginCount() + "");
+                lab.setText((element.getBeginCount()==null?"":element.getBeginCount()) + "");
                 lab.setHorizontalAlignment(SwingConstants.CENTER);
             }
             if (column == 3) {
@@ -451,7 +451,7 @@ public class TurnReportTable {
 
         Row row = sheet.createRow(0);
 
-        int headerWidth = 6;
+        int headerWidth = 7;
         Cell nameCell = null;
         for (int i = 0; i < headerWidth; i++) {
             if (i == 0) {
@@ -468,6 +468,84 @@ public class TurnReportTable {
         sheet.addMergedRegion(region);
 
         RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
+
+        //Формируем заголовки столбцов
+        HSSFCellStyle headerStyle = workbook.createCellStyle();
+        HSSFFont headerFont = workbook.createFont();
+        headerFont.setFontHeight((short) fontColumnHeaderSize);
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        row = sheet.createRow(1);
+        String[] columnNames = {"№ п/п", "№ в кат.", "Наименование", "Ост. на начало", "Приход", "Расход", "Ост. на конец"};
+        Cell[] headerCells = new Cell[columnNames.length];
+
+        for (int i = 0; i < columnNames.length; i++) {
+            headerCells[i] = row.createCell(i);
+            headerCells[i].setCellValue(columnNames[i]);
+            headerCells[i].setCellStyle(headerStyle);
+        }
+
+        //Вносим данные
+        HSSFCellStyle styleTextCell = workbook.createCellStyle();
+        styleTextCell.setWrapText(true);
+
+        HSSFCellStyle styleNumericCell = workbook.createCellStyle();
+        styleNumericCell.setAlignment(HorizontalAlignment.CENTER);
+        styleNumericCell.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        Cell cell;
+        int number = 1;
+        TurnElement element;
+        for (int index = 0; index < model.getRowCount(); index++){
+            row = sheet.createRow(index + 2);
+            element = (TurnElement)model.getValueAt(index,0);
+
+            //Столбец № п/п
+            cell = row.createCell(0);
+            cell.setCellValue(number);
+            cell.setCellStyle(styleNumericCell);
+            number++;
+
+            //Столбец № в кат.
+            cell = row.createCell(1);
+            cell.setCellValue(element.getCatalogId());
+            cell.setCellStyle(styleNumericCell);
+
+            //Столбец Наименование
+            cell = row.createCell(2);
+            cell.setCellValue(element.getCatalogName());
+            cell.setCellStyle(styleTextCell);
+
+            //Столбец Ост. на начало
+            cell = row.createCell(3);
+            cell.setCellValue(element.getBeginCount()==null?"":element.getBeginCount()+"");
+            cell.setCellStyle(styleNumericCell);
+
+            //Столбец Приход
+            cell = row.createCell(4);
+            cell.setCellValue(element.getIncCount()==null?"":element.getIncCount()+"");
+            cell.setCellStyle(styleNumericCell);
+
+            //Столбец Расход
+            cell = row.createCell(5);
+            cell.setCellValue(element.getDecCount()==null?"":element.getDecCount()+"");
+            cell.setCellStyle(styleNumericCell);
+
+            //Столбец Ост. на конец
+            cell = row.createCell(6);
+            cell.setCellValue(element.getEndCount());
+            cell.setCellStyle(styleNumericCell);
+        }
+
+        sheet.setColumnWidth(0, 3000);
+        sheet.setColumnWidth(1, 3000);
+        sheet.setColumnWidth(2, 10000);
+        sheet.setColumnWidth(3, 4000);
+        sheet.setColumnWidth(4, 4000);
+        sheet.setColumnWidth(5, 4000);
+        sheet.setColumnWidth(6, 4000);
 
         return workbook;
     }
