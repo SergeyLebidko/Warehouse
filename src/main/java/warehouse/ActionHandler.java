@@ -171,7 +171,7 @@ public class ActionHandler {
 
     public void showDeliveryReport() {
         ArrayList<DeliveryElement> list = new ArrayList<>();
-        deliveryReportTable.refresh(list, "Обороты с контагентом", 0, NO_ORDER);
+        deliveryReportTable.refresh(list, "Обороты с контрагентом", 0, NO_ORDER);
         state = DELIVERY_REPORT_DATASET;
         cardLayout.show(cardPane, state);
     }
@@ -240,6 +240,10 @@ public class ActionHandler {
         if (state.equals(LOG_REPORT_DATASET)) {
             workbook = logReportTable.getExcelWorkbook();
             name = "Журнал операций";
+        }
+        if (state.equals(DELIVERY_REPORT_DATASET)){
+            workbook = deliveryReportTable.getExcelWorkbook();
+            name = "Отчет по оборотам с контрагентом";
         }
 
         name += " " + dateFormat.format(new Date());

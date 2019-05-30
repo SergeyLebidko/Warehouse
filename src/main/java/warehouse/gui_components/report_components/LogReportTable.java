@@ -555,7 +555,7 @@ public class LogReportTable {
         Date date;
         for (int index = 0; index < model.getRowCount(); index++) {
             row = sheet.createRow(index + 2);
-            logElement = (LogElement)model.getValueAt(index,0);
+            logElement = (LogElement) model.getValueAt(index, 0);
 
             //Столбец № п/п
             cell = row.createCell(0);

@@ -4,6 +4,13 @@ import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.DatePickerSettings;
 import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
 import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
+import org.apache.poi.hssf.usermodel.HSSFCellStyle;
+import org.apache.poi.hssf.usermodel.HSSFFont;
+import org.apache.poi.hssf.usermodel.HSSFSheet;
+import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.util.CellRangeAddress;
+import org.apache.poi.ss.util.RegionUtil;
 import warehouse.ActionHandler;
 import warehouse.MainClass;
 import warehouse.data_components.SortOrders;
@@ -394,6 +401,111 @@ public class DeliveryReportTable {
         nameLab.setText(displayName);
         model.refresh();
         table.getTableHeader().repaint();
+    }
+
+    public HSSFWorkbook getExcelWorkbook() {
+        //Создаем файл в памяти
+        HSSFWorkbook workbook = new HSSFWorkbook();
+
+        //Создаем лист
+        HSSFSheet sheet = workbook.createSheet("Лист1");
+
+        //Заполняем лист данными
+        //Формируем ячейку с наименованием набора данных
+        HSSFCellStyle nameStyle = workbook.createCellStyle();
+        HSSFFont nameFont = workbook.createFont();
+        nameFont.setFontHeight((short) fontFileHeaderSize);
+        nameFont.setBold(true);
+        nameStyle.setFont(nameFont);
+        nameStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        Row row = sheet.createRow(0);
+
+        int headerWidth = 5;
+        Cell nameCell = null;
+        for (int i = 0; i < headerWidth; i++) {
+            if (i == 0) {
+                nameCell = row.createCell(0);
+                continue;
+            }
+            row.createCell(i);
+        }
+
+        nameCell.setCellValue(displayName);
+        nameCell.setCellStyle(nameStyle);
+
+        CellRangeAddress region = new CellRangeAddress(0, 0, 0, headerWidth - 1);
+        sheet.addMergedRegion(region);
+
+        RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
+
+        //Формируем заголовки столбцов
+        HSSFCellStyle headerStyle = workbook.createCellStyle();
+        HSSFFont headerFont = workbook.createFont();
+        headerFont.setFontHeight((short) fontColumnHeaderSize);
+        headerFont.setBold(true);
+        headerStyle.setFont(headerFont);
+        headerStyle.setAlignment(HorizontalAlignment.CENTER);
+
+        row = sheet.createRow(1);
+        String[] columnNames = {"№ п/п", "№ в кат.", "Наименование", "Приход", "Расход"};
+        Cell[] headerCells = new Cell[columnNames.length];
+
+        for (int i = 0; i < columnNames.length; i++) {
+            headerCells[i] = row.createCell(i);
+            headerCells[i].setCellValue(columnNames[i]);
+            headerCells[i].setCellStyle(headerStyle);
+        }
+
+        //Вносим данные
+        HSSFCellStyle styleTextCell = workbook.createCellStyle();
+        styleTextCell.setWrapText(true);
+
+        HSSFCellStyle styleNumericCell = workbook.createCellStyle();
+        styleNumericCell.setAlignment(HorizontalAlignment.CENTER);
+        styleNumericCell.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        Cell cell;
+        int number = 1;
+        DeliveryElement element;
+        for (int index = 0; index < model.getRowCount(); index++) {
+            row = sheet.createRow(index + 2);
+            element = (DeliveryElement) model.getValueAt(index, 0);
+
+            //Столбец № п/п
+            cell = row.createCell(0);
+            cell.setCellValue(number);
+            cell.setCellStyle(styleNumericCell);
+            number++;
+
+            //Столбец № в кат.
+            cell = row.createCell(1);
+            cell.setCellValue(element.getCatalogId());
+            cell.setCellStyle(styleNumericCell);
+
+            //Столбец Наименование
+            cell = row.createCell(2);
+            cell.setCellValue(element.getCatalogName());
+            cell.setCellStyle(styleTextCell);
+
+            //Столбец Приход
+            cell = row.createCell(3);
+            cell.setCellValue(element.getInc() == null ? "" : element.getInc() + "");
+            cell.setCellStyle(styleNumericCell);
+
+            //Столбец Расход
+            cell = row.createCell(4);
+            cell.setCellValue(element.getDec() == null ? "" : element.getDec() + "");
+            cell.setCellStyle(styleNumericCell);
+        }
+
+        sheet.setColumnWidth(0, 3000);
+        sheet.setColumnWidth(1, 3000);
+        sheet.setColumnWidth(2, 10000);
+        sheet.setColumnWidth(3, 4000);
+        sheet.setColumnWidth(4, 4000);
+
+        return workbook;
     }
 
     private void revertSortOrder() {
