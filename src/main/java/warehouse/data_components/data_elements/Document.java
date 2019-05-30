@@ -1,4 +1,6 @@
-package warehouse.data_components;
+package warehouse.data_components.data_elements;
+
+import warehouse.data_components.DocumentTypes;
 
 import java.util.ArrayList;
 import java.util.Date;

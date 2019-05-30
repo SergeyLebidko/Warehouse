@@ -1,6 +1,7 @@
-package warehouse.gui_components;
+package warehouse.gui_components.report_components;
 
 import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DatePickerSettings;
 import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
 import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -12,31 +13,32 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
 import warehouse.ActionHandler;
 import warehouse.MainClass;
-import warehouse.data_components.*;
+import warehouse.data_components.data_elements.CatalogElement;
+import warehouse.data_components.data_elements.RemaindElement;
+import warehouse.data_components.SortOrders;
+import warehouse.gui_components.dialog_components.SEChoiсeDialog;
+
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.awt.event.*;
-import java.text.DateFormat;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 
-import static warehouse.data_components.DocumentTypes.*;
-import static warehouse.ResourcesList.*;
 import static warehouse.data_components.SortOrders.*;
+import static warehouse.ResourcesList.*;
 
-public class LogReportTable {
+public class RemaindReportTable {
 
-    private static final int MAX_WIDTH_NUMBER_COLUMN = 140;
-    private static final int MIN_WIDTH_NUMBER_COLUMN = 100;
-    private static final int MAX_WIDTH_DATE_COLUMN = 220;
-    private static final int MIN_WIDTH_DATE_COLUMN = 120;
-    private static final int MAX_WIDTH_TYPE_COLUMN = 120;
-    private static final int MIN_WIDTH_TYPE_COLUMN = 100;
+    private static final int MAX_WIDTH_NUMBER_COLUMN = 170;
+    private static final int MIN_WIDTH_NUMBER_COLUMN = 130;
 
     private ActionHandler actionHandler;
 
@@ -47,14 +49,12 @@ public class LogReportTable {
     private JTable table;
     private SEChoiсeDialog seChoiсeDialog;
 
-    private DatePicker beginDatePicker;
     private DatePicker endDatePicker;
-    private JTextField contractorField;
-    private JButton clearContractorBtn;
-    private JComboBox typeBox;
-    private JTextField catalogField;
-    private JButton clearCatalogBtn;
-    private LogRequestSettings logRequestSettings;
+    private JTextField catalogNameField;
+
+    private Date endDate;
+    private Integer catalogId;
+    private JButton clearCatalogNameBtn;
 
     private JButton startBtn;
 
@@ -64,42 +64,25 @@ public class LogReportTable {
     private String displayName;
     private int sortedColumn;
     private SortOrders sortOrder;
-    private LogElementComparator logElementComparator;
+    private RemaindElementComparator remaindElementComparator;
 
-    private ArrayList<LogElement> content;
+    private ArrayList<RemaindElement> content;
 
-    private class LogElementComparator implements Comparator<LogElement> {
+    private class RemaindElementComparator implements Comparator<RemaindElement> {
 
         @Override
-        public int compare(LogElement o1, LogElement o2) {
+        public int compare(RemaindElement o1, RemaindElement o2) {
             if (sortedColumn == 0) {
-                Integer documentId1 = o1.getDocumentId();
-                Integer documentId2 = o2.getDocumentId();
-                return sortOrder.getMul() * documentId1.compareTo(documentId2);
+                Integer id1 = o1.getCatalogId();
+                Integer id2 = o2.getCatalogId();
+                return sortOrder.getMul() * id1.compareTo(id2);
             }
             if (sortedColumn == 1) {
-                Date date1 = o1.getDate();
-                Date date2 = o2.getDate();
-                return sortOrder.getMul() * date1.compareTo(date2);
+                String name1 = o1.getCatalogName();
+                String name2 = o2.getCatalogName();
+                return sortOrder.getMul() * name1.compareTo(name2);
             }
             if (sortedColumn == 2) {
-                String contractorName1 = o1.getContractorName();
-                String contractorName2 = o2.getContractorName();
-                return sortOrder.getMul() * contractorName1.compareTo(contractorName2);
-            }
-            if (sortedColumn == 3) {
-                DocumentTypes type1 = o1.getDocumentType();
-                DocumentTypes type2 = o2.getDocumentType();
-                if (type1 == type2) return 0;
-                if (type1 == COM & type2 == CONS) return sortOrder.getMul() * 1;
-                if (type1 == CONS & type2 == COM) return sortOrder.getMul() * (-1);
-            }
-            if (sortedColumn == 4) {
-                String catalogName1 = o1.getCatalogName();
-                String catalogName2 = o2.getCatalogName();
-                return sortOrder.getMul() * catalogName1.compareTo(catalogName2);
-            }
-            if (sortedColumn == 5) {
                 Integer count1 = o1.getCount();
                 Integer count2 = o2.getCount();
                 return sortOrder.getMul() * count1.compareTo(count2);
@@ -116,14 +99,14 @@ public class LogReportTable {
 
         public Model() {
             rowCount = 0;
-            columnCount = 6;
+            columnCount = 3;
             statusLab.setText("Строки: " + rowCount);
         }
 
         public void refresh() {
             if (content == null) return;
 
-            content.sort(logElementComparator);
+            content.sort(remaindElementComparator);
 
             rowCount = content.size();
             statusLab.setText("Строки: " + rowCount);
@@ -154,29 +137,16 @@ public class LogReportTable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JLabel lab = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            DateFormat dateFormat = DateFormat.getDateInstance();
-            LogElement element = (LogElement) value;
+            RemaindElement element = (RemaindElement) value;
             if (column == 0) {
-                lab.setText(element.getDocumentId() + "");
+                lab.setText(element.getCatalogId() + "");
                 lab.setHorizontalAlignment(SwingConstants.CENTER);
             }
             if (column == 1) {
-                lab.setText(dateFormat.format(element.getDate()));
-                lab.setHorizontalAlignment(SwingConstants.CENTER);
-            }
-            if (column == 2) {
-                lab.setText(element.getContractorName());
-                lab.setHorizontalAlignment(SwingConstants.LEFT);
-            }
-            if (column == 3) {
-                lab.setText(element.getDocumentType().getName());
-                lab.setHorizontalAlignment(SwingConstants.CENTER);
-            }
-            if (column == 4) {
                 lab.setText(element.getCatalogName());
                 lab.setHorizontalAlignment(SwingConstants.LEFT);
             }
-            if (column == 5) {
+            if (column == 2) {
                 lab.setText(element.getCount() + "");
                 lab.setHorizontalAlignment(SwingConstants.CENTER);
             }
@@ -203,21 +173,12 @@ public class LogReportTable {
             lab.setBackground(headerColor);
 
             if (column == 0) {
-                lab.setText("№ док.");
+                lab.setText("№ в кат.");
             }
             if (column == 1) {
-                lab.setText("Дата");
-            }
-            if (column == 2) {
-                lab.setText("Контрагент");
-            }
-            if (column == 3) {
-                lab.setText("Тип");
-            }
-            if (column == 4) {
                 lab.setText("Наименование");
             }
-            if (column == 5) {
+            if (column == 2) {
                 lab.setText("Количество");
             }
 
@@ -248,7 +209,7 @@ public class LogReportTable {
 
     }
 
-    public LogReportTable() {
+    public RemaindReportTable() {
         createFields();
         createActionListeners();
     }
@@ -256,7 +217,6 @@ public class LogReportTable {
     private void createFields() {
         actionHandler = MainClass.getActionHandler();
         seChoiсeDialog = new SEChoiсeDialog();
-        logRequestSettings = new LogRequestSettings();
 
         contentPane = new JPanel(new BorderLayout(5, 5));
         contentPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -276,12 +236,8 @@ public class LogReportTable {
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getColumnModel().getColumn(0).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
         table.getColumnModel().getColumn(0).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
-        table.getColumnModel().getColumn(1).setMaxWidth(MAX_WIDTH_DATE_COLUMN);
-        table.getColumnModel().getColumn(1).setMinWidth(MIN_WIDTH_DATE_COLUMN);
-        table.getColumnModel().getColumn(3).setMaxWidth(MAX_WIDTH_TYPE_COLUMN);
-        table.getColumnModel().getColumn(3).setMinWidth(MIN_WIDTH_TYPE_COLUMN);
-        table.getColumnModel().getColumn(5).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
-        table.getColumnModel().getColumn(5).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(2).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(2).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
 
         JPanel topPane = new JPanel();
         topPane.setLayout(new BorderLayout(5, 5));
@@ -293,51 +249,30 @@ public class LogReportTable {
 
         Box parametersBox = Box.createHorizontalBox();
 
-        beginDatePicker = new DatePicker();
-        beginDatePicker.getComponentDateTextField().setEditable(false);
-
-        endDatePicker = new DatePicker();
+        DatePickerSettings datePickerSettings = new DatePickerSettings();
+        datePickerSettings.setAllowEmptyDates(false);
+        endDatePicker = new DatePicker(datePickerSettings);
+        endDatePicker.setDateToToday();
         endDatePicker.getComponentDateTextField().setEditable(false);
 
-        contractorField = new JTextField(20);
-        contractorField.setEditable(false);
-        contractorField.setFont(mainFont);
+        catalogNameField = new JTextField(50);
+        catalogNameField.setFont(mainFont);
+        catalogNameField.setEditable(false);
 
-        clearContractorBtn = new JButton(removeFilterIcon);
-
-        typeBox = new JComboBox(new Object[]{"Все", COM.getName(), CONS.getName()});
-
-        catalogField = new JTextField(20);
-        catalogField.setEditable(false);
-        catalogField.setFont(mainFont);
-
-        clearCatalogBtn = new JButton(removeFilterIcon);
+        clearCatalogNameBtn = new JButton(removeFilterIcon);
 
         startBtn = new JButton(toFormBtnText, toFormIcon);
         startBtn.setToolTipText(getToFormBtnToolTip);
 
-        parametersBox.add(new JLabel("С:"));
-        parametersBox.add(Box.createHorizontalStrut(5));
-        parametersBox.add(beginDatePicker);
-        parametersBox.add(new JLabel("По:"));
+        parametersBox.add(new JLabel("На дату:"));
         parametersBox.add(Box.createHorizontalStrut(5));
         parametersBox.add(endDatePicker);
         parametersBox.add(Box.createHorizontalStrut(5));
-        parametersBox.add(new JLabel("Контрагент:"));
-        parametersBox.add(Box.createHorizontalStrut(5));
-        parametersBox.add(contractorField);
-        parametersBox.add(Box.createHorizontalStrut(5));
-        parametersBox.add(clearContractorBtn);
-        parametersBox.add(Box.createHorizontalStrut(5));
-        parametersBox.add(new JLabel("Тип:"));
-        parametersBox.add(Box.createHorizontalStrut(5));
-        parametersBox.add(typeBox);
-        parametersBox.add(Box.createHorizontalStrut(5));
         parametersBox.add(new JLabel("Наименование:"));
         parametersBox.add(Box.createHorizontalStrut(5));
-        parametersBox.add(catalogField);
+        parametersBox.add(catalogNameField);
         parametersBox.add(Box.createHorizontalStrut(5));
-        parametersBox.add(clearCatalogBtn);
+        parametersBox.add(clearCatalogNameBtn);
         parametersBox.add(Box.createHorizontalStrut(15));
         parametersBox.add(startBtn);
 
@@ -350,97 +285,52 @@ public class LogReportTable {
 
         displayName = "";
         sortedColumn = 0;
+        catalogId = null;
+        endDate = new Date();
         sortOrder = NO_ORDER;
-        logElementComparator = new LogElementComparator();
+        remaindElementComparator = new RemaindElementComparator();
     }
 
     private void createActionListeners() {
 
-        beginDatePicker.addDateChangeListener(new DateChangeListener() {
-            @Override
-            public void dateChanged(DateChangeEvent dateChangeEvent) {
-                logRequestSettings.setBeginDate(convertLocalDateToDate(dateChangeEvent.getNewDate()));
-            }
-        });
-
+        //Обработчик изменения даты
         endDatePicker.addDateChangeListener(new DateChangeListener() {
             @Override
-            public void dateChanged(DateChangeEvent dateChangeEvent) {
-                logRequestSettings.setEndDate(convertLocalDateToDate(dateChangeEvent.getNewDate()));
+            public void dateChanged(DateChangeEvent event) {
+                endDate = convertLocalDateToDate(event.getNewDate());
             }
         });
 
-        contractorField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                if (e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() != 1) return;
-                ContractorsElement contractorElement = seChoiсeDialog.showContractorsChoice();
-                if (contractorElement == null) {
-                    contractorField.setText("");
-                    logRequestSettings.setContractorId(null);
-                    return;
-                }
-
-                contractorField.setText(contractorElement.getName());
-                logRequestSettings.setContractorId(contractorElement.getId());
-            }
-        });
-
-        clearContractorBtn.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                contractorField.setText("");
-                logRequestSettings.setContractorId(null);
-            }
-        });
-
-        typeBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                int selectVal = typeBox.getSelectedIndex();
-                if (selectVal == 0) {
-                    logRequestSettings.setDocumentType(null);
-                    return;
-                }
-                if (selectVal == 1) {
-                    logRequestSettings.setDocumentType(COM);
-                    return;
-                }
-                if (selectVal == 2) {
-                    logRequestSettings.setDocumentType(CONS);
-                    return;
-                }
-            }
-        });
-
-        catalogField.addMouseListener(new MouseAdapter() {
+        //Обработчик щелчка по полю с именем из Каталога
+        catalogNameField.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() != 1) return;
                 CatalogElement catalogElement = seChoiсeDialog.showCatalogChoice();
                 if (catalogElement == null) {
-                    catalogField.setText("");
-                    logRequestSettings.setCatalogId(null);
+                    catalogNameField.setText("");
+                    catalogId = null;
                     return;
                 }
-
-                catalogField.setText(catalogElement.getName());
-                logRequestSettings.setCatalogId(catalogElement.getId());
+                catalogNameField.setText(catalogElement.getName());
+                catalogId = catalogElement.getId();
             }
         });
 
-        clearCatalogBtn.addActionListener(new ActionListener() {
+        //Обработчик щелчка по кнопке очистки
+        clearCatalogNameBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                catalogField.setText("");
-                logRequestSettings.setCatalogId(null);
+                catalogNameField.setText("");
+                catalogId = null;
             }
         });
 
+        //Обработчик щелчка по кнопке Сформировать
         startBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                actionHandler.showLogReportWithSettings(logRequestSettings);
+                actionHandler.showRemaindReportWithSettings(catalogId, endDate);
             }
         });
 
@@ -462,7 +352,7 @@ public class LogReportTable {
         return contentPane;
     }
 
-    public void refresh(ArrayList<LogElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
+    public void refresh(ArrayList<RemaindElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
         content = list;
         this.displayName = displayName;
         this.sortedColumn = sortedColumn;
@@ -490,7 +380,7 @@ public class LogReportTable {
 
         Row row = sheet.createRow(0);
 
-        int headerWidth = 7;
+        int headerWidth = 4;
         Cell nameCell = null;
         for (int i = 0; i < headerWidth; i++) {
             if (i == 0) {
@@ -517,7 +407,7 @@ public class LogReportTable {
         headerStyle.setAlignment(HorizontalAlignment.CENTER);
 
         row = sheet.createRow(1);
-        String[] columnNames = {"№ п/п", "№ док.", "Дата", "Контрагент", "Тип", "Наименование", "Количество"};
+        String[] columnNames = {"№ п/п", "№ в кат.", "Наименование", "Остаток"};
         Cell[] headerCells = new Cell[columnNames.length];
 
         for (int i = 0; i < columnNames.length; i++) {
@@ -534,22 +424,15 @@ public class LogReportTable {
         styleNumericCell.setAlignment(HorizontalAlignment.CENTER);
         styleNumericCell.setVerticalAlignment(VerticalAlignment.CENTER);
 
-        HSSFCellStyle styleTypeCell = workbook.createCellStyle();
-        styleTypeCell.setAlignment(HorizontalAlignment.CENTER);
-        styleTypeCell.setVerticalAlignment(VerticalAlignment.CENTER);
-
-        HSSFCellStyle styleDateCell = workbook.createCellStyle();
-        styleDateCell.setAlignment(HorizontalAlignment.CENTER);
-        styleDateCell.setVerticalAlignment(VerticalAlignment.CENTER);
+        HSSFCellStyle styleRemaindCell = workbook.createCellStyle();
+        styleRemaindCell.setVerticalAlignment(VerticalAlignment.CENTER);
 
         Cell cell;
-        LogElement logElement;
         int number = 1;
-        DateFormat dateFormat = DateFormat.getDateInstance();
-        Date date;
+        RemaindElement element;
         for (int index = 0; index < model.getRowCount(); index++) {
             row = sheet.createRow(index + 2);
-            logElement = (LogElement)model.getValueAt(index,0);
+            element = (RemaindElement) model.getValueAt(index, 0);
 
             //Столбец № п/п
             cell = row.createCell(0);
@@ -557,45 +440,26 @@ public class LogReportTable {
             cell.setCellStyle(styleNumericCell);
             number++;
 
-            //Столбец № док.
+            //Столбец Номер в каталоге
             cell = row.createCell(1);
-            cell.setCellValue(logElement.getDocumentId());
+            cell.setCellValue(element.getCatalogId());
             cell.setCellStyle(styleNumericCell);
-
-            //Столбец Дата документа
-            cell = row.createCell(2);
-            cell.setCellValue(dateFormat.format(logElement.getDate()));
-            cell.setCellStyle(styleDateCell);
-
-            //Столбец Контрагент
-            cell = row.createCell(3);
-            cell.setCellValue(logElement.getContractorName());
-            cell.setCellStyle(styleTextCell);
-
-            //Столбец Тип
-            cell = row.createCell(4);
-            cell.setCellValue(logElement.getDocumentType().getName());
-            cell.setCellStyle(styleTypeCell);
 
             //Столбец Наименование
-            cell = row.createCell(5);
-            cell.setCellValue(logElement.getCatalogName());
+            cell = row.createCell(2);
+            cell.setCellValue(element.getCatalogName());
             cell.setCellStyle(styleTextCell);
 
-            //Столбец Количество
-            cell = row.createCell(6);
-            cell.setCellValue(logElement.getCount());
-            cell.setCellStyle(styleNumericCell);
+            //Столбец Остаток
+            cell = row.createCell(3);
+            cell.setCellValue(element.getCount());
+            cell.setCellStyle(styleRemaindCell);
         }
 
-        //Расширяем столбцы, чтобы данные полностью в них помещались
         sheet.setColumnWidth(0, 3000);
         sheet.setColumnWidth(1, 3000);
-        sheet.setColumnWidth(2, 3000);
-        sheet.setColumnWidth(3, 10000);
-        sheet.setColumnWidth(4, 3000);
-        sheet.setColumnWidth(5, 10000);
-        sheet.setColumnWidth(6, 4000);
+        sheet.setColumnWidth(2, 10000);
+        sheet.setColumnWidth(3, 3000);
 
         return workbook;
     }
@@ -634,5 +498,6 @@ public class LogReportTable {
         }
         return date;
     }
+
 
 }

@@ -1,4 +1,4 @@
-package warehouse.data_components;
+package warehouse.data_components.data_elements;
 
 public class CatalogElement implements SimpleDataElement{
 

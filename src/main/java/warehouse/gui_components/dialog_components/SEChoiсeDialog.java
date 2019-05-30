@@ -1,7 +1,12 @@
-package warehouse.gui_components;
+package warehouse.gui_components.dialog_components;
 
 import warehouse.MainClass;
 import warehouse.data_components.*;
+import warehouse.data_components.data_elements.CatalogElement;
+import warehouse.data_components.data_elements.ContractorsElement;
+import warehouse.data_components.data_elements.SimpleDataElement;
+import warehouse.gui_components.SimpleDataTable;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;

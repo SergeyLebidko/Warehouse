@@ -1,4 +1,4 @@
-package warehouse.gui_components;
+package warehouse.gui_components.report_components;
 
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.DatePickerSettings;
@@ -13,9 +13,10 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
 import warehouse.ActionHandler;
 import warehouse.MainClass;
-import warehouse.data_components.CatalogElement;
+import warehouse.data_components.data_elements.CatalogElement;
 import warehouse.data_components.SortOrders;
-import warehouse.data_components.TurnElement;
+import warehouse.data_components.data_elements.TurnElement;
+import warehouse.gui_components.dialog_components.SEChoiсeDialog;
 
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;

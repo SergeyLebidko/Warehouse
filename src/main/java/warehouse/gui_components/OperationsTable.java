@@ -1,6 +1,6 @@
 package warehouse.gui_components;
 
-import warehouse.data_components.Operation;
+import warehouse.data_components.data_elements.Operation;
 import warehouse.data_components.SortOrders;
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;

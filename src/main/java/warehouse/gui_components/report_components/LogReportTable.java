@@ -1,7 +1,6 @@
-package warehouse.gui_components;
+package warehouse.gui_components.report_components;
 
 import com.github.lgooddatepicker.components.DatePicker;
-import com.github.lgooddatepicker.components.DatePickerSettings;
 import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
 import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -13,30 +12,37 @@ import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.ss.util.RegionUtil;
 import warehouse.ActionHandler;
 import warehouse.MainClass;
-import warehouse.data_components.CatalogElement;
-import warehouse.data_components.RemaindElement;
-import warehouse.data_components.SortOrders;
+import warehouse.data_components.*;
+import warehouse.data_components.data_elements.CatalogElement;
+import warehouse.data_components.data_elements.ContractorsElement;
+import warehouse.data_components.data_elements.LogElement;
+import warehouse.data_components.data_elements.LogRequestSettings;
+import warehouse.gui_components.dialog_components.SEChoiсeDialog;
+
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;
 import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
+import java.text.DateFormat;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.Date;
 
-import static warehouse.data_components.SortOrders.*;
+import static warehouse.data_components.DocumentTypes.*;
 import static warehouse.ResourcesList.*;
+import static warehouse.data_components.SortOrders.*;
 
-public class RemaindReportTable {
+public class LogReportTable {
 
-    private static final int MAX_WIDTH_NUMBER_COLUMN = 170;
-    private static final int MIN_WIDTH_NUMBER_COLUMN = 130;
+    private static final int MAX_WIDTH_NUMBER_COLUMN = 140;
+    private static final int MIN_WIDTH_NUMBER_COLUMN = 100;
+    private static final int MAX_WIDTH_DATE_COLUMN = 220;
+    private static final int MIN_WIDTH_DATE_COLUMN = 120;
+    private static final int MAX_WIDTH_TYPE_COLUMN = 120;
+    private static final int MIN_WIDTH_TYPE_COLUMN = 100;
 
     private ActionHandler actionHandler;
 
@@ -47,12 +53,14 @@ public class RemaindReportTable {
     private JTable table;
     private SEChoiсeDialog seChoiсeDialog;
 
+    private DatePicker beginDatePicker;
     private DatePicker endDatePicker;
-    private JTextField catalogNameField;
-
-    private Date endDate;
-    private Integer catalogId;
-    private JButton clearCatalogNameBtn;
+    private JTextField contractorField;
+    private JButton clearContractorBtn;
+    private JComboBox typeBox;
+    private JTextField catalogField;
+    private JButton clearCatalogBtn;
+    private LogRequestSettings logRequestSettings;
 
     private JButton startBtn;
 
@@ -62,25 +70,42 @@ public class RemaindReportTable {
     private String displayName;
     private int sortedColumn;
     private SortOrders sortOrder;
-    private RemaindElementComparator remaindElementComparator;
+    private LogElementComparator logElementComparator;
 
-    private ArrayList<RemaindElement> content;
+    private ArrayList<LogElement> content;
 
-    private class RemaindElementComparator implements Comparator<RemaindElement> {
+    private class LogElementComparator implements Comparator<LogElement> {
 
         @Override
-        public int compare(RemaindElement o1, RemaindElement o2) {
+        public int compare(LogElement o1, LogElement o2) {
             if (sortedColumn == 0) {
-                Integer id1 = o1.getCatalogId();
-                Integer id2 = o2.getCatalogId();
-                return sortOrder.getMul() * id1.compareTo(id2);
+                Integer documentId1 = o1.getDocumentId();
+                Integer documentId2 = o2.getDocumentId();
+                return sortOrder.getMul() * documentId1.compareTo(documentId2);
             }
             if (sortedColumn == 1) {
-                String name1 = o1.getCatalogName();
-                String name2 = o2.getCatalogName();
-                return sortOrder.getMul() * name1.compareTo(name2);
+                Date date1 = o1.getDate();
+                Date date2 = o2.getDate();
+                return sortOrder.getMul() * date1.compareTo(date2);
             }
             if (sortedColumn == 2) {
+                String contractorName1 = o1.getContractorName();
+                String contractorName2 = o2.getContractorName();
+                return sortOrder.getMul() * contractorName1.compareTo(contractorName2);
+            }
+            if (sortedColumn == 3) {
+                DocumentTypes type1 = o1.getDocumentType();
+                DocumentTypes type2 = o2.getDocumentType();
+                if (type1 == type2) return 0;
+                if (type1 == COM & type2 == CONS) return sortOrder.getMul() * 1;
+                if (type1 == CONS & type2 == COM) return sortOrder.getMul() * (-1);
+            }
+            if (sortedColumn == 4) {
+                String catalogName1 = o1.getCatalogName();
+                String catalogName2 = o2.getCatalogName();
+                return sortOrder.getMul() * catalogName1.compareTo(catalogName2);
+            }
+            if (sortedColumn == 5) {
                 Integer count1 = o1.getCount();
                 Integer count2 = o2.getCount();
                 return sortOrder.getMul() * count1.compareTo(count2);
@@ -97,14 +122,14 @@ public class RemaindReportTable {
 
         public Model() {
             rowCount = 0;
-            columnCount = 3;
+            columnCount = 6;
             statusLab.setText("Строки: " + rowCount);
         }
 
         public void refresh() {
             if (content == null) return;
 
-            content.sort(remaindElementComparator);
+            content.sort(logElementComparator);
 
             rowCount = content.size();
             statusLab.setText("Строки: " + rowCount);
@@ -135,16 +160,29 @@ public class RemaindReportTable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JLabel lab = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            RemaindElement element = (RemaindElement) value;
+            DateFormat dateFormat = DateFormat.getDateInstance();
+            LogElement element = (LogElement) value;
             if (column == 0) {
-                lab.setText(element.getCatalogId() + "");
+                lab.setText(element.getDocumentId() + "");
                 lab.setHorizontalAlignment(SwingConstants.CENTER);
             }
             if (column == 1) {
+                lab.setText(dateFormat.format(element.getDate()));
+                lab.setHorizontalAlignment(SwingConstants.CENTER);
+            }
+            if (column == 2) {
+                lab.setText(element.getContractorName());
+                lab.setHorizontalAlignment(SwingConstants.LEFT);
+            }
+            if (column == 3) {
+                lab.setText(element.getDocumentType().getName());
+                lab.setHorizontalAlignment(SwingConstants.CENTER);
+            }
+            if (column == 4) {
                 lab.setText(element.getCatalogName());
                 lab.setHorizontalAlignment(SwingConstants.LEFT);
             }
-            if (column == 2) {
+            if (column == 5) {
                 lab.setText(element.getCount() + "");
                 lab.setHorizontalAlignment(SwingConstants.CENTER);
             }
@@ -171,12 +209,21 @@ public class RemaindReportTable {
             lab.setBackground(headerColor);
 
             if (column == 0) {
-                lab.setText("№ в кат.");
+                lab.setText("№ док.");
             }
             if (column == 1) {
-                lab.setText("Наименование");
+                lab.setText("Дата");
             }
             if (column == 2) {
+                lab.setText("Контрагент");
+            }
+            if (column == 3) {
+                lab.setText("Тип");
+            }
+            if (column == 4) {
+                lab.setText("Наименование");
+            }
+            if (column == 5) {
                 lab.setText("Количество");
             }
 
@@ -207,7 +254,7 @@ public class RemaindReportTable {
 
     }
 
-    public RemaindReportTable() {
+    public LogReportTable() {
         createFields();
         createActionListeners();
     }
@@ -215,6 +262,7 @@ public class RemaindReportTable {
     private void createFields() {
         actionHandler = MainClass.getActionHandler();
         seChoiсeDialog = new SEChoiсeDialog();
+        logRequestSettings = new LogRequestSettings();
 
         contentPane = new JPanel(new BorderLayout(5, 5));
         contentPane.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
@@ -234,8 +282,12 @@ public class RemaindReportTable {
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getColumnModel().getColumn(0).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
         table.getColumnModel().getColumn(0).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
-        table.getColumnModel().getColumn(2).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
-        table.getColumnModel().getColumn(2).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(1).setMaxWidth(MAX_WIDTH_DATE_COLUMN);
+        table.getColumnModel().getColumn(1).setMinWidth(MIN_WIDTH_DATE_COLUMN);
+        table.getColumnModel().getColumn(3).setMaxWidth(MAX_WIDTH_TYPE_COLUMN);
+        table.getColumnModel().getColumn(3).setMinWidth(MIN_WIDTH_TYPE_COLUMN);
+        table.getColumnModel().getColumn(5).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(5).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
 
         JPanel topPane = new JPanel();
         topPane.setLayout(new BorderLayout(5, 5));
@@ -247,30 +299,51 @@ public class RemaindReportTable {
 
         Box parametersBox = Box.createHorizontalBox();
 
-        DatePickerSettings datePickerSettings = new DatePickerSettings();
-        datePickerSettings.setAllowEmptyDates(false);
-        endDatePicker = new DatePicker(datePickerSettings);
-        endDatePicker.setDateToToday();
+        beginDatePicker = new DatePicker();
+        beginDatePicker.getComponentDateTextField().setEditable(false);
+
+        endDatePicker = new DatePicker();
         endDatePicker.getComponentDateTextField().setEditable(false);
 
-        catalogNameField = new JTextField(50);
-        catalogNameField.setFont(mainFont);
-        catalogNameField.setEditable(false);
+        contractorField = new JTextField(20);
+        contractorField.setEditable(false);
+        contractorField.setFont(mainFont);
 
-        clearCatalogNameBtn = new JButton(removeFilterIcon);
+        clearContractorBtn = new JButton(removeFilterIcon);
+
+        typeBox = new JComboBox(new Object[]{"Все", COM.getName(), CONS.getName()});
+
+        catalogField = new JTextField(20);
+        catalogField.setEditable(false);
+        catalogField.setFont(mainFont);
+
+        clearCatalogBtn = new JButton(removeFilterIcon);
 
         startBtn = new JButton(toFormBtnText, toFormIcon);
         startBtn.setToolTipText(getToFormBtnToolTip);
 
-        parametersBox.add(new JLabel("На дату:"));
+        parametersBox.add(new JLabel("С:"));
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(beginDatePicker);
+        parametersBox.add(new JLabel("По:"));
         parametersBox.add(Box.createHorizontalStrut(5));
         parametersBox.add(endDatePicker);
         parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(new JLabel("Контрагент:"));
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(contractorField);
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(clearContractorBtn);
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(new JLabel("Тип:"));
+        parametersBox.add(Box.createHorizontalStrut(5));
+        parametersBox.add(typeBox);
+        parametersBox.add(Box.createHorizontalStrut(5));
         parametersBox.add(new JLabel("Наименование:"));
         parametersBox.add(Box.createHorizontalStrut(5));
-        parametersBox.add(catalogNameField);
+        parametersBox.add(catalogField);
         parametersBox.add(Box.createHorizontalStrut(5));
-        parametersBox.add(clearCatalogNameBtn);
+        parametersBox.add(clearCatalogBtn);
         parametersBox.add(Box.createHorizontalStrut(15));
         parametersBox.add(startBtn);
 
@@ -283,52 +356,97 @@ public class RemaindReportTable {
 
         displayName = "";
         sortedColumn = 0;
-        catalogId = null;
-        endDate = new Date();
         sortOrder = NO_ORDER;
-        remaindElementComparator = new RemaindElementComparator();
+        logElementComparator = new LogElementComparator();
     }
 
     private void createActionListeners() {
 
-        //Обработчик изменения даты
-        endDatePicker.addDateChangeListener(new DateChangeListener() {
+        beginDatePicker.addDateChangeListener(new DateChangeListener() {
             @Override
-            public void dateChanged(DateChangeEvent event) {
-                endDate = convertLocalDateToDate(event.getNewDate());
+            public void dateChanged(DateChangeEvent dateChangeEvent) {
+                logRequestSettings.setBeginDate(convertLocalDateToDate(dateChangeEvent.getNewDate()));
             }
         });
 
-        //Обработчик щелчка по полю с именем из Каталога
-        catalogNameField.addMouseListener(new MouseAdapter() {
+        endDatePicker.addDateChangeListener(new DateChangeListener() {
+            @Override
+            public void dateChanged(DateChangeEvent dateChangeEvent) {
+                logRequestSettings.setEndDate(convertLocalDateToDate(dateChangeEvent.getNewDate()));
+            }
+        });
+
+        contractorField.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() != 1) return;
+                ContractorsElement contractorElement = seChoiсeDialog.showContractorsChoice();
+                if (contractorElement == null) {
+                    contractorField.setText("");
+                    logRequestSettings.setContractorId(null);
+                    return;
+                }
+
+                contractorField.setText(contractorElement.getName());
+                logRequestSettings.setContractorId(contractorElement.getId());
+            }
+        });
+
+        clearContractorBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                contractorField.setText("");
+                logRequestSettings.setContractorId(null);
+            }
+        });
+
+        typeBox.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectVal = typeBox.getSelectedIndex();
+                if (selectVal == 0) {
+                    logRequestSettings.setDocumentType(null);
+                    return;
+                }
+                if (selectVal == 1) {
+                    logRequestSettings.setDocumentType(COM);
+                    return;
+                }
+                if (selectVal == 2) {
+                    logRequestSettings.setDocumentType(CONS);
+                    return;
+                }
+            }
+        });
+
+        catalogField.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() != 1) return;
                 CatalogElement catalogElement = seChoiсeDialog.showCatalogChoice();
                 if (catalogElement == null) {
-                    catalogNameField.setText("");
-                    catalogId = null;
+                    catalogField.setText("");
+                    logRequestSettings.setCatalogId(null);
                     return;
                 }
-                catalogNameField.setText(catalogElement.getName());
-                catalogId = catalogElement.getId();
+
+                catalogField.setText(catalogElement.getName());
+                logRequestSettings.setCatalogId(catalogElement.getId());
             }
         });
 
-        //Обработчик щелчка по кнопке очистки
-        clearCatalogNameBtn.addActionListener(new ActionListener() {
+        clearCatalogBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                catalogNameField.setText("");
-                catalogId = null;
+                catalogField.setText("");
+                logRequestSettings.setCatalogId(null);
             }
         });
 
-        //Обработчик щелчка по кнопке Сформировать
         startBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                actionHandler.showRemaindReportWithSettings(catalogId, endDate);
+                actionHandler.showLogReportWithSettings(logRequestSettings);
             }
         });
 
@@ -350,7 +468,7 @@ public class RemaindReportTable {
         return contentPane;
     }
 
-    public void refresh(ArrayList<RemaindElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
+    public void refresh(ArrayList<LogElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
         content = list;
         this.displayName = displayName;
         this.sortedColumn = sortedColumn;
@@ -378,7 +496,7 @@ public class RemaindReportTable {
 
         Row row = sheet.createRow(0);
 
-        int headerWidth = 4;
+        int headerWidth = 7;
         Cell nameCell = null;
         for (int i = 0; i < headerWidth; i++) {
             if (i == 0) {
@@ -405,7 +523,7 @@ public class RemaindReportTable {
         headerStyle.setAlignment(HorizontalAlignment.CENTER);
 
         row = sheet.createRow(1);
-        String[] columnNames = {"№ п/п", "№ в кат.", "Наименование", "Остаток"};
+        String[] columnNames = {"№ п/п", "№ док.", "Дата", "Контрагент", "Тип", "Наименование", "Количество"};
         Cell[] headerCells = new Cell[columnNames.length];
 
         for (int i = 0; i < columnNames.length; i++) {
@@ -422,15 +540,22 @@ public class RemaindReportTable {
         styleNumericCell.setAlignment(HorizontalAlignment.CENTER);
         styleNumericCell.setVerticalAlignment(VerticalAlignment.CENTER);
 
-        HSSFCellStyle styleRemaindCell = workbook.createCellStyle();
-        styleRemaindCell.setVerticalAlignment(VerticalAlignment.CENTER);
+        HSSFCellStyle styleTypeCell = workbook.createCellStyle();
+        styleTypeCell.setAlignment(HorizontalAlignment.CENTER);
+        styleTypeCell.setVerticalAlignment(VerticalAlignment.CENTER);
+
+        HSSFCellStyle styleDateCell = workbook.createCellStyle();
+        styleDateCell.setAlignment(HorizontalAlignment.CENTER);
+        styleDateCell.setVerticalAlignment(VerticalAlignment.CENTER);
 
         Cell cell;
+        LogElement logElement;
         int number = 1;
-        RemaindElement element;
+        DateFormat dateFormat = DateFormat.getDateInstance();
+        Date date;
         for (int index = 0; index < model.getRowCount(); index++) {
             row = sheet.createRow(index + 2);
-            element = (RemaindElement) model.getValueAt(index, 0);
+            logElement = (LogElement)model.getValueAt(index,0);
 
             //Столбец № п/п
             cell = row.createCell(0);
@@ -438,26 +563,45 @@ public class RemaindReportTable {
             cell.setCellStyle(styleNumericCell);
             number++;
 
-            //Столбец Номер в каталоге
+            //Столбец № док.
             cell = row.createCell(1);
-            cell.setCellValue(element.getCatalogId());
+            cell.setCellValue(logElement.getDocumentId());
             cell.setCellStyle(styleNumericCell);
 
-            //Столбец Наименование
+            //Столбец Дата документа
             cell = row.createCell(2);
-            cell.setCellValue(element.getCatalogName());
+            cell.setCellValue(dateFormat.format(logElement.getDate()));
+            cell.setCellStyle(styleDateCell);
+
+            //Столбец Контрагент
+            cell = row.createCell(3);
+            cell.setCellValue(logElement.getContractorName());
             cell.setCellStyle(styleTextCell);
 
-            //Столбец Остаток
-            cell = row.createCell(3);
-            cell.setCellValue(element.getCount());
-            cell.setCellStyle(styleRemaindCell);
+            //Столбец Тип
+            cell = row.createCell(4);
+            cell.setCellValue(logElement.getDocumentType().getName());
+            cell.setCellStyle(styleTypeCell);
+
+            //Столбец Наименование
+            cell = row.createCell(5);
+            cell.setCellValue(logElement.getCatalogName());
+            cell.setCellStyle(styleTextCell);
+
+            //Столбец Количество
+            cell = row.createCell(6);
+            cell.setCellValue(logElement.getCount());
+            cell.setCellStyle(styleNumericCell);
         }
 
+        //Расширяем столбцы, чтобы данные полностью в них помещались
         sheet.setColumnWidth(0, 3000);
         sheet.setColumnWidth(1, 3000);
-        sheet.setColumnWidth(2, 10000);
-        sheet.setColumnWidth(3, 3000);
+        sheet.setColumnWidth(2, 3000);
+        sheet.setColumnWidth(3, 10000);
+        sheet.setColumnWidth(4, 3000);
+        sheet.setColumnWidth(5, 10000);
+        sheet.setColumnWidth(6, 4000);
 
         return workbook;
     }
@@ -496,6 +640,5 @@ public class RemaindReportTable {
         }
         return date;
     }
-
 
 }

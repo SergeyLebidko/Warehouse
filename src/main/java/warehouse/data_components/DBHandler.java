@@ -1,6 +1,7 @@
 package warehouse.data_components;
 
 import org.sqlite.date.DateFormatUtils;
+import warehouse.data_components.data_elements.*;
 
 import java.sql.*;
 import java.util.ArrayList;

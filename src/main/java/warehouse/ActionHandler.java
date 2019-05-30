@@ -3,8 +3,14 @@ package warehouse;
 import javax.swing.*;
 
 import org.apache.poi.hssf.usermodel.HSSFWorkbook;
+import warehouse.data_components.data_elements.*;
 import warehouse.gui_components.*;
 import warehouse.data_components.*;
+import warehouse.gui_components.dialog_components.DocumentDialog;
+import warehouse.gui_components.report_components.LogReportTable;
+import warehouse.gui_components.report_components.RemaindReportTable;
+import warehouse.gui_components.report_components.TurnReportTable;
+
 import java.awt.*;
 import java.io.File;
 import java.io.FileOutputStream;

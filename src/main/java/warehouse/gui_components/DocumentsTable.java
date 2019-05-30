@@ -13,6 +13,8 @@ import org.apache.poi.ss.util.RegionUtil;
 import warehouse.ActionHandler;
 import warehouse.MainClass;
 import warehouse.data_components.*;
+import warehouse.data_components.data_elements.Document;
+
 import javax.swing.*;
 import javax.swing.border.EtchedBorder;
 import javax.swing.table.AbstractTableModel;

@@ -1,4 +1,4 @@
-package warehouse.gui_components;
+package warehouse.gui_components.dialog_components;
 
 import com.github.lgooddatepicker.components.DatePicker;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
@@ -8,8 +8,10 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import warehouse.ActionHandler;
 import warehouse.MainClass;
-import warehouse.data_components.Document;
-import warehouse.data_components.Operation;
+import warehouse.data_components.data_elements.Document;
+import warehouse.data_components.data_elements.Operation;
+import warehouse.gui_components.OperationsTable;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
