@@ -7,6 +7,7 @@ import warehouse.data_components.data_elements.*;
 import warehouse.gui_components.*;
 import warehouse.data_components.*;
 import warehouse.gui_components.dialog_components.DocumentDialog;
+import warehouse.gui_components.report_components.DeliveryReportTable;
 import warehouse.gui_components.report_components.LogReportTable;
 import warehouse.gui_components.report_components.RemaindReportTable;
 import warehouse.gui_components.report_components.TurnReportTable;
@@ -31,6 +32,7 @@ public class ActionHandler {
     private static final String DOCUMENTS_LIST_DATASET = "documents list";
     private static final String REMAIND_REPORT_DATASET = "remaind report";
     private static final String TURN_REPORT_DATASET = "turn report";
+    private static final String DELIVERY_REPORT_DATASET = "delivery report";
     private static final String LOG_REPORT_DATASET = "log report";
 
     private DBHandler dbHandler;
@@ -45,6 +47,7 @@ public class ActionHandler {
     private DocumentsTable documentsTable;
     private RemaindReportTable remaindReportTable;
     private TurnReportTable turnReportTable;
+    private DeliveryReportTable deliveryReportTable;
     private LogReportTable logReportTable;
 
     private DocumentDialog documentDialog;
@@ -60,7 +63,9 @@ public class ActionHandler {
         contractorsTable = new SimpleDataTable();
         documentsTable = new DocumentsTable();
         remaindReportTable = new RemaindReportTable();
+        deliveryReportTable = new DeliveryReportTable();
         turnReportTable = new TurnReportTable();
+
         logReportTable = new LogReportTable();
 
         //Добавляем созданные панели в менеджер расположения
@@ -72,6 +77,7 @@ public class ActionHandler {
         cardPane.add(documentsTable.getVisualComponent(), DOCUMENTS_LIST_DATASET);
         cardPane.add(remaindReportTable.getVisualComponent(), REMAIND_REPORT_DATASET);
         cardPane.add(turnReportTable.getVisualComponent(), TURN_REPORT_DATASET);
+        cardPane.add(deliveryReportTable.getVisualComponent(), DELIVERY_REPORT_DATASET);
         cardPane.add(logReportTable.getVisualComponent(), LOG_REPORT_DATASET);
         state = NO_DATASET;
 
@@ -123,18 +129,18 @@ public class ActionHandler {
         documentDialog.showDocument(document);
     }
 
-    public void showRemaindReport(){
+    public void showRemaindReport() {
         ArrayList<RemaindElement> list = new ArrayList<>();
         remaindReportTable.refresh(list, "Остатки", 0, NO_ORDER);
         state = REMAIND_REPORT_DATASET;
         cardLayout.show(cardPane, state);
     }
 
-    public void showRemaindReportWithSettings(Integer catalogId, Date endDate){
+    public void showRemaindReportWithSettings(Integer catalogId, Date endDate) {
         ArrayList<RemaindElement> list;
         try {
             list = dbHandler.getRemaindElements(catalogId, endDate);
-        }catch (SQLException e){
+        } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, failRemaindReportAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
@@ -143,24 +149,44 @@ public class ActionHandler {
         remaindReportTable.refresh(list, "Остатки", 1, TO_UP);
     }
 
-    public void showTurnReport(){
+    public void showTurnReport() {
         ArrayList<TurnElement> list = new ArrayList<>();
         turnReportTable.refresh(list, "Обороты", 0, NO_ORDER);
         state = TURN_REPORT_DATASET;
         cardLayout.show(cardPane, state);
     }
 
-    public void showTurnReportWithSettings(Date beginDate, Date endDate, Integer catalogId){
+    public void showTurnReportWithSettings(Date beginDate, Date endDate, Integer catalogId) {
         ArrayList<TurnElement> list;
-        try{
+        try {
             list = dbHandler.getTurnElements(beginDate, endDate, catalogId);
-        }catch (SQLException e){
-            JOptionPane.showMessageDialog(null, failRemaindReportAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, failTurnReportAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
         state = TURN_REPORT_DATASET;
         cardLayout.show(cardPane, state);
         turnReportTable.refresh(list, "Обороты", 1, TO_UP);
+    }
+
+    public void showDeliveryReport() {
+        ArrayList<DeliveryElement> list = new ArrayList<>();
+        deliveryReportTable.refresh(list, "Обороты с контагентом", 0, NO_ORDER);
+        state = DELIVERY_REPORT_DATASET;
+        cardLayout.show(cardPane, state);
+    }
+
+    public void showDeliveryReportWithSettings(Date beginDate, Date endDate, Integer catalogId) {
+        ArrayList<DeliveryElement> list;
+        try {
+            list = dbHandler.getDeliveryElements(beginDate, endDate, catalogId);
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, failDeliveryReportAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        state = DELIVERY_REPORT_DATASET;
+        cardLayout.show(cardPane, state);
+        deliveryReportTable.refresh(list, "Обороты с контрагентом", 1, TO_UP);
     }
 
     public void showLogReport() {
@@ -203,15 +229,15 @@ public class ActionHandler {
             workbook = documentsTable.getExcelWorkbook();
             name = "Документы";
         }
-        if (state.equals(REMAIND_REPORT_DATASET)){
+        if (state.equals(REMAIND_REPORT_DATASET)) {
             workbook = remaindReportTable.getExcelWorkbook();
             name = "Остатки";
         }
-        if (state.equals(TURN_REPORT_DATASET)){
+        if (state.equals(TURN_REPORT_DATASET)) {
             workbook = turnReportTable.getExcelWorkbook();
             name = "Обороты";
         }
-        if (state.equals(LOG_REPORT_DATASET)){
+        if (state.equals(LOG_REPORT_DATASET)) {
             workbook = logReportTable.getExcelWorkbook();
             name = "Журнал операций";
         }

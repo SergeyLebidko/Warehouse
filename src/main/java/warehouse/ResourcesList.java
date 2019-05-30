@@ -81,6 +81,7 @@ public class ResourcesList {
     public static final String openDocumentsItemText = "Документы";
     public static final String reportRemainderItemText = "Отчет по остаткам";
     public static final String reportTurnItemText = "Отчет по оборотам";
+    public static final String reportDeliveryItemText = "Отчет по оборотам с контрагентом";
     public static final String reportLogItemText = "Журнал операций";
 
     //Общие параметры для табличных компонентов
@@ -98,7 +99,8 @@ public class ResourcesList {
     public static final String failDocumentsAccess = "Не удалось получить список документов. Ошибка:";
     public static final String failExportXLSFile = "Не удалось записать файл на диск. Ошибка:";
     public static final String failRemaindReportAccess = "Не удалось сформировать данные по остаткам. Ошибка:";
-    public static final String failTurnreportAccess = "Не удалось сформировать отчет по оборотам. Ошибка:";
+    public static final String failTurnReportAccess = "Не удалось сформировать отчет по оборотам. Ошибка:";
+    public static final String failDeliveryReportAccess = "Не удалось сформировать отчет по оборотам с контрагентом. Ошибка:";
     public static final String failLogReportAccess = "Не удалось получить данные Журнала операций. Ошибка:";
 
     //Главный шрифт приложения (для таблиц, полей ввода и меню)

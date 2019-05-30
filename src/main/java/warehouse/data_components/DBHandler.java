@@ -212,6 +212,10 @@ public class DBHandler {
         return list;
     }
 
+    public ArrayList<DeliveryElement> getDeliveryElements(Date beginDate, Date endDate, Integer catalogId) throws SQLException{
+        return null;
+    }
+
     public ArrayList<LogElement> getLogElements(LogRequestSettings requestSettings) throws SQLException {
         ArrayList<LogElement> list = new ArrayList<>();
         String query = "SELECT DOCUMENTS.ID, DOCUMENTS.DATE, CONTRACTORS.NAME, DOCUMENTS.TYPE, CATALOG.NAME, OPERATIONS.COUNT " +

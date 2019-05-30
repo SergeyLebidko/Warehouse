@@ -143,15 +143,22 @@ public class GUI {
 
     private void createReportMenu() {
         reportMenu = new JPopupMenu();
+
         JMenuItem reportRemainderItem = new JMenuItem(reportRemainderItemText);
         reportRemainderItem.setFont(mainFont);
+
         JMenuItem reportTurnItem = new JMenuItem(reportTurnItemText);
         reportTurnItem.setFont(mainFont);
+
+        JMenuItem reportDeliveryItem = new JMenuItem(reportDeliveryItemText);
+        reportDeliveryItem.setFont(mainFont);
+
         JMenuItem reportLogItem = new JMenuItem(reportLogItemText);
         reportLogItem.setFont(mainFont);
 
         reportMenu.add(reportRemainderItem);
         reportMenu.add(reportTurnItem);
+        reportMenu.add(reportDeliveryItem);
         reportMenu.add(reportLogItem);
 
         reportRemainderItem.addActionListener(new ActionListener() {
@@ -165,6 +172,13 @@ public class GUI {
             @Override
             public void actionPerformed(ActionEvent e) {
                 actionHandler.showTurnReport();
+            }
+        });
+
+        reportDeliveryItem.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actionHandler.showDeliveryReport();
             }
         });
 

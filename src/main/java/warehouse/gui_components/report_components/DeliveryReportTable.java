@@ -4,18 +4,11 @@ import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.DatePickerSettings;
 import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
 import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
-import org.apache.poi.hssf.usermodel.HSSFCellStyle;
-import org.apache.poi.hssf.usermodel.HSSFFont;
-import org.apache.poi.hssf.usermodel.HSSFSheet;
-import org.apache.poi.hssf.usermodel.HSSFWorkbook;
-import org.apache.poi.ss.usermodel.*;
-import org.apache.poi.ss.util.CellRangeAddress;
-import org.apache.poi.ss.util.RegionUtil;
 import warehouse.ActionHandler;
 import warehouse.MainClass;
-import warehouse.data_components.data_elements.CatalogElement;
 import warehouse.data_components.SortOrders;
-import warehouse.data_components.data_elements.TurnElement;
+import warehouse.data_components.data_elements.ContractorsElement;
+import warehouse.data_components.data_elements.DeliveryElement;
 import warehouse.gui_components.dialog_components.SEChoiсeDialog;
 
 import javax.swing.*;
@@ -35,14 +28,10 @@ import java.util.Date;
 import static warehouse.data_components.SortOrders.*;
 import static warehouse.ResourcesList.*;
 
-public class TurnReportTable {
+public class DeliveryReportTable {
 
     private static final int MAX_WIDTH_NUMBER_COLUMN = 140;
     private static final int MIN_WIDTH_NUMBER_COLUMN = 100;
-    private static final int MAX_WIDTH_START_VAL_COLUMN = 170;
-    private static final int MIN_WIDTH_START_VAL_COLUMN = 140;
-    private static final int MAX_WIDTH_END_VAL_COLUMN = 170;
-    private static final int MIN_WIDTH_END_VAL_COLUMN = 140;
 
     private ActionHandler actionHandler;
 
@@ -55,14 +44,13 @@ public class TurnReportTable {
 
     private DatePicker beginDatePicker;
     private DatePicker endDatePicker;
-    private JTextField catalogNameField;
-    private JButton clearCatalogNameBtn;
+    private JTextField contractorNameField;
+    private JButton clearContractorFieldBtn;
+    private JButton startBtn;
 
     private Date beginDate;
     private Date endDate;
-    private Integer catalogId;
-
-    private JButton startBtn;
+    private Integer contractorId;
 
     private JLabel statusLab;
     private JLabel nameLab;
@@ -70,14 +58,14 @@ public class TurnReportTable {
     private String displayName;
     private int sortedColumn;
     private SortOrders sortOrder;
-    private TurnElementComparator turnElementComparator;
+    private DeliveryElementComparator deliveryElementComparator;
 
-    private ArrayList<TurnElement> content;
+    private ArrayList<DeliveryElement> content;
 
-    private class TurnElementComparator implements Comparator<TurnElement> {
+    private class DeliveryElementComparator implements Comparator<DeliveryElement> {
 
         @Override
-        public int compare(TurnElement o1, TurnElement o2) {
+        public int compare(DeliveryElement o1, DeliveryElement o2) {
             if (sortedColumn == 0) {
                 Integer id1 = o1.getCatalogId();
                 Integer id2 = o2.getCatalogId();
@@ -91,20 +79,12 @@ public class TurnReportTable {
             Integer i1, i2;
             i1 = i2 = null;
             if (sortedColumn == 2) {
-                i1 = o1.getBeginCount();
-                i2 = o2.getBeginCount();
+                i1 = o1.getInc();
+                i2 = o2.getInc();
             }
             if (sortedColumn == 3) {
-                i1 = o1.getIncCount();
-                i2 = o2.getIncCount();
-            }
-            if (sortedColumn == 4) {
-                i1 = o1.getDecCount();
-                i2 = o2.getDecCount();
-            }
-            if (sortedColumn == 5) {
-                i1 = o1.getEndCount();
-                i2 = o2.getEndCount();
+                i1 = o1.getDec();
+                i2 = o2.getDec();
             }
             if (i1 == null) i1 = 0;
             if (i2 == null) i2 = 0;
@@ -120,14 +100,14 @@ public class TurnReportTable {
 
         public Model() {
             rowCount = 0;
-            columnCount = 6;
+            columnCount = 4;
             statusLab.setText("Строки: " + rowCount);
         }
 
         public void refresh() {
             if (content == null) return;
 
-            content.sort(turnElementComparator);
+            content.sort(deliveryElementComparator);
 
             rowCount = content.size();
             statusLab.setText("Строки: " + rowCount);
@@ -158,7 +138,7 @@ public class TurnReportTable {
         public Component getTableCellRendererComponent(JTable table, Object value, boolean isSelected, boolean hasFocus, int row, int column) {
             JLabel lab = (JLabel) super.getTableCellRendererComponent(table, value, isSelected, hasFocus, row, column);
 
-            TurnElement element = (TurnElement) value;
+            DeliveryElement element = (DeliveryElement) value;
             if (column == 0) {
                 lab.setText(element.getCatalogId() + "");
                 lab.setHorizontalAlignment(SwingConstants.CENTER);
@@ -168,19 +148,11 @@ public class TurnReportTable {
                 lab.setHorizontalAlignment(SwingConstants.LEFT);
             }
             if (column == 2) {
-                lab.setText((element.getBeginCount() == null ? "" : element.getBeginCount()) + "");
+                lab.setText((element.getInc() == null ? "" : element.getInc()) + "");
                 lab.setHorizontalAlignment(SwingConstants.CENTER);
             }
             if (column == 3) {
-                lab.setText((element.getIncCount() == null ? "" : element.getIncCount()) + "");
-                lab.setHorizontalAlignment(SwingConstants.CENTER);
-            }
-            if (column == 4) {
-                lab.setText((element.getDecCount() == null ? "" : element.getDecCount()) + "");
-                lab.setHorizontalAlignment(SwingConstants.CENTER);
-            }
-            if (column == 5) {
-                lab.setText(element.getEndCount() + "");
+                lab.setText((element.getDec() == null ? "" : element.getDec()) + "");
                 lab.setHorizontalAlignment(SwingConstants.CENTER);
             }
 
@@ -212,16 +184,10 @@ public class TurnReportTable {
                 lab.setText("Наименование");
             }
             if (column == 2) {
-                lab.setText("Ост. на начало");
-            }
-            if (column == 3) {
                 lab.setText("Приход");
             }
-            if (column == 4) {
+            if (column == 3) {
                 lab.setText("Расход");
-            }
-            if (column == 5) {
-                lab.setText("Ост. на конец");
             }
 
             lab.setBorder(BorderFactory.createEtchedBorder(EtchedBorder.LOWERED));
@@ -251,7 +217,7 @@ public class TurnReportTable {
 
     }
 
-    public TurnReportTable() {
+    public DeliveryReportTable() {
         createFields();
         createActionListeners();
     }
@@ -278,14 +244,10 @@ public class TurnReportTable {
         table.getSelectionModel().setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         table.getColumnModel().getColumn(0).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
         table.getColumnModel().getColumn(0).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
-        table.getColumnModel().getColumn(2).setMaxWidth(MAX_WIDTH_START_VAL_COLUMN);
-        table.getColumnModel().getColumn(2).setMinWidth(MIN_WIDTH_START_VAL_COLUMN);
+        table.getColumnModel().getColumn(2).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
+        table.getColumnModel().getColumn(2).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
         table.getColumnModel().getColumn(3).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
         table.getColumnModel().getColumn(3).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
-        table.getColumnModel().getColumn(4).setMaxWidth(MAX_WIDTH_NUMBER_COLUMN);
-        table.getColumnModel().getColumn(4).setMinWidth(MIN_WIDTH_NUMBER_COLUMN);
-        table.getColumnModel().getColumn(5).setMaxWidth(MAX_WIDTH_END_VAL_COLUMN);
-        table.getColumnModel().getColumn(5).setMinWidth(MIN_WIDTH_END_VAL_COLUMN);
 
         JPanel topPane = new JPanel();
         topPane.setLayout(new BorderLayout(5, 5));
@@ -313,11 +275,11 @@ public class TurnReportTable {
         endDatePicker.setDateToToday();
         endDatePicker.getComponentDateTextField().setEditable(false);
 
-        catalogNameField = new JTextField(50);
-        catalogNameField.setEditable(false);
-        catalogNameField.setFont(mainFont);
+        contractorNameField = new JTextField(50);
+        contractorNameField.setEditable(false);
+        contractorNameField.setFont(mainFont);
 
-        clearCatalogNameBtn = new JButton(removeFilterIcon);
+        clearContractorFieldBtn = new JButton(removeFilterIcon);
 
         startBtn = new JButton(toFormBtnText, toFormIcon);
         startBtn.setToolTipText(getToFormBtnToolTip);
@@ -330,11 +292,9 @@ public class TurnReportTable {
         parametersBox.add(Box.createHorizontalStrut(5));
         parametersBox.add(endDatePicker);
         parametersBox.add(Box.createHorizontalStrut(5));
-        parametersBox.add(new JLabel("Наименование:"));
+        parametersBox.add(contractorNameField);
         parametersBox.add(Box.createHorizontalStrut(5));
-        parametersBox.add(catalogNameField);
-        parametersBox.add(Box.createHorizontalStrut(5));
-        parametersBox.add(clearCatalogNameBtn);
+        parametersBox.add(clearContractorFieldBtn);
         parametersBox.add(Box.createHorizontalStrut(15));
         parametersBox.add(startBtn);
 
@@ -342,16 +302,16 @@ public class TurnReportTable {
         topPane.add(parametersBox, BorderLayout.SOUTH);
 
         contentPane.add(topPane, BorderLayout.NORTH);
-        contentPane.add(new JScrollPane(table), BorderLayout.CENTER);
+        contentPane.add(new JScrollPane(table));
         contentPane.add(statusLab, BorderLayout.SOUTH);
 
         displayName = "";
         sortedColumn = 0;
-        catalogId = null;
+        contractorId = null;
         beginDate = convertLocalDateToDate(firstDayOfMonth);
         endDate = new Date();
         sortOrder = NO_ORDER;
-        turnElementComparator = new TurnElementComparator();
+        deliveryElementComparator = new DeliveryElementComparator();
     }
 
     private void createActionListeners() {
@@ -372,28 +332,27 @@ public class TurnReportTable {
             }
         });
 
-        //Обработчик выбора наименования из каталога
-        catalogNameField.addMouseListener(new MouseAdapter() {
+        //Обработчик щелчка по полю с наименованием контрагента
+        contractorNameField.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 if (e.getButton() != MouseEvent.BUTTON1 || e.getClickCount() != 1) return;
-                CatalogElement catalogElement = seChoiсeDialog.showCatalogChoice();
-                if (catalogElement == null) {
-                    catalogNameField.setText("");
-                    catalogId = null;
+                ContractorsElement contractorsElement = seChoiсeDialog.showContractorsChoice();
+                if (contractorsElement == null) {
+                    contractorNameField.setText("");
+                    contractorId = null;
                     return;
                 }
-                catalogNameField.setText(catalogElement.getName());
-                catalogId = catalogElement.getId();
+                contractorNameField.setText(contractorsElement.getName());
+                contractorId = contractorsElement.getId();
             }
         });
 
-        //Обработчик щелчка по кнопке очистки
-        clearCatalogNameBtn.addActionListener(new ActionListener() {
+        clearContractorFieldBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                catalogNameField.setText("");
-                catalogId = null;
+                contractorNameField.setText("");
+                contractorId = null;
             }
         });
 
@@ -401,7 +360,10 @@ public class TurnReportTable {
         startBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                actionHandler.showTurnReportWithSettings(beginDate, endDate, catalogId);
+                if (contractorId == null) {
+                    JOptionPane.showMessageDialog(null, "Выберите контрагента", "", JOptionPane.PLAIN_MESSAGE);
+                }
+                actionHandler.showDeliveryReportWithSettings(beginDate, endDate, contractorId);
             }
         });
 
@@ -423,7 +385,7 @@ public class TurnReportTable {
         return contentPane;
     }
 
-    public void refresh(ArrayList<TurnElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
+    public void refresh(ArrayList<DeliveryElement> list, String displayName, int sortedColumn, SortOrders sortOrder) {
         content = list;
         this.displayName = displayName;
         this.sortedColumn = sortedColumn;
@@ -432,123 +394,6 @@ public class TurnReportTable {
         nameLab.setText(displayName);
         model.refresh();
         table.getTableHeader().repaint();
-    }
-
-    public HSSFWorkbook getExcelWorkbook() {
-        //Создаем файл в памяти
-        HSSFWorkbook workbook = new HSSFWorkbook();
-
-        //Создаем лист
-        HSSFSheet sheet = workbook.createSheet("Лист1");
-
-        //Заполняем лист данными
-        //Формируем ячейку с наименованием набора данных
-        HSSFCellStyle nameStyle = workbook.createCellStyle();
-        HSSFFont nameFont = workbook.createFont();
-        nameFont.setFontHeight((short) fontFileHeaderSize);
-        nameFont.setBold(true);
-        nameStyle.setFont(nameFont);
-        nameStyle.setAlignment(HorizontalAlignment.CENTER);
-
-        Row row = sheet.createRow(0);
-
-        int headerWidth = 7;
-        Cell nameCell = null;
-        for (int i = 0; i < headerWidth; i++) {
-            if (i == 0) {
-                nameCell = row.createCell(0);
-                continue;
-            }
-            row.createCell(i);
-        }
-
-        nameCell.setCellValue(displayName);
-        nameCell.setCellStyle(nameStyle);
-
-        CellRangeAddress region = new CellRangeAddress(0, 0, 0, headerWidth - 1);
-        sheet.addMergedRegion(region);
-
-        RegionUtil.setBorderBottom(BorderStyle.THIN, region, sheet);
-
-        //Формируем заголовки столбцов
-        HSSFCellStyle headerStyle = workbook.createCellStyle();
-        HSSFFont headerFont = workbook.createFont();
-        headerFont.setFontHeight((short) fontColumnHeaderSize);
-        headerFont.setBold(true);
-        headerStyle.setFont(headerFont);
-        headerStyle.setAlignment(HorizontalAlignment.CENTER);
-
-        row = sheet.createRow(1);
-        String[] columnNames = {"№ п/п", "№ в кат.", "Наименование", "Ост. на начало", "Приход", "Расход", "Ост. на конец"};
-        Cell[] headerCells = new Cell[columnNames.length];
-
-        for (int i = 0; i < columnNames.length; i++) {
-            headerCells[i] = row.createCell(i);
-            headerCells[i].setCellValue(columnNames[i]);
-            headerCells[i].setCellStyle(headerStyle);
-        }
-
-        //Вносим данные
-        HSSFCellStyle styleTextCell = workbook.createCellStyle();
-        styleTextCell.setWrapText(true);
-
-        HSSFCellStyle styleNumericCell = workbook.createCellStyle();
-        styleNumericCell.setAlignment(HorizontalAlignment.CENTER);
-        styleNumericCell.setVerticalAlignment(VerticalAlignment.CENTER);
-
-        Cell cell;
-        int number = 1;
-        TurnElement element;
-        for (int index = 0; index < model.getRowCount(); index++) {
-            row = sheet.createRow(index + 2);
-            element = (TurnElement) model.getValueAt(index, 0);
-
-            //Столбец № п/п
-            cell = row.createCell(0);
-            cell.setCellValue(number);
-            cell.setCellStyle(styleNumericCell);
-            number++;
-
-            //Столбец № в кат.
-            cell = row.createCell(1);
-            cell.setCellValue(element.getCatalogId());
-            cell.setCellStyle(styleNumericCell);
-
-            //Столбец Наименование
-            cell = row.createCell(2);
-            cell.setCellValue(element.getCatalogName());
-            cell.setCellStyle(styleTextCell);
-
-            //Столбец Ост. на начало
-            cell = row.createCell(3);
-            cell.setCellValue(element.getBeginCount() == null ? "" : element.getBeginCount() + "");
-            cell.setCellStyle(styleNumericCell);
-
-            //Столбец Приход
-            cell = row.createCell(4);
-            cell.setCellValue(element.getIncCount() == null ? "" : element.getIncCount() + "");
-            cell.setCellStyle(styleNumericCell);
-
-            //Столбец Расход
-            cell = row.createCell(5);
-            cell.setCellValue(element.getDecCount() == null ? "" : element.getDecCount() + "");
-            cell.setCellStyle(styleNumericCell);
-
-            //Столбец Ост. на конец
-            cell = row.createCell(6);
-            cell.setCellValue(element.getEndCount());
-            cell.setCellStyle(styleNumericCell);
-        }
-
-        sheet.setColumnWidth(0, 3000);
-        sheet.setColumnWidth(1, 3000);
-        sheet.setColumnWidth(2, 10000);
-        sheet.setColumnWidth(3, 4000);
-        sheet.setColumnWidth(4, 4000);
-        sheet.setColumnWidth(5, 4000);
-        sheet.setColumnWidth(6, 4000);
-
-        return workbook;
     }
 
     private void revertSortOrder() {
