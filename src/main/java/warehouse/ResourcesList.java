@@ -80,7 +80,7 @@ public class ResourcesList {
     public static final String openContractorsItemText = "Контрагенты";
     public static final String openDocumentsItemText = "Документы";
     public static final String reportRemainderItemText = "Отчет по остаткам";
-    public static final String reportTurnItemText = "Отчет по оборотам";
+    public static final String reportTurnItemText = "Общий отчет по оборотам";
     public static final String reportDeliveryItemText = "Отчет по оборотам с контрагентом";
     public static final String reportLogItemText = "Журнал операций";
 

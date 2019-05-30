@@ -1,5 +1,6 @@
 package warehouse.data_components;
 
+import org.apache.poi.ss.usermodel.DateUtil;
 import org.sqlite.date.DateFormatUtils;
 import warehouse.data_components.data_elements.*;
 
@@ -22,7 +23,7 @@ public class DBHandler {
     }
 
     public ArrayList<SimpleDataElement> getCatalog() throws SQLException {
-        String query = "SELECT * FROM CATALOG ORDER BY NAME";
+        String query = "SELECT * FROM CATALOG";
 
         ResultSet resultSet = statement.executeQuery(query);
         ArrayList<SimpleDataElement> list = new ArrayList<>();
@@ -39,7 +40,7 @@ public class DBHandler {
     }
 
     public ArrayList<SimpleDataElement> getContractors() throws SQLException {
-        String query = "SELECT * FROM CONTRACTORS ORDER BY NAME";
+        String query = "SELECT * FROM CONTRACTORS";
 
         ResultSet resultSet = statement.executeQuery(query);
         ArrayList<SimpleDataElement> list = new ArrayList<>();
@@ -60,8 +61,7 @@ public class DBHandler {
 
         String query = "SELECT DOCUMENTS.ID, DOCUMENTS.DATE, DOCUMENTS.TYPE, DOCUMENTS.CONTRACTOR_ID, CONTRACTORS.NAME " +
                 "FROM DOCUMENTS, CONTRACTORS " +
-                "WHERE DOCUMENTS.CONTRACTOR_ID=CONTRACTORS.ID " +
-                "ORDER BY DATE(DATE)";
+                "WHERE DOCUMENTS.CONTRACTOR_ID=CONTRACTORS.ID ";
 
         //Формируем список документов
         Integer id;
@@ -74,7 +74,7 @@ public class DBHandler {
         int typeInt;
         while (resultSet.next()) {
             id = resultSet.getInt(1);
-            date = convertStringToDate(resultSet.getString(2));
+            date = DateUtil.parseYYYYMMDDDate(resultSet.getString(2));
             typeInt = resultSet.getInt(3);
             if (typeInt == (-1)) type = CONS;
             if (typeInt == (1)) type = COM;
@@ -108,7 +108,7 @@ public class DBHandler {
             query += " AND DATE(DOCUMENTS.DATE)<=DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
         }
 
-        query += " GROUP BY CATALOG.ID, CATALOG.NAME ORDER BY CATALOG.NAME";
+        query += " GROUP BY CATALOG.ID, CATALOG.NAME";
 
         ResultSet resultSet = statement.executeQuery(query);
 
@@ -136,6 +136,7 @@ public class DBHandler {
                 " WHERE OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
                 " AND OPERATIONS.CATALOG_ID=CATALOG.ID" +
                 " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(\"" + DateFormatUtils.format(beginDate, "yyyy-MM-dd") + "\") AND DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\"))";
+
 
         if (catalogId != null) {
             query += " AND CATALOG.ID=" + catalogId;
@@ -199,10 +200,10 @@ public class DBHandler {
             if (resultSet.next()) {
                 decCount = resultSet.getInt(1);
             }
-            if (decCount==0)decCount=null;
+            if (decCount == 0) decCount = null;
 
             //Рассчитываем итог на конец периода
-            endCount = (beginCount==null?0:beginCount) + (incCount == null ? 0 : incCount) - (decCount == null ? 0 : decCount);
+            endCount = (beginCount == null ? 0 : beginCount) + (incCount == null ? 0 : incCount) - (decCount == null ? 0 : decCount);
 
             //Вносим данные в результирующий список
             list.add(new TurnElement(currentCatalogElement.getId(), currentCatalogElement.getName(), beginCount, incCount, decCount, endCount));
@@ -212,8 +213,69 @@ public class DBHandler {
         return list;
     }
 
-    public ArrayList<DeliveryElement> getDeliveryElements(Date beginDate, Date endDate, Integer catalogId) throws SQLException{
-        return null;
+    public ArrayList<DeliveryElement> getDeliveryElements(Date beginDate, Date endDate, Integer contractorId) throws SQLException {
+        //Получаем все позиции каталога, которые были задействаваны в операциях данного контрагента в выбранном периоде
+        ArrayList<CatalogElement> catalogElements = new ArrayList<>();
+        String query = "SELECT CATALOG.ID, CATALOG.NAME" +
+                " FROM CATALOG" +
+                " WHERE EXISTS" +
+                " (SELECT OPERATIONS.ID" +
+                " FROM OPERATIONS, DOCUMENTS" +
+                " WHERE OPERATIONS.CATALOG_ID=CATALOG.ID" +
+                " AND OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
+                " AND DOCUMENTS.CONTRACTOR_ID=" + contractorId + "" +
+                " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(\"" + DateFormatUtils.format(beginDate, "yyyy-MM-dd") + "\") AND DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\"))";
+
+        ResultSet resultSet = statement.executeQuery(query);
+
+        int catalogId;
+        String catalogName;
+        while (resultSet.next()) {
+            catalogId = resultSet.getInt(1);
+            catalogName = resultSet.getString(2);
+            catalogElements.add(new CatalogElement(catalogId, catalogName));
+        }
+
+        //Для каждой найденной позиции каталога считаем сумму операций - приходных и расходных
+        ArrayList<DeliveryElement> list = new ArrayList<>();
+
+        Integer inc;
+        Integer dec;
+        for (CatalogElement element : catalogElements) {
+            //Считаем приходные операции
+            query = "SELECT SUM(COUNT)" +
+                    " FROM OPERATIONS, DOCUMENTS" +
+                    " WHERE DOCUMENTS.CONTRACTOR_ID=" + contractorId + "" +
+                    " AND OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
+                    " AND DOCUMENTS.TYPE=" + COM.getMul() + "" +
+                    " AND OPERATIONS.CATALOG_ID=" + element.getId() +
+                    " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(\"" + DateFormatUtils.format(beginDate, "yyyy-MM-dd") + "\") AND DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
+
+            resultSet = statement.executeQuery(query);
+            inc = null;
+            if (resultSet.next()) {
+                inc = resultSet.getInt(1);
+            }
+
+            //Считаем расходные операции
+            query = "SELECT SUM(COUNT)" +
+                    " FROM OPERATIONS, DOCUMENTS" +
+                    " WHERE DOCUMENTS.CONTRACTOR_ID=" + contractorId + "" +
+                    " AND OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
+                    " AND DOCUMENTS.TYPE=" + CONS.getMul() + "" +
+                    " AND OPERATIONS.CATALOG_ID=" + element.getId() +
+                    " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(\"" + DateFormatUtils.format(beginDate, "yyyy-MM-dd") + "\") AND DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
+
+            resultSet = statement.executeQuery(query);
+            dec = null;
+            if (resultSet.next()) {
+                dec = resultSet.getInt(1);
+            }
+
+            list.add(new DeliveryElement(element.getId(), element.getName(), inc, dec));
+        }
+
+        return list;
     }
 
     public ArrayList<LogElement> getLogElements(LogRequestSettings requestSettings) throws SQLException {
@@ -253,8 +315,6 @@ public class DBHandler {
 
         }
 
-        query += "ORDER BY DATE(DOCUMENTS.DATE)";
-
         ResultSet resultSet = statement.executeQuery(query);
 
         int documentId;
@@ -267,7 +327,7 @@ public class DBHandler {
         LogElement element;
         while (resultSet.next()) {
             documentId = resultSet.getInt(1);
-            date = convertStringToDate(resultSet.getString(2));
+            date = DateUtil.parseYYYYMMDDDate(resultSet.getString(2));
             contractorName = resultSet.getString(3);
             documentType = DocumentTypes.getType(resultSet.getInt(4));
             catalogName = resultSet.getString(5);
@@ -285,8 +345,7 @@ public class DBHandler {
 
         String query = "SELECT OPERATIONS.ID, CATALOG.ID, NAME, COUNT " +
                 "FROM OPERATIONS, CATALOG " +
-                "WHERE DOCUMENT_ID=" + documentId + " AND CATALOG_ID=CATALOG.ID " +
-                "ORDER BY NAME";
+                "WHERE DOCUMENT_ID=" + documentId + " AND CATALOG_ID=CATALOG.ID";
 
         ResultSet resultSet = statement.executeQuery(query);
 
@@ -305,31 +364,6 @@ public class DBHandler {
         }
 
         return list;
-    }
-
-    private Date convertStringToDate(String dateStr) {
-        Date result;
-
-        int year;
-        int month;
-        int day;
-
-        String yearStr;
-        String monthStr;
-        String dayStr;
-
-        String[] dateArr = dateStr.split("-");
-        yearStr = dateArr[0];
-        monthStr = dateArr[1];
-        dayStr = dateArr[2];
-
-        year = Integer.parseInt(yearStr) - 1900;
-        month = Integer.parseInt(monthStr) - 1;
-        day = Integer.parseInt(dayStr);
-
-        result = new Date(year, month, day);
-
-        return result;
     }
 
 }

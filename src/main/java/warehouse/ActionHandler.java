@@ -176,10 +176,10 @@ public class ActionHandler {
         cardLayout.show(cardPane, state);
     }
 
-    public void showDeliveryReportWithSettings(Date beginDate, Date endDate, Integer catalogId) {
+    public void showDeliveryReportWithSettings(Date beginDate, Date endDate, Integer contractroId) {
         ArrayList<DeliveryElement> list;
         try {
-            list = dbHandler.getDeliveryElements(beginDate, endDate, catalogId);
+            list = dbHandler.getDeliveryElements(beginDate, endDate, contractroId);
         } catch (SQLException e) {
             JOptionPane.showMessageDialog(null, failDeliveryReportAccess + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
