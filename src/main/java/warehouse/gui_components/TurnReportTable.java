@@ -82,30 +82,36 @@ public class TurnReportTable {
                 Integer id2 = o2.getCatalogId();
                 return sortOrder.getMul() * id1.compareTo(id2);
             }
-            if (sortedColumn == 1){
+            if (sortedColumn == 1) {
                 String name1 = o1.getCatalogName();
                 String name2 = o2.getCatalogName();
-                return sortOrder.getMul()*name1.compareTo(name2);
+                return sortOrder.getMul() * name1.compareTo(name2);
             }
-            if (sortedColumn == 2){
-                Integer i1=o1.getBeginCount();
-                Integer i2=o2.getBeginCount();
-                return sortOrder.getMul()*i1.compareTo(i2);
+            if (sortedColumn == 2) {
+                Integer i1 = o1.getBeginCount();
+                Integer i2 = o2.getBeginCount();
+                if (i1 == null) i1 = 0;
+                if (i2 == null) i2 = 0;
+                return sortOrder.getMul() * i1.compareTo(i2);
             }
-            if (sortedColumn == 3){
-                Integer i1=o1.getIncCount();
-                Integer i2=o2.getIncCount();
-                return sortOrder.getMul()*i1.compareTo(i2);
+            if (sortedColumn == 3) {
+                Integer i1 = o1.getIncCount();
+                Integer i2 = o2.getIncCount();
+                if (i1 == null) i1 = 0;
+                if (i2 == null) i2 = 0;
+                return sortOrder.getMul() * i1.compareTo(i2);
             }
-            if (sortedColumn == 4){
-                Integer i1=o1.getDecCount();
-                Integer i2=o2.getDecCount();
-                return sortOrder.getMul()*i1.compareTo(i2);
+            if (sortedColumn == 4) {
+                Integer i1 = o1.getDecCount();
+                Integer i2 = o2.getDecCount();
+                if (i1 == null) i1 = 0;
+                if (i2 == null) i2 = 0;
+                return sortOrder.getMul() * i1.compareTo(i2);
             }
-            if (sortedColumn == 5){
-                Integer i1=o1.getEndCount();
-                Integer i2=o2.getEndCount();
-                return sortOrder.getMul()*i1.compareTo(i2);
+            if (sortedColumn == 5) {
+                Integer i1 = o1.getEndCount();
+                Integer i2 = o2.getEndCount();
+                return sortOrder.getMul() * i1.compareTo(i2);
             }
             return 0;
         }
@@ -167,7 +173,7 @@ public class TurnReportTable {
                 lab.setHorizontalAlignment(SwingConstants.LEFT);
             }
             if (column == 2) {
-                lab.setText((element.getBeginCount()==null?"":element.getBeginCount()) + "");
+                lab.setText((element.getBeginCount() == null ? "" : element.getBeginCount()) + "");
                 lab.setHorizontalAlignment(SwingConstants.CENTER);
             }
             if (column == 3) {
@@ -498,9 +504,9 @@ public class TurnReportTable {
         Cell cell;
         int number = 1;
         TurnElement element;
-        for (int index = 0; index < model.getRowCount(); index++){
+        for (int index = 0; index < model.getRowCount(); index++) {
             row = sheet.createRow(index + 2);
-            element = (TurnElement)model.getValueAt(index,0);
+            element = (TurnElement) model.getValueAt(index, 0);
 
             //Столбец № п/п
             cell = row.createCell(0);
@@ -520,17 +526,17 @@ public class TurnReportTable {
 
             //Столбец Ост. на начало
             cell = row.createCell(3);
-            cell.setCellValue(element.getBeginCount()==null?"":element.getBeginCount()+"");
+            cell.setCellValue(element.getBeginCount() == null ? "" : element.getBeginCount() + "");
             cell.setCellStyle(styleNumericCell);
 
             //Столбец Приход
             cell = row.createCell(4);
-            cell.setCellValue(element.getIncCount()==null?"":element.getIncCount()+"");
+            cell.setCellValue(element.getIncCount() == null ? "" : element.getIncCount() + "");
             cell.setCellStyle(styleNumericCell);
 
             //Столбец Расход
             cell = row.createCell(5);
-            cell.setCellValue(element.getDecCount()==null?"":element.getDecCount()+"");
+            cell.setCellValue(element.getDecCount() == null ? "" : element.getDecCount() + "");
             cell.setCellStyle(styleNumericCell);
 
             //Столбец Ост. на конец
