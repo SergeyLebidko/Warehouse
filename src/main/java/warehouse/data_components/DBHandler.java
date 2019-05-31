@@ -16,18 +16,25 @@ public class DBHandler {
 
     private static DBHandler dbHandler = new DBHandler();
 
+    private Connection connection;
     private Statement statement;
 
-    private DBHandler(){}
+    private DBHandler() {
+    }
 
-    public static DBHandler getInstance(){
+    public static DBHandler getInstance() {
         return dbHandler;
     }
 
-    public void initConnection() throws Exception{
+    public void initConnection() throws Exception {
         Class.forName(jdbcClassName);
-        Connection connection = DriverManager.getConnection(databaseConnectionString);
+        connection = DriverManager.getConnection(databaseConnectionString);
         statement = connection.createStatement();
+    }
+
+    public void disposeConnection() throws SQLException {
+        statement.close();
+        connection.close();
     }
 
     public ArrayList<SimpleDataElement> getCatalog() throws SQLException {

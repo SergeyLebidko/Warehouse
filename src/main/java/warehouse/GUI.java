@@ -2,10 +2,7 @@ package warehouse;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 
 import static warehouse.ResourcesList.*;
 
@@ -212,6 +209,14 @@ public class GUI {
             @Override
             public void mouseReleased(MouseEvent e) {
                 reportMenu.show(reportBtn, e.getX(), e.getY());
+            }
+        });
+
+        //Кнопка закрытия окна
+        frm.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                actionHandler.closeDBConnection();
             }
         });
     }

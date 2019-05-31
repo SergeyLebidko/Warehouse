@@ -241,7 +241,7 @@ public class ActionHandler {
             workbook = logReportTable.getExcelWorkbook();
             name = "Журнал операций";
         }
-        if (state.equals(DELIVERY_REPORT_DATASET)){
+        if (state.equals(DELIVERY_REPORT_DATASET)) {
             workbook = deliveryReportTable.getExcelWorkbook();
             name = "Отчет по оборотам с контрагентом";
         }
@@ -279,6 +279,13 @@ public class ActionHandler {
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, failOpenExportXLSFile + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
+        }
+    }
+
+    public void closeDBConnection() {
+        try {
+            dbHandler.disposeConnection();
+        } catch (SQLException e) {
         }
     }
 
