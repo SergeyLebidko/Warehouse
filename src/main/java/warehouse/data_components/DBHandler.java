@@ -8,6 +8,7 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.LinkedList;
 
 import static warehouse.ResourcesList.*;
 import static warehouse.data_components.DocumentTypes.*;
@@ -17,7 +18,20 @@ public class DBHandler {
     private static DBHandler dbHandler = new DBHandler();
 
     private Connection connection;
+    private LinkedList<Statement> stmtList;
+
+    //Объект для выполнения sql-запросов, которые не могут быть подготовлены заранее
     private Statement statement;
+
+    private PreparedStatement getCatalogStmt;
+    private PreparedStatement getContractorsStmt;
+    private PreparedStatement getDocumentsStmt;
+    private PreparedStatement getDocumentOperationsStmt;
+    private PreparedStatement getIncsTurnStmt;
+    private PreparedStatement getDecsTurnStmt;
+    private PreparedStatement getDeliveryElemntsStmt;
+    private PreparedStatement getIncsDeliveryStmt;
+    private PreparedStatement getDecsDeliveryStmt;
 
     private DBHandler() {
     }
@@ -30,18 +44,95 @@ public class DBHandler {
         Class.forName(jdbcClassName);
         connection = DriverManager.getConnection(databaseConnectionString);
         connection.setAutoCommit(false);
+        stmtList = new LinkedList<>();
+
+        //Подготавливаем объекты для выполнения запросов
         statement = connection.createStatement();
+        stmtList.add(statement);
+        String query;
+
+        query = "SELECT * FROM CATALOG";
+        getCatalogStmt = connection.prepareStatement(query);
+        stmtList.add(getCatalogStmt);
+
+        query = "SELECT * FROM CONTRACTORS";
+        getContractorsStmt = connection.prepareStatement(query);
+        stmtList.add(getContractorsStmt);
+
+        query = "SELECT DOCUMENTS.ID, DOCUMENTS.DATE, DOCUMENTS.TYPE, DOCUMENTS.CONTRACTOR_ID, CONTRACTORS.NAME " +
+                "FROM DOCUMENTS, CONTRACTORS " +
+                "WHERE DOCUMENTS.CONTRACTOR_ID=CONTRACTORS.ID";
+        getDocumentsStmt = connection.prepareStatement(query);
+        stmtList.add(getDocumentsStmt);
+
+        query = "SELECT OPERATIONS.ID, CATALOG.ID, NAME, COUNT " +
+                "FROM OPERATIONS, CATALOG " +
+                "WHERE DOCUMENT_ID=? AND CATALOG_ID=CATALOG.ID";
+        getDocumentOperationsStmt = connection.prepareStatement(query);
+        stmtList.add(getDocumentOperationsStmt);
+
+        query = "SELECT SUM(OPERATIONS.COUNT)" +
+                " FROM OPERATIONS, DOCUMENTS" +
+                " WHERE OPERATIONS.CATALOG_ID=?" +
+                " AND OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
+                " AND DOCUMENTS.TYPE=" + COM.getMul() + "" +
+                " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(?) AND DATE(?)";
+        getIncsTurnStmt = connection.prepareStatement(query);
+        stmtList.add(getIncsTurnStmt);
+
+        query = "SELECT SUM(OPERATIONS.COUNT)" +
+                " FROM OPERATIONS, DOCUMENTS" +
+                " WHERE OPERATIONS.CATALOG_ID=?" +
+                " AND OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
+                " AND DOCUMENTS.TYPE=" + CONS.getMul() + "" +
+                " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(?) AND DATE(?)";
+        getDecsTurnStmt = connection.prepareStatement(query);
+        stmtList.add(getDecsTurnStmt);
+
+        query = "SELECT CATALOG.ID, CATALOG.NAME" +
+                " FROM CATALOG" +
+                " WHERE EXISTS" +
+                " (SELECT OPERATIONS.ID" +
+                " FROM OPERATIONS, DOCUMENTS" +
+                " WHERE OPERATIONS.CATALOG_ID=CATALOG.ID" +
+                " AND OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
+                " AND DOCUMENTS.CONTRACTOR_ID=?" +
+                " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(?) AND DATE(?))";
+        getDeliveryElemntsStmt = connection.prepareStatement(query);
+        stmtList.add(getDeliveryElemntsStmt);
+
+        query = "SELECT SUM(COUNT)" +
+                " FROM OPERATIONS, DOCUMENTS" +
+                " WHERE DOCUMENTS.CONTRACTOR_ID=?" +
+                " AND OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
+                " AND DOCUMENTS.TYPE=?" +
+                " AND OPERATIONS.CATALOG_ID=?" +
+                " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(?) AND DATE(?)";
+        getIncsDeliveryStmt = connection.prepareStatement(query);
+        stmtList.add(getIncsDeliveryStmt);
+
+        query = "SELECT SUM(COUNT)" +
+                " FROM OPERATIONS, DOCUMENTS" +
+                " WHERE DOCUMENTS.CONTRACTOR_ID=?" +
+                " AND OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
+                " AND DOCUMENTS.TYPE=?" +
+                " AND OPERATIONS.CATALOG_ID=?" +
+                " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(?) AND DATE(?)";
+        getDecsDeliveryStmt = connection.prepareStatement(query);
+        stmtList.add(getDecsDeliveryStmt);
     }
 
     public void disposeConnection() throws SQLException {
-        statement.close();
+        for (Statement stmt: stmtList){
+            try {
+                stmt.close();
+            }catch (SQLException e){}
+        }
         connection.close();
     }
 
     public ArrayList<SimpleDataElement> getCatalog() throws SQLException {
-        String query = "SELECT * FROM CATALOG";
-
-        ResultSet resultSet = statement.executeQuery(query);
+        ResultSet resultSet = getCatalogStmt.executeQuery();
         ArrayList<SimpleDataElement> list = new ArrayList<>();
 
         int id;
@@ -57,9 +148,7 @@ public class DBHandler {
     }
 
     public ArrayList<SimpleDataElement> getContractors() throws SQLException {
-        String query = "SELECT * FROM CONTRACTORS";
-
-        ResultSet resultSet = statement.executeQuery(query);
+        ResultSet resultSet = getContractorsStmt.executeQuery();
         ArrayList<SimpleDataElement> list = new ArrayList<>();
 
         int id;
@@ -77,10 +166,6 @@ public class DBHandler {
     public ArrayList<Document> getDocuments() throws SQLException {
         ArrayList<Document> list = new ArrayList<>();
 
-        String query = "SELECT DOCUMENTS.ID, DOCUMENTS.DATE, DOCUMENTS.TYPE, DOCUMENTS.CONTRACTOR_ID, CONTRACTORS.NAME " +
-                "FROM DOCUMENTS, CONTRACTORS " +
-                "WHERE DOCUMENTS.CONTRACTOR_ID=CONTRACTORS.ID ";
-
         //Формируем список документов
         Integer id;
         Date date;
@@ -88,7 +173,7 @@ public class DBHandler {
         int contractorId;
         String contractorName;
 
-        ResultSet resultSet = statement.executeQuery(query);
+        ResultSet resultSet = getDocumentsStmt.executeQuery();
         int typeInt;
         while (resultSet.next()) {
             id = resultSet.getInt(1);
@@ -115,16 +200,14 @@ public class DBHandler {
 
     public ArrayList<RemaindElement> getRemaindElements(Integer catalogId, Date endDate) throws SQLException {
         ArrayList<RemaindElement> list = new ArrayList<>();
-        String query = "SELECT CATALOG.ID, CATALOG.NAME, SUM(DOCUMENTS.TYPE * OPERATIONS.COUNT) " +
-                "FROM CATALOG, DOCUMENTS, OPERATIONS " +
-                "WHERE OPERATIONS.CATALOG_ID=CATALOG.ID AND " +
-                "OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID ";
+        String query = "SELECT CATALOG.ID, CATALOG.NAME, SUM(DOCUMENTS.TYPE * OPERATIONS.COUNT)" +
+                "FROM CATALOG, DOCUMENTS, OPERATIONS" +
+                " WHERE OPERATIONS.CATALOG_ID=CATALOG.ID AND" +
+                " OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
+                " AND DATE(DOCUMENTS.DATE)<=DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
 
         if (catalogId != null) {
             query += " AND CATALOG.ID=" + catalogId;
-        }
-        if (endDate != null) {
-            query += " AND DATE(DOCUMENTS.DATE)<=DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
         }
 
         query += " GROUP BY CATALOG.ID, CATALOG.NAME";
@@ -170,7 +253,6 @@ public class DBHandler {
         //Теперь для каждой найденной на предыдущем этапе позиции каталога формируем данные по оборотам
         ArrayList<TurnElement> list = new ArrayList<>();
 
-        String catalogName;
         Integer beginCount;
         Integer incCount;
         Integer decCount;
@@ -196,13 +278,10 @@ public class DBHandler {
 
             //Затем рассчитываем приход
             incCount = 0;
-            query = "SELECT SUM(OPERATIONS.COUNT)" +
-                    " FROM OPERATIONS, DOCUMENTS" +
-                    " WHERE OPERATIONS.CATALOG_ID=" + currentCatalogElement.getId() + "" +
-                    " AND OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
-                    " AND DOCUMENTS.TYPE=" + COM.getMul() + "" +
-                    " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(\"" + DateFormatUtils.format(beginDate, "yyyy-MM-dd") + "\") AND DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
-            resultSet = statement.executeQuery(query);
+            getIncsTurnStmt.setInt(1, currentCatalogElement.getId());
+            getIncsTurnStmt.setString(2, DateFormatUtils.format(beginDate, "yyyy-MM-dd"));
+            getIncsTurnStmt.setString(3, DateFormatUtils.format(endDate, "yyyy-MM-dd"));
+            resultSet = getIncsTurnStmt.executeQuery();
             if (resultSet.next()) {
                 incCount = resultSet.getInt(1);
             }
@@ -210,13 +289,10 @@ public class DBHandler {
 
             //Затем рассчитываем расход
             decCount = 0;
-            query = "SELECT SUM(OPERATIONS.COUNT)" +
-                    " FROM OPERATIONS, DOCUMENTS" +
-                    " WHERE OPERATIONS.CATALOG_ID=" + currentCatalogElement.getId() + "" +
-                    " AND OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
-                    " AND DOCUMENTS.TYPE=" + CONS.getMul() + "" +
-                    " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(\"" + DateFormatUtils.format(beginDate, "yyyy-MM-dd") + "\") AND DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
-            resultSet = statement.executeQuery(query);
+            getDecsTurnStmt.setInt(1, currentCatalogElement.getId());
+            getDecsTurnStmt.setString(2, DateFormatUtils.format(beginDate, "yyyy-MM-dd"));
+            getDecsTurnStmt.setString(3, DateFormatUtils.format(endDate, "yyyy-MM-dd"));
+            resultSet = getDecsTurnStmt.executeQuery();
             if (resultSet.next()) {
                 decCount = resultSet.getInt(1);
             }
@@ -237,17 +313,12 @@ public class DBHandler {
     public ArrayList<DeliveryElement> getDeliveryElements(Date beginDate, Date endDate, Integer contractorId) throws SQLException {
         //Получаем все позиции каталога, которые были задействаваны в операциях данного контрагента в выбранном периоде
         ArrayList<CatalogElement> catalogElements = new ArrayList<>();
-        String query = "SELECT CATALOG.ID, CATALOG.NAME" +
-                " FROM CATALOG" +
-                " WHERE EXISTS" +
-                " (SELECT OPERATIONS.ID" +
-                " FROM OPERATIONS, DOCUMENTS" +
-                " WHERE OPERATIONS.CATALOG_ID=CATALOG.ID" +
-                " AND OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
-                " AND DOCUMENTS.CONTRACTOR_ID=" + contractorId + "" +
-                " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(\"" + DateFormatUtils.format(beginDate, "yyyy-MM-dd") + "\") AND DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\"))";
 
-        ResultSet resultSet = statement.executeQuery(query);
+        getDeliveryElemntsStmt.setInt(1, contractorId);
+        getDeliveryElemntsStmt.setString(2, DateFormatUtils.format(beginDate, "yyyy-MM-dd"));
+        getDeliveryElemntsStmt.setString(3, DateFormatUtils.format(endDate, "yyyy-MM-dd"));
+
+        ResultSet resultSet = getDeliveryElemntsStmt.executeQuery();
 
         int catalogId;
         String catalogName;
@@ -264,30 +335,24 @@ public class DBHandler {
         Integer dec;
         for (CatalogElement element : catalogElements) {
             //Считаем приходные операции
-            query = "SELECT SUM(COUNT)" +
-                    " FROM OPERATIONS, DOCUMENTS" +
-                    " WHERE DOCUMENTS.CONTRACTOR_ID=" + contractorId + "" +
-                    " AND OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
-                    " AND DOCUMENTS.TYPE=" + COM.getMul() + "" +
-                    " AND OPERATIONS.CATALOG_ID=" + element.getId() +
-                    " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(\"" + DateFormatUtils.format(beginDate, "yyyy-MM-dd") + "\") AND DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
-
-            resultSet = statement.executeQuery(query);
+            getIncsDeliveryStmt.setInt(1, contractorId);
+            getIncsDeliveryStmt.setInt(2, COM.getMul());
+            getIncsDeliveryStmt.setInt(3, element.getId());
+            getIncsDeliveryStmt.setString(4, DateFormatUtils.format(beginDate, "yyyy-MM-dd"));
+            getIncsDeliveryStmt.setString(5, DateFormatUtils.format(endDate, "yyyy-MM-dd"));
+            resultSet = getIncsDeliveryStmt.executeQuery();
             inc = null;
             if (resultSet.next()) {
                 inc = resultSet.getInt(1);
             }
 
             //Считаем расходные операции
-            query = "SELECT SUM(COUNT)" +
-                    " FROM OPERATIONS, DOCUMENTS" +
-                    " WHERE DOCUMENTS.CONTRACTOR_ID=" + contractorId + "" +
-                    " AND OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
-                    " AND DOCUMENTS.TYPE=" + CONS.getMul() + "" +
-                    " AND OPERATIONS.CATALOG_ID=" + element.getId() +
-                    " AND DATE(DOCUMENTS.DATE) BETWEEN DATE(\"" + DateFormatUtils.format(beginDate, "yyyy-MM-dd") + "\") AND DATE(\"" + DateFormatUtils.format(endDate, "yyyy-MM-dd") + "\")";
-
-            resultSet = statement.executeQuery(query);
+            getDecsDeliveryStmt.setInt(1, contractorId);
+            getDecsDeliveryStmt.setInt(2, CONS.getMul());
+            getDecsDeliveryStmt.setInt(3, element.getId());
+            getDecsDeliveryStmt.setString(4, DateFormatUtils.format(beginDate, "yyyy-MM-dd"));
+            getDecsDeliveryStmt.setString(5, DateFormatUtils.format(endDate, "yyyy-MM-dd"));
+            resultSet = getDecsDeliveryStmt.executeQuery();
             dec = null;
             if (resultSet.next()) {
                 dec = resultSet.getInt(1);
@@ -366,11 +431,8 @@ public class DBHandler {
     private ArrayList<Operation> getDocumentOperations(int documentId) throws SQLException {
         ArrayList<Operation> list = new ArrayList<>();
 
-        String query = "SELECT OPERATIONS.ID, CATALOG.ID, NAME, COUNT " +
-                "FROM OPERATIONS, CATALOG " +
-                "WHERE DOCUMENT_ID=" + documentId + " AND CATALOG_ID=CATALOG.ID";
-
-        ResultSet resultSet = statement.executeQuery(query);
+        getDocumentOperationsStmt.setInt(1, documentId);
+        ResultSet resultSet = getDocumentOperationsStmt.executeQuery();
 
         Integer id;
         int catalogId;

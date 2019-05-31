@@ -369,6 +369,7 @@ public class DeliveryReportTable {
             public void actionPerformed(ActionEvent e) {
                 if (contractorId == null) {
                     JOptionPane.showMessageDialog(null, "Выберите контрагента", "", JOptionPane.PLAIN_MESSAGE);
+                    return;
                 }
                 actionHandler.showDeliveryReportWithSettings(beginDate, endDate, contractorId);
             }
