@@ -29,6 +29,7 @@ public class DBHandler {
     public void initConnection() throws Exception {
         Class.forName(jdbcClassName);
         connection = DriverManager.getConnection(databaseConnectionString);
+        connection.setAutoCommit(false);
         statement = connection.createStatement();
     }
 
