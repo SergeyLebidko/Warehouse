@@ -14,7 +14,8 @@ public class MainClass {
     public static void main(String[] args) {
         //Пытаемся получить подключение к базе данных
         try {
-            dbHandler = new DBHandler();
+            dbHandler = DBHandler.getInstance();
+            dbHandler.initConnection();
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, "Ошибка подключения к базе данных. Приложение будет закрыто.", "", JOptionPane.ERROR_MESSAGE);
             System.exit(0);

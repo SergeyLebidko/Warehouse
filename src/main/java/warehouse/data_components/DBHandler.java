@@ -14,9 +14,17 @@ import static warehouse.data_components.DocumentTypes.*;
 
 public class DBHandler {
 
+    private static DBHandler dbHandler = new DBHandler();
+
     private Statement statement;
 
-    public DBHandler() throws Exception {
+    private DBHandler(){}
+
+    public static DBHandler getInstance(){
+        return dbHandler;
+    }
+
+    public void initConnection() throws Exception{
         Class.forName(jdbcClassName);
         Connection connection = DriverManager.getConnection(databaseConnectionString);
         statement = connection.createStatement();
