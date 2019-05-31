@@ -50,6 +50,7 @@ public class DBHandler {
             name = resultSet.getString(2);
             list.add(new CatalogElement(id, name));
         }
+        resultSet.close();
 
         return list;
     }
@@ -67,6 +68,7 @@ public class DBHandler {
             name = resultSet.getString(2);
             list.add(new ContractorsElement(id, name));
         }
+        resultSet.close();
 
         return list;
     }
@@ -105,6 +107,7 @@ public class DBHandler {
             opList = getDocumentOperations(document.getId());
             document.getOperationList().addAll(opList);
         }
+        resultSet.close();
 
         return list;
     }
@@ -136,6 +139,7 @@ public class DBHandler {
             countTmp = resultSet.getInt(3);
             list.add(new RemaindElement(idTmp, nameTmp, countTmp));
         }
+        resultSet.close();
 
         return list;
     }
@@ -224,6 +228,7 @@ public class DBHandler {
             list.add(new TurnElement(currentCatalogElement.getId(), currentCatalogElement.getName(), beginCount, incCount, decCount, endCount));
 
         }
+        resultSet.close();
 
         return list;
     }
@@ -289,6 +294,7 @@ public class DBHandler {
 
             list.add(new DeliveryElement(element.getId(), element.getName(), inc, dec));
         }
+        resultSet.close();
 
         return list;
     }
@@ -351,6 +357,7 @@ public class DBHandler {
             element = new LogElement(documentId, date, contractorName, documentType, catalogName, count);
             list.add(element);
         }
+        resultSet.close();
 
         return list;
     }
@@ -377,6 +384,7 @@ public class DBHandler {
 
             list.add(new Operation(id, documentId, catalogId, catalogName, count));
         }
+        resultSet.close();
 
         return list;
     }
