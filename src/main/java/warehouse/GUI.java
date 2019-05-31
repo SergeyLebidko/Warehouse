@@ -196,6 +196,14 @@ public class GUI {
             }
         });
 
+        //Кнопка Добавить
+        addBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actionHandler.add();
+            }
+        });
+
         //Кнопка Экспорт
         xlsBtn.addActionListener(new ActionListener() {
             @Override

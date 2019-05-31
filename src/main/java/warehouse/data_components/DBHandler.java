@@ -27,6 +27,8 @@ public class DBHandler {
     private PreparedStatement getContractorsStmt;
     private PreparedStatement getDocumentsStmt;
     private PreparedStatement getDocumentOperationsStmt;
+    private PreparedStatement addCatalogElementStmt;
+    private PreparedStatement addContractorElementStmt;
     private PreparedStatement getIncsTurnStmt;
     private PreparedStatement getDecsTurnStmt;
     private PreparedStatement getDeliveryElemntsStmt;
@@ -70,6 +72,14 @@ public class DBHandler {
                 "WHERE DOCUMENT_ID=? AND CATALOG_ID=CATALOG.ID";
         getDocumentOperationsStmt = connection.prepareStatement(query);
         stmtList.add(getDocumentOperationsStmt);
+
+        query = "INSERT INTO CATALOG (NAME) VALUES(?)";
+        addCatalogElementStmt = connection.prepareStatement(query);
+        stmtList.add(addCatalogElementStmt);
+
+        query = "INSERT INTO CONTRACTORS (NAME) VALUES(?)";
+        addContractorElementStmt = connection.prepareStatement(query);
+        stmtList.add(addContractorElementStmt);
 
         query = "SELECT SUM(OPERATIONS.COUNT)" +
                 " FROM OPERATIONS, DOCUMENTS" +
@@ -123,10 +133,11 @@ public class DBHandler {
     }
 
     public void disposeConnection() throws SQLException {
-        for (Statement stmt: stmtList){
+        for (Statement stmt : stmtList) {
             try {
                 stmt.close();
-            }catch (SQLException e){}
+            } catch (SQLException e) {
+            }
         }
         connection.close();
     }
@@ -196,6 +207,28 @@ public class DBHandler {
         resultSet.close();
 
         return list;
+    }
+
+    public void addCatalogElement(String name) throws Exception {
+        addCatalogElementStmt.setString(1, name);
+        try {
+            addCatalogElementStmt.executeUpdate();
+        } catch (SQLException e) {
+            if (e.getErrorCode() == 19) throw new Exception(failItemAlreadyExists);
+            throw e;
+        }
+        connection.commit();
+    }
+
+    public void addContractorElement(String name) throws Exception {
+        addContractorElementStmt.setString(1, name);
+        try{
+            addContractorElementStmt.executeUpdate();
+        }catch (SQLException e){
+            if (e.getErrorCode() == 19) throw new Exception(failItemAlreadyExists);
+            throw e;
+        }
+        connection.commit();
     }
 
     public ArrayList<RemaindElement> getRemaindElements(Integer catalogId, Date endDate) throws SQLException {

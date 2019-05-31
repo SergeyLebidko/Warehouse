@@ -129,6 +129,77 @@ public class ActionHandler {
         documentDialog.showDocument(document);
     }
 
+    public void add() {
+        if (state.equals(CATALOG_DATASET)) {
+            addCatalogElement();
+            return;
+        }
+        if (state.equals(CONTRACTORS_DATASET)) {
+            addContractorElement();
+            return;
+        }
+        if (state.equals(DOCUMENTS_LIST_DATASET)) {
+            addDocument();
+            return;
+        }
+    }
+
+    private void addCatalogElement() {
+        String name = getNewSimpleElementName("");
+        if (name==null)return;
+
+        GUI gui = MainClass.getGui();
+        JFrame frm = gui.getFrm();
+        try {
+            dbHandler.addCatalogElement(name);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(frm, failAddCatalogElement+" "+e.getMessage(), "",JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        showCatalog();
+    }
+
+    private void addContractorElement() {
+        String name = getNewSimpleElementName("");
+        if (name==null)return;
+
+        GUI gui = MainClass.getGui();
+        JFrame frm = gui.getFrm();
+        try {
+            dbHandler.addContractorElement(name);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(frm, failAddContractorElement+" "+e.getMessage(), "",JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        showContractors();
+    }
+
+    private String getNewSimpleElementName(String startValue){
+        GUI gui = MainClass.getGui();
+        JFrame frm = gui.getFrm();
+
+        String name=null;
+        while (true){
+            name = JOptionPane.showInputDialog(frm, "Введите наименование нового элемента", startValue);
+            if (name == null)break;
+            name = name.trim();
+            if (name.indexOf("%")!=(-1) || name.indexOf("_")!=(-1)){
+                JOptionPane.showMessageDialog(frm, "Символы % и _ недопустимы", "", JOptionPane.ERROR_MESSAGE);
+                continue;
+            }
+            if (name.equals("")){
+                JOptionPane.showMessageDialog(frm, "Наименование не может быть пустым", "", JOptionPane.ERROR_MESSAGE);
+                continue;
+            }
+            break;
+        }
+        return name;
+    }
+
+    private void addDocument() {
+        //Вставить код
+    }
+
     public void showRemaindReport() {
         ArrayList<RemaindElement> list = new ArrayList<>();
         remaindReportTable.refresh(list, "Остатки", 0, NO_ORDER);
