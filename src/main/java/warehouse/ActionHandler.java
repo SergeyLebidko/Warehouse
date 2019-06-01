@@ -126,7 +126,7 @@ public class ActionHandler {
 
     public void showDocument(Document document) {
         if (document == null) return;
-        documentDialog.showDocument(document);
+        documentDialog.showViewDocumentDialog(document);
     }
 
     public void add() {

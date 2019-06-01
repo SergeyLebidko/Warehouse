@@ -1,6 +1,5 @@
 package warehouse.gui_components.dialog_components;
 
-import com.github.lgooddatepicker.components.DatePicker;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -16,6 +15,8 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.text.DateFormat;
 import java.time.LocalDate;
 import java.util.Date;
@@ -24,91 +25,79 @@ import static warehouse.data_components.SortOrders.*;
 import static warehouse.ResourcesList.*;
 
 public class DocumentDialog {
-
     //Статусы, выставляемые кнопками, логика работы которых приводит к закрытию окна
     private static final int NO_BUTTON_PRESSED = 0;
-    private static final int OK_BUTTON_PRESSED = 1;
-    private static final int CANCEL_BUTTON_PRESSED = 2;
-    private static final int EDIT_BUTTON_PRESSED = 3;
+    private static final int CLOSE_BUTTON_PRESSED = 1;
+    private static final int OK_BUTTON_PRESSED = 2;
+    private static final int CANCEL_BUTTON_PRESSED = 3;
+    private static final int EDIT_BUTTON_PRESSED = 4;
 
     private ActionHandler actionHandler;
-    private Document currentDocument;
     private DateFormat dateFormat;
     private int buttonPressed;
+    private Document currentDocument;
 
-    private JDialog dialog;
+    //Блок полей, необходимых для отображения диалога просмотра
+    private JDialog viewDialog;
 
-    private JPanel contentPane;
-    private JTextField idField;
-    private DatePicker datePicker;
-    private JTextField dateField;
-    private JTextField contractorField;
-    private JTextField typeField;
-    private OperationsTable operationsTable;
+    private JPanel contentPaneVD;
+    private JTextField idFieldVD;
+    private JTextField dateFieldVD;
+    private JTextField contractorFieldVD;
+    private JTextField typeFieldVD;
+    private OperationsTable operationsTableVD;
 
-    private JButton editBtn;
-    private JButton xlsBtn;
-    private JButton addBtn;
-    private JButton removeBtn;
-    private JButton cancelBtn;
-    private JButton okBtn;
+    private JButton xlsBtnVD;
+    private JButton okBtnVD;
 
     public DocumentDialog() {
-        createFields();
-        createBtnListeners();
-    }
-
-    private void createFields() {
         actionHandler = MainClass.getActionHandler();
         dateFormat = DateFormat.getDateInstance();
         buttonPressed = NO_BUTTON_PRESSED;
 
+        createViewDialog();
+    }
+
+    private void createViewDialog() {
         //Создаем диалоговое окно
         JFrame frm = MainClass.getGui().getFrm();
-        dialog = new JDialog(frm, true);
-        dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        dialog.setSize(new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT));
-        dialog.setResizable(false);
+        viewDialog = new JDialog(frm, true);
+        viewDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        viewDialog.setSize(new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT));
+        viewDialog.setResizable(false);
         int xPos = Toolkit.getDefaultToolkit().getScreenSize().width / 2 - DIALOG_WIDTH / 2;
         int yPos = Toolkit.getDefaultToolkit().getScreenSize().height / 2 - DIALOG_HEIGHT / 2;
-        dialog.setLocation(xPos, yPos);
+        viewDialog.setLocation(xPos, yPos);
 
         //Создаем элементы диалогового окна
-        contentPane = new JPanel();
-        contentPane.setLayout(new BorderLayout());
+        contentPaneVD = new JPanel();
+        contentPaneVD.setLayout(new BorderLayout());
 
-        editBtn = new JButton(editIconSmall);
-        xlsBtn = new JButton(excelIconSmall);
+        xlsBtnVD = new JButton(excelIconSmall);
 
-        idField = new JTextField();
-        idField.setFont(mainFont);
-        idField.setHorizontalAlignment(SwingConstants.RIGHT);
+        idFieldVD = new JTextField();
+        idFieldVD.setEditable(false);
+        idFieldVD.setFont(mainFont);
+        idFieldVD.setHorizontalAlignment(SwingConstants.RIGHT);
 
-        datePicker = new DatePicker();
-        datePicker.getComponentDateTextField().setEditable(false);
-        datePicker.getComponentDateTextField().setHorizontalAlignment(SwingConstants.RIGHT);
+        dateFieldVD = new JTextField();
+        dateFieldVD.setFont(mainFont);
+        dateFieldVD.setEditable(false);
+        dateFieldVD.setHorizontalAlignment(SwingConstants.RIGHT);
 
-        dateField = new JTextField();
-        dateField.setFont(mainFont);
-        dateField.setEditable(false);
-        dateField.setHorizontalAlignment(SwingConstants.RIGHT);
+        contractorFieldVD = new JTextField();
+        contractorFieldVD.setFont(mainFont);
+        contractorFieldVD.setEditable(false);
+        contractorFieldVD.setHorizontalAlignment(SwingConstants.RIGHT);
 
-        contractorField = new JTextField();
-        contractorField.setFont(mainFont);
-        contractorField.setEditable(false);
-        contractorField.setHorizontalAlignment(SwingConstants.RIGHT);
+        typeFieldVD = new JTextField();
+        typeFieldVD.setEditable(false);
+        typeFieldVD.setFont(mainFont);
+        typeFieldVD.setHorizontalAlignment(SwingConstants.RIGHT);
 
-        typeField = new JTextField();
-        typeField.setFont(mainFont);
-        typeField.setHorizontalAlignment(SwingConstants.RIGHT);
+        operationsTableVD = new OperationsTable();
 
-        addBtn = new JButton(addIconSmall);
-        removeBtn = new JButton(removeIconSmall);
-
-        operationsTable = new OperationsTable();
-
-        okBtn = new JButton("Oк");
-        cancelBtn = new JButton("Отмена");
+        okBtnVD = new JButton("Oк");
 
         //Создаем вспомогательные панели
         Box topBox = Box.createVerticalBox();
@@ -135,63 +124,54 @@ public class DocumentDialog {
         bottomBtnPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
         //Добавляем созданные элементы в панели содержимого
-        topBtnPane.add(editBtn);
-        topBtnPane.add(xlsBtn);
+        topBtnPane.add(xlsBtnVD);
 
         idBox.add(new JLabel("№ документа:"));
         idBox.add(Box.createHorizontalStrut(5));
-        idBox.add(idField);
+        idBox.add(idFieldVD);
         idBox.add(Box.createHorizontalStrut((int) (DIALOG_WIDTH * 0.6)));
 
         dateBox.add(new JLabel("Дата:"));
         dateBox.add(Box.createHorizontalStrut(5));
-        dateBox.add(datePicker);
-        dateBox.add(dateField);
+        dateBox.add(dateFieldVD);
         dateBox.add(Box.createHorizontalStrut((int) (DIALOG_WIDTH * 0.6)));
 
         contractorBox.add(new JLabel("Контрагент:"));
         contractorBox.add(Box.createHorizontalStrut(5));
-        contractorBox.add(contractorField);
+        contractorBox.add(contractorFieldVD);
         contractorBox.add(Box.createHorizontalStrut((int) (DIALOG_WIDTH * 0.6)));
 
         typeBox.add(new JLabel("Тип:"));
         typeBox.add(Box.createHorizontalStrut(5));
-        typeBox.add(typeField);
+        typeBox.add(typeFieldVD);
         typeBox.add(Box.createHorizontalStrut((int) (DIALOG_WIDTH * 0.6)));
 
-        middlePane.add(addBtn);
-        middlePane.add(removeBtn);
-
-        bottomBtnPane.add(okBtn);
-        bottomBtnPane.add(cancelBtn);
+        bottomBtnPane.add(okBtnVD);
 
         topBox.add(topBtnPane);
         topBox.add(idBox);
         topBox.add(dateBox);
         topBox.add(contractorBox);
         topBox.add(typeBox);
-        topBox.add(middlePane);
 
-        contentPane.add(topBox, BorderLayout.NORTH);
-        contentPane.add(operationsTable.getVisualComponent(), BorderLayout.CENTER);
-        contentPane.add(bottomBtnPane, BorderLayout.SOUTH);
+        contentPaneVD.add(topBox, BorderLayout.NORTH);
+        contentPaneVD.add(operationsTableVD.getVisualComponent(), BorderLayout.CENTER);
+        contentPaneVD.add(bottomBtnPane, BorderLayout.SOUTH);
 
         //Добавляем созданные элементы в окно
-        dialog.setContentPane(contentPane);
-    }
+        viewDialog.setContentPane(contentPaneVD);
 
-    private void createBtnListeners() {
+        //Добавляем слушателей
         //Добавляем слушателя кнопке Ок
-        okBtn.addActionListener(new ActionListener() {
+        okBtnVD.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                buttonPressed = OK_BUTTON_PRESSED;
-                dialog.setVisible(false);
+                viewDialog.setVisible(false);
             }
         });
 
         //Добавляем слушателя кнопке Экпорт
-        xlsBtn.addActionListener(new ActionListener() {
+        xlsBtnVD.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String docName = "Документ";
@@ -201,31 +181,22 @@ public class DocumentDialog {
         });
     }
 
-    public void showDocument(Document document) {
+    public void showViewDocumentDialog(Document document) {
         this.currentDocument = document;
 
-        //Настраиваем поля для диалога вывода документа
-        idField.setEditable(false);
-        dateField.setEditable(false);
-        typeField.setEditable(false);
-        datePicker.setVisible(false);
-
         //Заполняем поля содержимым
-        idField.setText((currentDocument.getId() == null) ? "..." : (document.getId() + ""));
-        DateFormat dateFormat = DateFormat.getDateInstance();
-        dateField.setText(dateFormat.format(currentDocument.getDate()));
-        contractorField.setText(document.getContractorName());
-        typeField.setText(currentDocument.getType().getName());
-        operationsTable.refresh(currentDocument.getOperationList(), 1, TO_UP);
-
-        //Настраиваем видимость кнопок
-        okBtn.setVisible(true);
-        cancelBtn.setVisible(false);
-        addBtn.setVisible(false);
-        removeBtn.setVisible(false);
+        idFieldVD.setText((currentDocument.getId() == null) ? "..." : (document.getId() + ""));
+        dateFieldVD.setText(dateFormat.format(currentDocument.getDate()));
+        contractorFieldVD.setText(document.getContractorName());
+        typeFieldVD.setText(currentDocument.getType().getName());
+        operationsTableVD.refresh(currentDocument.getOperationList(), 1, TO_UP);
 
         //Выводим окно диалога на экран
-        dialog.setVisible(true);
+        viewDialog.setVisible(true);
+    }
+
+    public Document showCreateDocumentDialog(){
+        return null;
     }
 
     private HSSFWorkbook createExcelWorkbook(Document document) {
