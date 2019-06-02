@@ -1,5 +1,7 @@
 package warehouse.gui_components.dialog_components;
 
+import com.github.lgooddatepicker.components.DatePicker;
+import com.github.lgooddatepicker.components.DatePickerSettings;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -15,14 +17,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 import java.text.DateFormat;
 import java.time.LocalDate;
 import java.util.Date;
 
 import static warehouse.data_components.SortOrders.*;
 import static warehouse.ResourcesList.*;
+import static warehouse.data_components.DocumentTypes.*;
 
 public class DocumentDialog {
     //Статусы, выставляемые кнопками, логика работы которых приводит к закрытию окна
@@ -50,15 +51,31 @@ public class DocumentDialog {
     private JButton xlsBtnVD;
     private JButton okBtnVD;
 
+    //Блок полей, необходимых для диалога создания документа
+    private JDialog createDialog;
+
+    private JPanel contentPaneCD;
+    private JTextField idFieldCD;
+    private DatePicker datePickerCD;
+    private JTextField contractorFieldCD;
+    private JComboBox<String> typeBoxCD;
+    private OperationsTable operationsTableCD;
+
+    private JButton addOperationBtnCD;
+    private JButton removeOperationBtnCD;
+    private JButton okBtnCD;
+    private JButton cancelBtnCD;
+
     public DocumentDialog() {
         actionHandler = MainClass.getActionHandler();
         dateFormat = DateFormat.getDateInstance();
         buttonPressed = NO_BUTTON_PRESSED;
 
-        createViewDialog();
+        makeViewDialog();
+        makeCreateDialog();
     }
 
-    private void createViewDialog() {
+    private void makeViewDialog() {
         //Создаем диалоговое окно
         JFrame frm = MainClass.getGui().getFrm();
         viewDialog = new JDialog(frm, true);
@@ -116,9 +133,6 @@ public class DocumentDialog {
 
         Box typeBox = Box.createHorizontalBox();
         typeBox.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
-
-        JPanel middlePane = new JPanel();
-        middlePane.setLayout(new FlowLayout(FlowLayout.LEFT));
 
         JPanel bottomBtnPane = new JPanel();
         bottomBtnPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
@@ -181,6 +195,119 @@ public class DocumentDialog {
         });
     }
 
+    private void makeCreateDialog(){
+        //Создаем диалоговое окно
+        JFrame frm = MainClass.getGui().getFrm();
+        createDialog = new JDialog(frm, true);
+        createDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        createDialog.setSize(new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT));
+        createDialog.setResizable(false);
+        int xPos = Toolkit.getDefaultToolkit().getScreenSize().width / 2 - DIALOG_WIDTH / 2;
+        int yPos = Toolkit.getDefaultToolkit().getScreenSize().height / 2 - DIALOG_HEIGHT / 2;
+        createDialog.setLocation(xPos, yPos);
+
+        //Создаем элементы диалогового окна
+        contentPaneCD = new JPanel();
+        contentPaneCD.setLayout(new BorderLayout());
+
+        idFieldCD = new JTextField("...");
+        idFieldCD.setFont(mainFont);
+        idFieldCD.setEditable(false);
+        idFieldCD.setHorizontalAlignment(SwingConstants.RIGHT);
+
+        DatePickerSettings datePickerSettings = new DatePickerSettings();
+        datePickerSettings.setAllowEmptyDates(false);
+        datePickerCD = new DatePicker(datePickerSettings);
+        datePickerCD.setFont(mainFont);
+        datePickerCD.getComponentDateTextField().setEditable(false);
+        datePickerCD.getComponentDateTextField().setHorizontalAlignment(SwingConstants.RIGHT);
+
+        contractorFieldCD = new JTextField();
+        contractorFieldCD.setFont(mainFont);
+        contractorFieldCD.setEditable(false);
+        contractorFieldCD.setHorizontalAlignment(SwingConstants.RIGHT);
+
+        typeBoxCD = new JComboBox<>(new String[]{COM.getName(), CONS.getName()});
+        typeBoxCD.setFont(mainFont);
+
+        addOperationBtnCD = new JButton(addIconSmall);
+        addOperationBtnCD.setToolTipText(addBtnToolTip);
+
+        removeOperationBtnCD = new JButton(removeIconSmall);
+        removeOperationBtnCD.setToolTipText(removeBtnToolTip);
+
+        operationsTableCD = new OperationsTable();
+
+        okBtnCD = new JButton("Ок");
+        cancelBtnCD = new JButton("Отмена");
+
+        //Создаем вспомогательные панели
+        Box topBox = Box.createVerticalBox();
+
+        Box idBox = Box.createHorizontalBox();
+        idBox.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+
+        Box dateBox = Box.createHorizontalBox();
+        dateBox.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+
+        Box contractorBox = Box.createHorizontalBox();
+        contractorBox.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+
+        Box typeBox = Box.createHorizontalBox();
+        typeBox.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+
+        JPanel topBtnPane = new JPanel();
+        topBtnPane.setLayout(new FlowLayout(FlowLayout.LEFT));
+
+        JPanel bottomBtnPane = new JPanel();
+        bottomBtnPane.setLayout(new FlowLayout(FlowLayout.RIGHT));
+
+        //Добавляем компонеты во вспомогательные панели
+        idBox.add(new JLabel("№ документа:"));
+        idBox.add(Box.createHorizontalStrut(5));
+        idBox.add(idFieldCD);
+        idBox.add(Box.createHorizontalStrut((int) (DIALOG_WIDTH * 0.6)));
+
+        dateBox.add(new JLabel("Дата:"));
+        dateBox.add(Box.createHorizontalStrut(5));
+        dateBox.add(datePickerCD);
+        dateBox.add(Box.createHorizontalStrut((int) (DIALOG_WIDTH * 0.6)));
+
+        contractorBox.add(new JLabel("Контрагент:"));
+        contractorBox.add(Box.createHorizontalStrut(5));
+        contractorBox.add(contractorFieldCD);
+        contractorBox.add(Box.createHorizontalStrut((int) (DIALOG_WIDTH * 0.6)));
+
+        typeBox.add(new JLabel("Тип:"));
+        typeBox.add(Box.createHorizontalStrut(5));
+        typeBox.add(typeBoxCD);
+        typeBox.add(Box.createHorizontalStrut((int) (DIALOG_WIDTH * 0.6)));
+
+        topBox.add(idBox);
+        topBox.add(dateBox);
+        topBox.add(contractorBox);
+        topBox.add(typeBox);
+
+        topBtnPane.add(addOperationBtnCD);
+        topBtnPane.add(removeOperationBtnCD);
+
+        topBox.add(topBtnPane);
+
+        bottomBtnPane.add(okBtnCD);
+        bottomBtnPane.add(cancelBtnCD);
+
+        //Добавляем созданные панели в панель содержимого
+        contentPaneCD.add(topBox, BorderLayout.NORTH);
+        contentPaneCD.add(operationsTableCD.getVisualComponent(), BorderLayout.CENTER);
+        contentPaneCD.add(bottomBtnPane, BorderLayout.SOUTH);
+
+        //Добавляем все созданные компоненты в окно
+        createDialog.setContentPane(contentPaneCD);
+
+        //Добавляем слушателей
+        //Вставить код
+    }
+
     public void showViewDocumentDialog(Document document) {
         this.currentDocument = document;
 
@@ -196,6 +323,12 @@ public class DocumentDialog {
     }
 
     public Document showCreateDocumentDialog(){
+        //Заполняем поля содержимым
+        datePickerCD.setDateToToday();
+
+        //Выводим окно диалога на экран
+        createDialog.setVisible(true);
+
         return null;
     }
 

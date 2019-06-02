@@ -197,6 +197,9 @@ public class ActionHandler {
     }
 
     private void addDocument() {
+        Document document = documentDialog.showCreateDocumentDialog();
+        if (document==null)return;
+
         //Вставить код
     }
 
