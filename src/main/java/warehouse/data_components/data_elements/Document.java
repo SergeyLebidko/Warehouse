@@ -23,15 +23,6 @@ public class Document implements DataElement{
         this.contractorName = contractorName;
     }
 
-    public Document(Date date, DocumentTypes type, int contractorId, String contractorName) {
-        operationList = new ArrayList<>();
-        id = null;
-        this.date = date;
-        this.type = type;
-        this.contractorId = contractorId;
-        this.contractorName = contractorName;
-    }
-
     public Integer getId() {
         return id;
     }

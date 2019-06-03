@@ -478,7 +478,7 @@ public class DBHandler {
             catalogName = resultSet.getString(3);
             count = resultSet.getInt(4);
 
-            list.add(new Operation(id, documentId, catalogId, catalogName, count));
+            list.add(new Operation(id, catalogId, catalogName, count));
         }
         resultSet.close();
 
