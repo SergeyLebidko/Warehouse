@@ -17,6 +17,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
+import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -146,14 +147,14 @@ public class ActionHandler {
 
     private void addCatalogElement() {
         String name = getNewSimpleElementName("");
-        if (name==null)return;
+        if (name == null) return;
 
         GUI gui = MainClass.getGui();
         JFrame frm = gui.getFrm();
         try {
             dbHandler.addCatalogElement(name);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(frm, failAddCatalogElement+" "+e.getMessage(), "",JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frm, failAddCatalogElement + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
         showCatalog();
@@ -161,33 +162,33 @@ public class ActionHandler {
 
     private void addContractorElement() {
         String name = getNewSimpleElementName("");
-        if (name==null)return;
+        if (name == null) return;
 
         GUI gui = MainClass.getGui();
         JFrame frm = gui.getFrm();
         try {
             dbHandler.addContractorElement(name);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(frm, failAddContractorElement+" "+e.getMessage(), "",JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(frm, failAddContractorElement + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
         showContractors();
     }
 
-    private String getNewSimpleElementName(String startValue){
+    private String getNewSimpleElementName(String startValue) {
         GUI gui = MainClass.getGui();
         JFrame frm = gui.getFrm();
 
-        String name=null;
-        while (true){
+        String name = null;
+        while (true) {
             name = JOptionPane.showInputDialog(frm, "Введите наименование нового элемента", startValue);
-            if (name == null)break;
+            if (name == null) break;
             name = name.trim();
-            if (name.indexOf("%")!=(-1) || name.indexOf("_")!=(-1)){
+            if (name.indexOf("%") != (-1) || name.indexOf("_") != (-1)) {
                 JOptionPane.showMessageDialog(frm, "Символы % и _ недопустимы", "", JOptionPane.ERROR_MESSAGE);
                 continue;
             }
-            if (name.equals("")){
+            if (name.equals("")) {
                 JOptionPane.showMessageDialog(frm, "Наименование не может быть пустым", "", JOptionPane.ERROR_MESSAGE);
                 continue;
             }
@@ -198,9 +199,25 @@ public class ActionHandler {
 
     private void addDocument() {
         Document document = documentDialog.showCreateDocumentDialog();
-        if (document==null)return;
+        if (document == null) return;
 
-        //Вставить код
+        //Тестовый код
+        DateFormat format = DateFormat.getDateInstance();
+        System.out.println("Введен документ");
+        System.out.println("  id = " + document.getId());
+        System.out.println("  Дата = " + format.format(document.getDate()));
+        System.out.println("  contractorId = " + document.getContractorId());
+        System.out.println("  Контрагент = " + document.getContractorName());
+        System.out.println("  Тип = " + document.getType().getName());
+        System.out.println("  Операции документа:");
+        for (Operation operation : document.getOperationList()) {
+            System.out.print("      " + operation.getId());
+            System.out.print(" " + operation.getCatalogId());
+            System.out.print(" " + operation.getCatalogName());
+            System.out.println(" " + operation.getCount());
+        }
+
+        //Вставить код внесения документа в БД
     }
 
     public void showRemaindReport() {

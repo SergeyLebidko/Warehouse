@@ -362,8 +362,17 @@ public class DocumentDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Operation operation = operationDialog.showInputOperationDialog();
-                if (operation==null)return;
+                if (operation == null) return;
 
+                //Проверяем, чтобы одно и то же наименование не было внесено в список операций дважды
+                for (Operation opElement: currentDocument.getOperationList()){
+                    if (opElement.getCatalogId()==operation.getCatalogId()){
+                        JOptionPane.showMessageDialog(createDialog, opElement.getCatalogName() + " уже есть в списке", "", JOptionPane.ERROR_MESSAGE);
+                        return;
+                    }
+                }
+
+                //Добавляем введенную операцию в список операций текущего документа
                 currentDocument.getOperationList().add(operation);
                 operationsTableCD.refresh(currentDocument.getOperationList(), 1, TO_UP);
             }
@@ -373,7 +382,7 @@ public class DocumentDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 Operation operation = operationsTableCD.getSelectedRow();
-                if (operation==null)return;
+                if (operation == null) return;
 
                 currentDocument.getOperationList().remove(operation);
                 operationsTableCD.refresh(currentDocument.getOperationList(), 1, TO_UP);
@@ -412,12 +421,19 @@ public class DocumentDialog {
     }
 
     public Document showCreateDocumentDialog() {
+        currentDocument = new Document();
+
         //Заполняем поля содержимым
         datePickerCD.setDateToToday();
+        contractorFieldCD.setText("");
+        typeBoxCD.setSelectedIndex(0);
+        operationsTableCD.refresh(currentDocument.getOperationList(), 0, NO_ORDER);
 
-        //Выводим окно диалога на экран
-        currentDocument = new Document();
+        //Подготавливаем вспомогательные переменные и выводим окно диалога на экран
         currentDocument.setType(COM);
+        currentDocument.setDate(new Date());
+        Date currentDate = new Date();
+        Date docDate;
         while (true) {
             createDialog.setVisible(true);
 
@@ -426,20 +442,24 @@ public class DocumentDialog {
 
             //Если пользователь подтверждает ввод - проверяем правильность заполнения полей
             if (buttonPressed == OK_BUTTON_PRESSED) {
-                if (currentDocument.getContractorId()==null){
-                    //Сообщение о необходимости выбрать контрагента
+                //Проверка выбора контрагента
+                if (currentDocument.getContractorId() == null) {
+                    JOptionPane.showMessageDialog(createDialog, "Выберите контрагента", "", JOptionPane.ERROR_MESSAGE);
                     continue;
                 }
 
                 //Проверка даты. Документы не могут иметь дату больше текущей
-
-                //Проверка количества операций. Предупреждение о том, что операций должно быть больше нуля
+                docDate = currentDocument.getDate();
+                if (docDate.compareTo(currentDate) == 1) {
+                    JOptionPane.showMessageDialog(createDialog, "Дата документа не может быть больше текущей", "", JOptionPane.ERROR_MESSAGE);
+                    continue;
+                }
             }
 
             break;
         }
 
-        return null;
+        return currentDocument;
     }
 
     private HSSFWorkbook createExcelWorkbook(Document document) {
