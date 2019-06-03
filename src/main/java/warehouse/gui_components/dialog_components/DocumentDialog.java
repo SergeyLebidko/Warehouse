@@ -2,6 +2,8 @@ package warehouse.gui_components.dialog_components;
 
 import com.github.lgooddatepicker.components.DatePicker;
 import com.github.lgooddatepicker.components.DatePickerSettings;
+import com.github.lgooddatepicker.optionalusertools.DateChangeListener;
+import com.github.lgooddatepicker.zinternaltools.DateChangeEvent;
 import org.apache.poi.hssf.usermodel.HSSFCellStyle;
 import org.apache.poi.hssf.usermodel.HSSFFont;
 import org.apache.poi.hssf.usermodel.HSSFSheet;
@@ -9,14 +11,16 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import warehouse.ActionHandler;
 import warehouse.MainClass;
+import warehouse.data_components.data_elements.CatalogElement;
+import warehouse.data_components.data_elements.ContractorsElement;
 import warehouse.data_components.data_elements.Document;
 import warehouse.data_components.data_elements.Operation;
 import warehouse.gui_components.OperationsTable;
 
 import javax.swing.*;
+import javax.swing.event.ListDataListener;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
+import java.awt.event.*;
 import java.text.DateFormat;
 import java.time.LocalDate;
 import java.util.Date;
@@ -37,6 +41,8 @@ public class DocumentDialog {
     private DateFormat dateFormat;
     private int buttonPressed;
     private Document currentDocument;
+    private SEChoiсeDialog seChoiсeDialog;
+    private OperationDialog operationDialog;
 
     //Блок полей, необходимых для отображения диалога просмотра
     private JDialog viewDialog;
@@ -69,6 +75,8 @@ public class DocumentDialog {
     public DocumentDialog() {
         actionHandler = MainClass.getActionHandler();
         dateFormat = DateFormat.getDateInstance();
+        operationDialog = new OperationDialog();
+        seChoiсeDialog = new SEChoiсeDialog();
         buttonPressed = NO_BUTTON_PRESSED;
 
         makeViewDialog();
@@ -195,7 +203,7 @@ public class DocumentDialog {
         });
     }
 
-    private void makeCreateDialog(){
+    private void makeCreateDialog() {
         //Создаем диалоговое окно
         JFrame frm = MainClass.getGui().getFrm();
         createDialog = new JDialog(frm, true);
@@ -245,16 +253,16 @@ public class DocumentDialog {
         Box topBox = Box.createVerticalBox();
 
         Box idBox = Box.createHorizontalBox();
-        idBox.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        idBox.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         Box dateBox = Box.createHorizontalBox();
-        dateBox.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        dateBox.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         Box contractorBox = Box.createHorizontalBox();
-        contractorBox.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        contractorBox.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         Box typeBox = Box.createHorizontalBox();
-        typeBox.setBorder(BorderFactory.createEmptyBorder(5,5,5,5));
+        typeBox.setBorder(BorderFactory.createEmptyBorder(5, 5, 5, 5));
 
         JPanel topBtnPane = new JPanel();
         topBtnPane.setLayout(new FlowLayout(FlowLayout.LEFT));
@@ -304,8 +312,89 @@ public class DocumentDialog {
         //Добавляем все созданные компоненты в окно
         createDialog.setContentPane(contentPaneCD);
 
-        //Добавляем слушателей
-        //Вставить код
+        //Добавляем слушателей кнопкам
+        createDialog.addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosed(WindowEvent e) {
+                buttonPressed = CLOSE_BUTTON_PRESSED;
+            }
+        });
+
+        datePickerCD.addDateChangeListener(new DateChangeListener() {
+            @Override
+            public void dateChanged(DateChangeEvent event) {
+                currentDocument.setDate(convertLocalDateToDate(event.getNewDate()));
+            }
+        });
+
+        contractorFieldCD.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                if (e.getClickCount() == 1 & e.getButton() == MouseEvent.BUTTON1) {
+                    ContractorsElement contractorsElement = seChoiсeDialog.showContractorsChoice();
+                    if (contractorsElement == null) {
+                        return;
+                    }
+
+                    contractorFieldCD.setText(contractorsElement.getName());
+                    currentDocument.setContractorId(contractorsElement.getId());
+                    currentDocument.setContractorName(contractorsElement.getName());
+                }
+            }
+        });
+
+        typeBoxCD.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                int selectedItem = typeBoxCD.getSelectedIndex();
+                if (selectedItem == 0) {
+                    currentDocument.setType(COM);
+                    return;
+                }
+                if (selectedItem == 1) {
+                    currentDocument.setType(CONS);
+                    return;
+                }
+            }
+        });
+
+        addOperationBtnCD.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Operation operation = operationDialog.showInputOperationDialog();
+                if (operation==null)return;
+
+                currentDocument.getOperationList().add(operation);
+                operationsTableCD.refresh(currentDocument.getOperationList(), 1, TO_UP);
+            }
+        });
+
+        removeOperationBtnCD.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                Operation operation = operationsTableCD.getSelectedRow();
+                if (operation==null)return;
+
+                currentDocument.getOperationList().remove(operation);
+                operationsTableCD.refresh(currentDocument.getOperationList(), 1, TO_UP);
+            }
+        });
+
+        okBtnCD.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                buttonPressed = OK_BUTTON_PRESSED;
+                createDialog.setVisible(false);
+            }
+        });
+
+        cancelBtnCD.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                buttonPressed = CANCEL_BUTTON_PRESSED;
+                createDialog.setVisible(false);
+            }
+        });
     }
 
     public void showViewDocumentDialog(Document document) {
@@ -322,12 +411,33 @@ public class DocumentDialog {
         viewDialog.setVisible(true);
     }
 
-    public Document showCreateDocumentDialog(){
+    public Document showCreateDocumentDialog() {
         //Заполняем поля содержимым
         datePickerCD.setDateToToday();
 
         //Выводим окно диалога на экран
-        createDialog.setVisible(true);
+        currentDocument = new Document();
+        currentDocument.setType(COM);
+        while (true) {
+            createDialog.setVisible(true);
+
+            //Если пользователь отказался от ввода - возвращаем null
+            if (buttonPressed == CLOSE_BUTTON_PRESSED || buttonPressed == CANCEL_BUTTON_PRESSED) return null;
+
+            //Если пользователь подтверждает ввод - проверяем правильность заполнения полей
+            if (buttonPressed == OK_BUTTON_PRESSED) {
+                if (currentDocument.getContractorId()==null){
+                    //Сообщение о необходимости выбрать контрагента
+                    continue;
+                }
+
+                //Проверка даты. Документы не могут иметь дату больше текущей
+
+                //Проверка количества операций. Предупреждение о том, что операций должно быть больше нуля
+            }
+
+            break;
+        }
 
         return null;
     }
@@ -436,12 +546,15 @@ public class DocumentDialog {
         return workbook;
     }
 
-    private LocalDate convertDateToLocalDate(Date date) {
-        int year = date.getYear() + 1900;
-        int month = date.getMonth() + 1;
-        int day = date.getDay();
-        LocalDate localDate = LocalDate.of(year, month, day);
-        return localDate;
+    private Date convertLocalDateToDate(LocalDate localDate) {
+        Date date = null;
+        if (localDate != null) {
+            int year = localDate.getYear() - 1900;
+            int month = localDate.getMonthValue() - 1;
+            int day = localDate.getDayOfMonth();
+            date = new Date(year, month, day);
+        }
+        return date;
     }
 
 }

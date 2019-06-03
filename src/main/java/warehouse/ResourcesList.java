@@ -106,7 +106,6 @@ public class ResourcesList {
     public static final String failDeliveryReportAccess = "Не удалось сформировать отчет по оборотам с контрагентом. Ошибка:";
     public static final String failLogReportAccess = "Не удалось получить данные Журнала операций. Ошибка:";
 
-
     //Главный шрифт приложения (для таблиц, полей ввода и меню)
     public static final Font mainFont = new Font("Arial", Font.PLAIN, 16);
 
