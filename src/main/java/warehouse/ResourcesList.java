@@ -101,6 +101,10 @@ public class ResourcesList {
     public static final String failAddContractorElement = "Не удалось добавить контрагента. Ошибка:";
     public static final String failItemAlreadyExists = "Элемент с таким наименованием уже существует";
     public static final String failDocumentAdd = "Не удалось добавить документ. Ошибка:";
+
+    public static final String failCatalogElementUpdate = "Не удалось изменить элемент каталога. Ошибка:";
+    public static final String failContractorElementUpdate = "Не удалось изменить наименование контрагента. Ошибка:";
+
     public static final String failExportXLSFile = "Не удалось записать файл на диск. Ошибка:";
     public static final String failRemaindReportAccess = "Не удалось сформировать данные по остаткам. Ошибка:";
     public static final String failTurnReportAccess = "Не удалось сформировать отчет по оборотам. Ошибка:";

@@ -26,6 +26,11 @@ public class ContractorsElement implements SimpleDataElement {
     }
 
     @Override
+    public void setName(String nextName){
+        name = nextName;
+    }
+
+    @Override
     public String toString() {
         return name;
     }

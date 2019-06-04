@@ -23,17 +23,20 @@ public class DBHandler {
     //Объект для выполнения sql-запросов, которые не могут быть подготовлены заранее
     private Statement statement;
 
+    //Подготавливаемые заранее sql-запросы
     private PreparedStatement getCatalogStmt;
     private PreparedStatement getContractorsStmt;
     private PreparedStatement getDocumentsStmt;
     private PreparedStatement getDocumentOperationsStmt;
     private PreparedStatement addCatalogElementStmt;
     private PreparedStatement addContractorElementStmt;
-
     private PreparedStatement addDocumentStmt;
     private PreparedStatement addOperationStmt;
     private PreparedStatement getMaxIdDocumentStmt;
     private PreparedStatement validateOperatonStmt;
+
+    private PreparedStatement editCatalogElementStmt;
+    private PreparedStatement editContractroElementStmt;
 
     private PreparedStatement getIncsTurnStmt;
     private PreparedStatement getDecsTurnStmt;
@@ -107,6 +110,14 @@ public class DBHandler {
                 " ORDER BY DATE(DOCUMENTS.DATE)";
         validateOperatonStmt = connection.prepareStatement(query);
         stmtList.add(validateOperatonStmt);
+
+        query = "UPDATE CATALOG SET NAME=? WHERE ID=?";
+        editCatalogElementStmt = connection.prepareStatement(query);
+        stmtList.add(editCatalogElementStmt);
+
+        query = "UPDATE CONTRACTORS SET NAME=? WHERE ID=?";
+        editContractroElementStmt = connection.prepareStatement(query);
+        stmtList.add(editContractroElementStmt);
 
         query = "SELECT SUM(OPERATIONS.COUNT)" +
                 " FROM OPERATIONS, DOCUMENTS" +
@@ -286,7 +297,7 @@ public class DBHandler {
             //В случае внесения расходного документа проверяем корректность остатков
             if (document.getType() == CONS) {
                 for (Operation operation : document.getOperationList()) {
-                    if (!isCorrectRemaind(operation.getCatalogId())) throw new Exception("Некорректные остатки");
+                    if (!isCorrectRemaind(operation.getCatalogId())) throw new Exception("Некорректная сумма операции");
                 }
             }
         } catch (Exception e) {
@@ -295,6 +306,34 @@ public class DBHandler {
         }
 
         connection.commit();
+    }
+
+    public void editCatalogElement(CatalogElement element) throws Exception {
+        try {
+            editCatalogElementStmt.setString(1, element.getName());
+            editCatalogElementStmt.setInt(2, element.getId());
+            editCatalogElementStmt.executeUpdate();
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        }
+        connection.commit();
+    }
+
+    public void editContractorElement(ContractorsElement element) throws Exception {
+        try {
+            editContractroElementStmt.setString(1, element.getName());
+            editContractroElementStmt.setInt(2, element.getId());
+            editContractroElementStmt.executeUpdate();
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        }
+        connection.commit();
+    }
+
+    public void editDocument(Document document) throws Exception {
+        //Вставить код
     }
 
     private boolean isCorrectRemaind(int catalogId) throws SQLException {

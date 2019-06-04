@@ -11,14 +11,12 @@ import org.apache.poi.hssf.usermodel.HSSFWorkbook;
 import org.apache.poi.ss.usermodel.*;
 import warehouse.ActionHandler;
 import warehouse.MainClass;
-import warehouse.data_components.data_elements.CatalogElement;
 import warehouse.data_components.data_elements.ContractorsElement;
 import warehouse.data_components.data_elements.Document;
 import warehouse.data_components.data_elements.Operation;
 import warehouse.gui_components.OperationsTable;
 
 import javax.swing.*;
-import javax.swing.event.ListDataListener;
 import java.awt.*;
 import java.awt.event.*;
 import java.text.DateFormat;
@@ -58,7 +56,7 @@ public class DocumentDialog {
     private JButton okBtnVD;
 
     //Блок полей, необходимых для диалога создания документа
-    private JDialog createDialog;
+    private JDialog changeDialog;
 
     private JPanel contentPaneCD;
     private JTextField idFieldCD;
@@ -80,7 +78,7 @@ public class DocumentDialog {
         buttonPressed = NO_BUTTON_PRESSED;
 
         makeViewDialog();
-        makeCreateDialog();
+        makeChangeDialog();
     }
 
     private void makeViewDialog() {
@@ -203,22 +201,22 @@ public class DocumentDialog {
         });
     }
 
-    private void makeCreateDialog() {
+    private void makeChangeDialog() {
         //Создаем диалоговое окно
         JFrame frm = MainClass.getGui().getFrm();
-        createDialog = new JDialog(frm, true);
-        createDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-        createDialog.setSize(new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT));
-        createDialog.setResizable(false);
+        changeDialog = new JDialog(frm, true);
+        changeDialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        changeDialog.setSize(new Dimension(DIALOG_WIDTH, DIALOG_HEIGHT));
+        changeDialog.setResizable(false);
         int xPos = Toolkit.getDefaultToolkit().getScreenSize().width / 2 - DIALOG_WIDTH / 2;
         int yPos = Toolkit.getDefaultToolkit().getScreenSize().height / 2 - DIALOG_HEIGHT / 2;
-        createDialog.setLocation(xPos, yPos);
+        changeDialog.setLocation(xPos, yPos);
 
         //Создаем элементы диалогового окна
         contentPaneCD = new JPanel();
         contentPaneCD.setLayout(new BorderLayout());
 
-        idFieldCD = new JTextField("...");
+        idFieldCD = new JTextField();
         idFieldCD.setFont(mainFont);
         idFieldCD.setEditable(false);
         idFieldCD.setHorizontalAlignment(SwingConstants.RIGHT);
@@ -310,10 +308,10 @@ public class DocumentDialog {
         contentPaneCD.add(bottomBtnPane, BorderLayout.SOUTH);
 
         //Добавляем все созданные компоненты в окно
-        createDialog.setContentPane(contentPaneCD);
+        changeDialog.setContentPane(contentPaneCD);
 
         //Добавляем слушателей кнопкам
-        createDialog.addWindowListener(new WindowAdapter() {
+        changeDialog.addWindowListener(new WindowAdapter() {
             @Override
             public void windowClosed(WindowEvent e) {
                 buttonPressed = CLOSE_BUTTON_PRESSED;
@@ -367,7 +365,7 @@ public class DocumentDialog {
                 //Проверяем, чтобы одно и то же наименование не было внесено в список операций дважды
                 for (Operation opElement: currentDocument.getOperationList()){
                     if (opElement.getCatalogId()==operation.getCatalogId()){
-                        JOptionPane.showMessageDialog(createDialog, opElement.getCatalogName() + " уже есть в списке", "", JOptionPane.ERROR_MESSAGE);
+                        JOptionPane.showMessageDialog(changeDialog, opElement.getCatalogName() + " уже есть в списке", "", JOptionPane.ERROR_MESSAGE);
                         return;
                     }
                 }
@@ -393,7 +391,7 @@ public class DocumentDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 buttonPressed = OK_BUTTON_PRESSED;
-                createDialog.setVisible(false);
+                changeDialog.setVisible(false);
             }
         });
 
@@ -401,7 +399,7 @@ public class DocumentDialog {
             @Override
             public void actionPerformed(ActionEvent e) {
                 buttonPressed = CANCEL_BUTTON_PRESSED;
-                createDialog.setVisible(false);
+                changeDialog.setVisible(false);
             }
         });
     }
@@ -420,22 +418,47 @@ public class DocumentDialog {
         viewDialog.setVisible(true);
     }
 
-    public Document showCreateDocumentDialog() {
-        currentDocument = new Document();
+    public Document showEditDocumentDialog(Document document){
+        currentDocument = document;
 
         //Заполняем поля содержимым
+        idFieldCD.setText(document.getId()+"");
+        datePickerCD.setDate(convertDateToLocalDate(document.getDate()));
+        contractorFieldCD.setText(document.getContractorName());
+        if (document.getType()==COM){
+            typeBoxCD.setSelectedIndex(0);
+        }
+        if (document.getType()==CONS){
+            typeBoxCD.setSelectedIndex(1);
+        }
+        operationsTableCD.refresh(document.getOperationList(), 1, TO_UP);
+
+        Document editedDocument = showChangeDocumentDialog();
+        return editedDocument;
+    }
+
+    public Document showCreateDocumentDialog(){
+        currentDocument = new Document();
+        currentDocument.setType(COM);
+        currentDocument.setDate(new Date());
+
+        //Заполняем поля содержимым
+        idFieldCD.setText("...");
         datePickerCD.setDateToToday();
         contractorFieldCD.setText("");
         typeBoxCD.setSelectedIndex(0);
         operationsTableCD.refresh(currentDocument.getOperationList(), 0, NO_ORDER);
 
+        Document document = showChangeDocumentDialog();
+        return document;
+    }
+
+    private Document showChangeDocumentDialog() {
         //Подготавливаем вспомогательные переменные и выводим окно диалога на экран
-        currentDocument.setType(COM);
-        currentDocument.setDate(new Date());
         Date currentDate = new Date();
         Date docDate;
         while (true) {
-            createDialog.setVisible(true);
+            changeDialog.setVisible(true);
 
             //Если пользователь отказался от ввода - возвращаем null
             if (buttonPressed == CLOSE_BUTTON_PRESSED || buttonPressed == CANCEL_BUTTON_PRESSED) return null;
@@ -444,14 +467,14 @@ public class DocumentDialog {
             if (buttonPressed == OK_BUTTON_PRESSED) {
                 //Проверка выбора контрагента
                 if (currentDocument.getContractorId() == null) {
-                    JOptionPane.showMessageDialog(createDialog, "Выберите контрагента", "", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(changeDialog, "Выберите контрагента", "", JOptionPane.ERROR_MESSAGE);
                     continue;
                 }
 
                 //Проверка даты. Документы не могут иметь дату больше текущей
                 docDate = currentDocument.getDate();
                 if (docDate.compareTo(currentDate) == 1) {
-                    JOptionPane.showMessageDialog(createDialog, "Дата документа не может быть больше текущей", "", JOptionPane.ERROR_MESSAGE);
+                    JOptionPane.showMessageDialog(changeDialog, "Дата документа не может быть больше текущей", "", JOptionPane.ERROR_MESSAGE);
                     continue;
                 }
             }
@@ -575,6 +598,14 @@ public class DocumentDialog {
             date = new Date(year, month, day);
         }
         return date;
+    }
+
+    private LocalDate convertDateToLocalDate(Date date) {
+        int year = date.getYear() + 1900;
+        int month = date.getMonth() + 1;
+        int day = date.getDay();
+        LocalDate localDate = LocalDate.of(year, month, day);
+        return localDate;
     }
 
 }

@@ -17,7 +17,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.SQLException;
-import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -149,12 +148,10 @@ public class ActionHandler {
         String name = getNewSimpleElementName("");
         if (name == null) return;
 
-        GUI gui = MainClass.getGui();
-        JFrame frm = gui.getFrm();
         try {
             dbHandler.addCatalogElement(name);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(frm, failAddCatalogElement + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, failAddCatalogElement + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
         showCatalog();
@@ -164,15 +161,80 @@ public class ActionHandler {
         String name = getNewSimpleElementName("");
         if (name == null) return;
 
-        GUI gui = MainClass.getGui();
-        JFrame frm = gui.getFrm();
         try {
             dbHandler.addContractorElement(name);
         } catch (Exception e) {
-            JOptionPane.showMessageDialog(frm, failAddContractorElement + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(null, failAddContractorElement + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
             return;
         }
         showContractors();
+    }
+
+    private void addDocument() {
+        Document document = documentDialog.showCreateDocumentDialog();
+        if (document == null) return;
+
+        //Вносим документ в базу данных
+        try {
+            dbHandler.addDocument(document);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, failDocumentAdd + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        showDocumentList();
+    }
+
+    public void edit() {
+        if (state.equals(CATALOG_DATASET)) {
+            editCatalogElement();
+            return;
+        }
+        if (state.equals(CONTRACTORS_DATASET)) {
+            editContractroElement();
+            return;
+        }
+        if (state.equals(DOCUMENTS_LIST_DATASET)) {
+            editDocument();
+            return;
+        }
+    }
+
+    private void editCatalogElement() {
+        CatalogElement catalogElement = (CatalogElement) catalogTable.getSelectedElement();
+        if (catalogElement == null) return;
+
+        String name = getNewSimpleElementName(catalogElement.getName());
+        if (name == null) return;
+
+        catalogElement.setName(name);
+        try {
+            dbHandler.editCatalogElement(catalogElement);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, failCatalogElementUpdate + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        showCatalog();
+    }
+
+    private void editContractroElement() {
+        ContractorsElement contractorsElement = (ContractorsElement) contractorsTable.getSelectedElement();
+        if (contractorsElement == null) return;
+
+        String name = getNewSimpleElementName(contractorsElement.getName());
+        if (name == null) return;
+
+        contractorsElement.setName(name);
+        try {
+            dbHandler.editContractorElement(contractorsElement);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, failContractorElementUpdate + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+        showContractors();
+    }
+
+    private void editDocument() {
+
     }
 
     private String getNewSimpleElementName(String startValue) {
@@ -195,20 +257,6 @@ public class ActionHandler {
             break;
         }
         return name;
-    }
-
-    private void addDocument() {
-        Document document = documentDialog.showCreateDocumentDialog();
-        if (document == null) return;
-
-        //Вносим документ в базу данных
-        try {
-            dbHandler.addDocument(document);
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, failDocumentAdd+" "+e.getMessage(),"", JOptionPane.ERROR_MESSAGE);
-            return;
-        }
-        showDocumentList();
     }
 
     public void showRemaindReport() {
