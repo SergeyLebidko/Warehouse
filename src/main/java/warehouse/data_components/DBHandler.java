@@ -5,10 +5,8 @@ import org.sqlite.date.DateFormatUtils;
 import warehouse.data_components.data_elements.*;
 
 import java.sql.*;
-import java.util.ArrayList;
-import java.util.Calendar;
+import java.util.*;
 import java.util.Date;
-import java.util.LinkedList;
 
 import static warehouse.ResourcesList.*;
 import static warehouse.data_components.DocumentTypes.*;
@@ -37,6 +35,8 @@ public class DBHandler {
 
     private PreparedStatement editCatalogElementStmt;
     private PreparedStatement editContractroElementStmt;
+    private PreparedStatement editDocumentElementStmt;
+    private PreparedStatement removeOperationStmt;
 
     private PreparedStatement getIncsTurnStmt;
     private PreparedStatement getDecsTurnStmt;
@@ -118,6 +118,14 @@ public class DBHandler {
         query = "UPDATE CONTRACTORS SET NAME=? WHERE ID=?";
         editContractroElementStmt = connection.prepareStatement(query);
         stmtList.add(editContractroElementStmt);
+
+        query = "UPDATE DOCUMENTS SET DATE=?, TYPE=?, CONTRACTOR_ID=? WHERE ID=?";
+        editDocumentElementStmt = connection.prepareStatement(query);
+        stmtList.add(editDocumentElementStmt);
+
+        query = "DELETE FROM OPERATIONS WHERE DOCUMENT_ID=?";
+        removeOperationStmt = connection.prepareStatement(query);
+        stmtList.add(removeOperationStmt);
 
         query = "SELECT SUM(OPERATIONS.COUNT)" +
                 " FROM OPERATIONS, DOCUMENTS" +
@@ -333,7 +341,48 @@ public class DBHandler {
     }
 
     public void editDocument(Document document) throws Exception {
-        //Вставить код
+        try {
+            //Обновляем данные документа: поля "Дата", "Тип", "Контрагент"
+            editDocumentElementStmt.setString(1, DateFormatUtils.format(document.getDate(), "yyyy-MM-dd"));
+            editDocumentElementStmt.setInt(2, document.getType().getMul());
+            editDocumentElementStmt.setInt(3, document.getContractorId());
+            editDocumentElementStmt.setInt(4, document.getId());
+            editDocumentElementStmt.executeUpdate();
+
+            //Составляем список всех id из каталога, которые будут затронуты данной операцией
+            HashSet<Integer> catalogIdSet = new HashSet<>();
+
+            //Вносим в список все catalog id из текущих операций документа
+            for (Operation operation : getDocumentOperations(document.getId())) {
+                catalogIdSet.add(operation.getCatalogId());
+            }
+            //Вносим в список все catalog id из обновленного документа
+            for (Operation operation : document.getOperationList()) {
+                catalogIdSet.add(operation.getCatalogId());
+            }
+
+            //Удаляем все текущие операции
+            removeOperationStmt.setInt(1, document.getId());
+            removeOperationStmt.executeUpdate();
+
+            //Вносим операции обновленного документа в БД
+            for (Operation operation: document.getOperationList()){
+                addOperationStmt.setInt(1, document.getId());
+                addOperationStmt.setInt(2, operation.getCatalogId());
+                addOperationStmt.setInt(3, operation.getCount());
+                addOperationStmt.executeUpdate();
+            }
+
+            //Выполняем проверку корректности остатков
+            for (Integer cataloId: catalogIdSet) {
+                if (!isCorrectRemaind(cataloId)) throw new Exception("Некорректная сумма операции");
+            }
+
+        } catch (Exception e) {
+            connection.rollback();
+            throw e;
+        }
+        connection.commit();
     }
 
     private boolean isCorrectRemaind(int catalogId) throws SQLException {

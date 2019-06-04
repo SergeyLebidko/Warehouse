@@ -234,7 +234,18 @@ public class ActionHandler {
     }
 
     private void editDocument() {
+        Document document = documentsTable.getSelectedElement();
+        if (document == null) return;
 
+        Document editedDoc = documentDialog.showEditDocumentDialog(document);
+        if (editedDoc == null) return;
+
+        try{
+            dbHandler.editDocument(editedDoc);
+        }catch (Exception e){
+            JOptionPane.showMessageDialog(null, failDocumentElementUpdate+" "+e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+        }
+        showDocumentList();
     }
 
     private String getNewSimpleElementName(String startValue) {

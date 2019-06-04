@@ -534,14 +534,7 @@ public class DeliveryReportTable {
     }
 
     private Date convertLocalDateToDate(LocalDate localDate) {
-        Date date = null;
-        if (localDate != null) {
-            int year = localDate.getYear() - 1900;
-            int month = localDate.getMonthValue() - 1;
-            int day = localDate.getDayOfMonth();
-            date = new Date(year, month, day);
-        }
-        return date;
+        return java.sql.Date.valueOf(localDate);
     }
 
 }

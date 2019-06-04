@@ -405,7 +405,7 @@ public class DocumentDialog {
     }
 
     public void showViewDocumentDialog(Document document) {
-        this.currentDocument = document;
+        currentDocument = document;
 
         //Заполняем поля содержимым
         idFieldVD.setText((currentDocument.getId() == null) ? "..." : (document.getId() + ""));
@@ -590,22 +590,11 @@ public class DocumentDialog {
     }
 
     private Date convertLocalDateToDate(LocalDate localDate) {
-        Date date = null;
-        if (localDate != null) {
-            int year = localDate.getYear() - 1900;
-            int month = localDate.getMonthValue() - 1;
-            int day = localDate.getDayOfMonth();
-            date = new Date(year, month, day);
-        }
-        return date;
+        return java.sql.Date.valueOf(localDate);
     }
 
     private LocalDate convertDateToLocalDate(Date date) {
-        int year = date.getYear() + 1900;
-        int month = date.getMonth() + 1;
-        int day = date.getDay();
-        LocalDate localDate = LocalDate.of(year, month, day);
-        return localDate;
+        return new java.sql.Date(date.getTime()).toLocalDate();
     }
 
 }

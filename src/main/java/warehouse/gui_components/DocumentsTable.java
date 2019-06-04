@@ -707,11 +707,7 @@ public class DocumentsTable {
     }
 
     private Date convertLocalDateToDate(LocalDate localDate) {
-        if (localDate == null) return null;
-        int year = localDate.getYear() - 1900;
-        int month = localDate.getMonthValue() - 1;
-        int day = localDate.getDayOfMonth();
-        return new Date(year, month, day);
+        return java.sql.Date.valueOf(localDate);
     }
 
 }
