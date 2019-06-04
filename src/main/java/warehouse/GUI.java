@@ -212,6 +212,14 @@ public class GUI {
             }
         });
 
+        //Кнопка Удалить
+        removeBtn.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                actionHandler.remove();
+            }
+        });
+
         //Кнопка Экспорт
         xlsBtn.addActionListener(new ActionListener() {
             @Override

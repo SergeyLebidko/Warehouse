@@ -240,10 +240,10 @@ public class ActionHandler {
         Document editedDoc = documentDialog.showEditDocumentDialog(document);
         if (editedDoc == null) return;
 
-        try{
+        try {
             dbHandler.editDocument(editedDoc);
-        }catch (Exception e){
-            JOptionPane.showMessageDialog(null, failDocumentElementUpdate+" "+e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, failDocumentElementUpdate + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
         }
         showDocumentList();
     }
@@ -268,6 +268,63 @@ public class ActionHandler {
             break;
         }
         return name;
+    }
+
+    public void remove() {
+        if (state.equals(CATALOG_DATASET)) {
+            removeCatalogElement();
+            return;
+        }
+        if (state.equals(CONTRACTORS_DATASET)) {
+            removeContractorElement();
+            return;
+        }
+        if (state.equals(DOCUMENTS_LIST_DATASET)) {
+            removeDocument();
+            return;
+        }
+    }
+
+    private void removeCatalogElement() {
+        CatalogElement catalogElement = (CatalogElement) catalogTable.getSelectedElement();
+        if (catalogElement == null) return;
+
+        try {
+            dbHandler.removeCatalogElement(catalogElement);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, failRemoveCatalogElement + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        showCatalog();
+    }
+
+    private void removeContractorElement() {
+        ContractorsElement contractorsElement = (ContractorsElement) contractorsTable.getSelectedElement();
+        if (contractorsElement == null) return;
+
+        try {
+            dbHandler.removeContractorElement(contractorsElement);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, failRemoveContractorElement + " " + e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        showContractors();
+    }
+
+    private void removeDocument() {
+        Document document = documentsTable.getSelectedElement();
+        if (document == null) return;
+
+        try{
+            dbHandler.removeDocument(document);
+        }catch (Exception e){
+            JOptionPane.showMessageDialog(null, failRemoveDocument+" "+e.getMessage(), "", JOptionPane.ERROR_MESSAGE);
+            return;
+        }
+
+        showDocumentList();
     }
 
     public void showRemaindReport() {

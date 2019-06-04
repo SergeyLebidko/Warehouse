@@ -38,6 +38,12 @@ public class DBHandler {
     private PreparedStatement editDocumentElementStmt;
     private PreparedStatement removeOperationStmt;
 
+    private PreparedStatement removeCatalogElementStmt;
+    private PreparedStatement getNumberOperationsForCatalogIdStmt;
+
+    private PreparedStatement removeContractorElementStmt;
+    private PreparedStatement getNumberDocumentsForContractorIdStmt;
+
     private PreparedStatement getIncsTurnStmt;
     private PreparedStatement getDecsTurnStmt;
     private PreparedStatement getDeliveryElemntsStmt;
@@ -126,6 +132,22 @@ public class DBHandler {
         query = "DELETE FROM OPERATIONS WHERE DOCUMENT_ID=?";
         removeOperationStmt = connection.prepareStatement(query);
         stmtList.add(removeOperationStmt);
+
+        query = "DELETE FROM CATALOG WHERE ID=?";
+        removeCatalogElementStmt = connection.prepareStatement(query);
+        stmtList.add(removeCatalogElementStmt);
+
+        query = "SELECT COUNT(*) FROM OPERATIONS WHERE CATALOG_ID=?";
+        getNumberOperationsForCatalogIdStmt = connection.prepareStatement(query);
+        stmtList.add(getNumberOperationsForCatalogIdStmt);
+
+        query = "DELETE FROM CONTRACTORS WHERE ID=?";
+        removeContractorElementStmt = connection.prepareStatement(query);
+        stmtList.add(removeContractorElementStmt);
+
+        query = "SELECT COUNT(*) FROM DOCUMENTS WHERE CONTRACTOR_ID=?";
+        getNumberDocumentsForContractorIdStmt = connection.prepareStatement(query);
+        stmtList.add(getNumberDocumentsForContractorIdStmt);
 
         query = "SELECT SUM(OPERATIONS.COUNT)" +
                 " FROM OPERATIONS, DOCUMENTS" +
@@ -366,7 +388,7 @@ public class DBHandler {
             removeOperationStmt.executeUpdate();
 
             //Вносим операции обновленного документа в БД
-            for (Operation operation: document.getOperationList()){
+            for (Operation operation : document.getOperationList()) {
                 addOperationStmt.setInt(1, document.getId());
                 addOperationStmt.setInt(2, operation.getCatalogId());
                 addOperationStmt.setInt(3, operation.getCount());
@@ -374,7 +396,7 @@ public class DBHandler {
             }
 
             //Выполняем проверку корректности остатков
-            for (Integer cataloId: catalogIdSet) {
+            for (Integer cataloId : catalogIdSet) {
                 if (!isCorrectRemaind(cataloId)) throw new Exception("Некорректная сумма операции");
             }
 
@@ -383,6 +405,48 @@ public class DBHandler {
             throw e;
         }
         connection.commit();
+    }
+
+    public void removeCatalogElement(CatalogElement catalogElement) throws Exception {
+        //Сначала проверяем, есть ли операции, в которых задействован данный элемент каталога
+        getNumberOperationsForCatalogIdStmt.setInt(1, catalogElement.getId());
+        ResultSet resultSet = getNumberOperationsForCatalogIdStmt.executeQuery();
+        resultSet.next();
+        int countOperations = resultSet.getInt(1);
+        if (countOperations > 0) throw new Exception("На данный элемент каталога есть действующие ссылки в документах");
+
+        //Если все нормально - удаляем
+        try {
+            removeCatalogElementStmt.setInt(1, catalogElement.getId());
+            removeCatalogElementStmt.executeUpdate();
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        }
+        connection.commit();
+    }
+
+    public void removeContractorElement(ContractorsElement contractorsElement) throws Exception {
+        //Сначала проверяем, есть ли документы, в которых фигурирует данный контрагент
+        getNumberDocumentsForContractorIdStmt.setInt(1, contractorsElement.getId());
+        ResultSet resultSet = getNumberDocumentsForContractorIdStmt.executeQuery();
+        resultSet.next();
+        int countDocuments = resultSet.getInt(1);
+        if (countDocuments > 0) throw new Exception("На данного контрагента есть действующие ссылки в документах");
+
+        //Если все нормально - удаляем
+        try {
+            removeContractorElementStmt.setInt(1, contractorsElement.getId());
+            removeContractorElementStmt.executeUpdate();
+        } catch (SQLException e) {
+            connection.rollback();
+            throw e;
+        }
+        connection.commit();
+    }
+
+    public void removeDocument(Document document) throws Exception {
+
     }
 
     private boolean isCorrectRemaind(int catalogId) throws SQLException {
