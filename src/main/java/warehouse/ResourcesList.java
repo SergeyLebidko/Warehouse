@@ -104,11 +104,9 @@ public class ResourcesList {
     public static final String failCatalogElementUpdate = "Не удалось изменить элемент каталога. Ошибка:";
     public static final String failContractorElementUpdate = "Не удалось изменить наименование контрагента. Ошибка:";
     public static final String failDocumentElementUpdate = "Не удалось обновить документ. Ошибка:";
-
     public static final String failRemoveCatalogElement = "Не удалось удалить элемент каталога. Ошибка:";
     public static final String failRemoveContractorElement = "Не удалось удалить контрагента. Ошибка:";
     public static final String failRemoveDocument = "Не удалось удалить документ. Ошибка:";
-
     public static final String failExportXLSFile = "Не удалось записать файл на диск. Ошибка:";
     public static final String failRemaindReportAccess = "Не удалось сформировать данные по остаткам. Ошибка:";
     public static final String failTurnReportAccess = "Не удалось сформировать отчет по оборотам. Ошибка:";

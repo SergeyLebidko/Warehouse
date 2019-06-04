@@ -32,18 +32,15 @@ public class DBHandler {
     private PreparedStatement addOperationStmt;
     private PreparedStatement getMaxIdDocumentStmt;
     private PreparedStatement validateOperatonStmt;
-
     private PreparedStatement editCatalogElementStmt;
     private PreparedStatement editContractroElementStmt;
     private PreparedStatement editDocumentElementStmt;
     private PreparedStatement removeOperationStmt;
-
     private PreparedStatement removeCatalogElementStmt;
     private PreparedStatement getNumberOperationsForCatalogIdStmt;
-
     private PreparedStatement removeContractorElementStmt;
     private PreparedStatement getNumberDocumentsForContractorIdStmt;
-
+    private PreparedStatement removeDocumentStmt;
     private PreparedStatement getIncsTurnStmt;
     private PreparedStatement getDecsTurnStmt;
     private PreparedStatement getDeliveryElemntsStmt;
@@ -148,6 +145,10 @@ public class DBHandler {
         query = "SELECT COUNT(*) FROM DOCUMENTS WHERE CONTRACTOR_ID=?";
         getNumberDocumentsForContractorIdStmt = connection.prepareStatement(query);
         stmtList.add(getNumberDocumentsForContractorIdStmt);
+
+        query = "DELETE FROM DOCUMENTS WHERE ID=?";
+        removeDocumentStmt = connection.prepareStatement(query);
+        stmtList.add(removeDocumentStmt);
 
         query = "SELECT SUM(OPERATIONS.COUNT)" +
                 " FROM OPERATIONS, DOCUMENTS" +
@@ -446,7 +447,19 @@ public class DBHandler {
     }
 
     public void removeDocument(Document document) throws Exception {
+        removeDocumentStmt.setInt(1, document.getId());
+        removeDocumentStmt.executeUpdate();
 
+        //Если удаляем приходный документ, то проверяем корректность сотатков
+        if (document.getType() == COM) {
+            for (Operation operation : document.getOperationList()) {
+                if (!isCorrectRemaind(operation.getCatalogId())) {
+                    connection.rollback();
+                    throw new Exception("Удаление данного документа сделает остатки некорректными");
+                }
+            }
+        }
+        connection.commit();
     }
 
     private boolean isCorrectRemaind(int catalogId) throws SQLException {
