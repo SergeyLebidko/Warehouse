@@ -29,6 +29,12 @@ public class DBHandler {
     private PreparedStatement getDocumentOperationsStmt;
     private PreparedStatement addCatalogElementStmt;
     private PreparedStatement addContractorElementStmt;
+
+    private PreparedStatement addDocumentStmt;
+    private PreparedStatement addOperationStmt;
+    private PreparedStatement getMaxIdDocumentStmt;
+    private PreparedStatement validateOperatonStmt;
+
     private PreparedStatement getIncsTurnStmt;
     private PreparedStatement getDecsTurnStmt;
     private PreparedStatement getDeliveryElemntsStmt;
@@ -80,6 +86,27 @@ public class DBHandler {
         query = "INSERT INTO CONTRACTORS (NAME) VALUES(?)";
         addContractorElementStmt = connection.prepareStatement(query);
         stmtList.add(addContractorElementStmt);
+
+        query = "INSERT INTO DOCUMENTS (DATE, TYPE, CONTRACTOR_ID) VALUES (?, ? ,?)";
+        addDocumentStmt = connection.prepareStatement(query);
+        stmtList.add(addDocumentStmt);
+
+        query = "INSERT INTO OPERATIONS (DOCUMENT_ID, CATALOG_ID, COUNT) VALUES (?, ?, ?)";
+        addOperationStmt = connection.prepareStatement(query);
+        stmtList.add(addOperationStmt);
+
+        query = "SELECT MAX(DOCUMENTS.ID) FROM DOCUMENTS";
+        getMaxIdDocumentStmt = connection.prepareStatement(query);
+        stmtList.add(getMaxIdDocumentStmt);
+
+        query = "SELECT SUM(DOCUMENTS.TYPE*OPERATIONS.COUNT)" +
+                " FROM OPERATIONS, DOCUMENTS" +
+                " WHERE OPERATIONS.DOCUMENT_ID=DOCUMENTS.ID" +
+                " AND OPERATIONS.CATALOG_ID=?" +
+                " GROUP BY DATE" +
+                " ORDER BY DATE(DOCUMENTS.DATE)";
+        validateOperatonStmt = connection.prepareStatement(query);
+        stmtList.add(validateOperatonStmt);
 
         query = "SELECT SUM(OPERATIONS.COUNT)" +
                 " FROM OPERATIONS, DOCUMENTS" +
@@ -214,6 +241,7 @@ public class DBHandler {
         try {
             addCatalogElementStmt.executeUpdate();
         } catch (SQLException e) {
+            connection.rollback();
             if (e.getErrorCode() == 19) throw new Exception(failItemAlreadyExists);
             throw e;
         }
@@ -222,13 +250,66 @@ public class DBHandler {
 
     public void addContractorElement(String name) throws Exception {
         addContractorElementStmt.setString(1, name);
-        try{
+        try {
             addContractorElementStmt.executeUpdate();
-        }catch (SQLException e){
+        } catch (SQLException e) {
+            connection.rollback();
             if (e.getErrorCode() == 19) throw new Exception(failItemAlreadyExists);
             throw e;
         }
         connection.commit();
+    }
+
+    public void addDocument(Document document) throws Exception {
+        try {
+            //Вносим данные документа
+            addDocumentStmt.setString(1, DateFormatUtils.format(document.getDate(), "yyyy-MM-dd"));
+            addDocumentStmt.setInt(2, document.getType().getMul());
+            addDocumentStmt.setInt(3, document.getContractorId());
+            addDocumentStmt.executeUpdate();
+
+            //Получаем id внесенного документа
+            int documentId;
+            ResultSet resultSet = getMaxIdDocumentStmt.executeQuery();
+            resultSet.next();
+            documentId = resultSet.getInt(1);
+            resultSet.close();
+
+            //Вносим данные операций документа
+            for (Operation operation : document.getOperationList()) {
+                addOperationStmt.setInt(1, documentId);
+                addOperationStmt.setInt(2, operation.getCatalogId());
+                addOperationStmt.setInt(3, operation.getCount());
+                addOperationStmt.executeUpdate();
+            }
+
+            //В случае внесения расходного документа проверяем корректность остатков
+            if (document.getType() == CONS) {
+                for (Operation operation : document.getOperationList()) {
+                    if (!isCorrectRemaind(operation.getCatalogId())) throw new Exception("Некорректные остатки");
+                }
+            }
+        } catch (Exception e) {
+            connection.rollback();
+            throw e;
+        }
+
+        connection.commit();
+    }
+
+    private boolean isCorrectRemaind(int catalogId) throws SQLException {
+        validateOperatonStmt.setInt(1, catalogId);
+        ResultSet resultSet = validateOperatonStmt.executeQuery();
+        int sum = 0;
+        while (resultSet.next()) {
+            sum += resultSet.getInt(1);
+            if (sum < 0) {
+                resultSet.close();
+                return false;
+            }
+        }
+        resultSet.close();
+        return true;
     }
 
     public ArrayList<RemaindElement> getRemaindElements(Integer catalogId, Date endDate) throws SQLException {

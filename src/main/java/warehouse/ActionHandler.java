@@ -201,23 +201,14 @@ public class ActionHandler {
         Document document = documentDialog.showCreateDocumentDialog();
         if (document == null) return;
 
-        //Тестовый код
-        DateFormat format = DateFormat.getDateInstance();
-        System.out.println("Введен документ");
-        System.out.println("  id = " + document.getId());
-        System.out.println("  Дата = " + format.format(document.getDate()));
-        System.out.println("  contractorId = " + document.getContractorId());
-        System.out.println("  Контрагент = " + document.getContractorName());
-        System.out.println("  Тип = " + document.getType().getName());
-        System.out.println("  Операции документа:");
-        for (Operation operation : document.getOperationList()) {
-            System.out.print("      " + operation.getId());
-            System.out.print(" " + operation.getCatalogId());
-            System.out.print(" " + operation.getCatalogName());
-            System.out.println(" " + operation.getCount());
+        //Вносим документ в базу данных
+        try {
+            dbHandler.addDocument(document);
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, failDocumentAdd+" "+e.getMessage(),"", JOptionPane.ERROR_MESSAGE);
+            return;
         }
-
-        //Вставить код внесения документа в БД
+        showDocumentList();
     }
 
     public void showRemaindReport() {
