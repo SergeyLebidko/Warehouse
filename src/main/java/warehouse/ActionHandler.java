@@ -254,7 +254,7 @@ public class ActionHandler {
 
         String name = null;
         while (true) {
-            name = JOptionPane.showInputDialog(frm, "Введите наименование нового элемента", startValue);
+            name = JOptionPane.showInputDialog(frm, "Введите наименование элемента", startValue);
             if (name == null) break;
             name = name.trim();
             if (name.indexOf("%") != (-1) || name.indexOf("_") != (-1)) {

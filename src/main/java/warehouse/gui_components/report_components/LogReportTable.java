@@ -631,6 +631,7 @@ public class LogReportTable {
     }
 
     private Date convertLocalDateToDate(LocalDate localDate) {
+        if (localDate == null) return null;
         return java.sql.Date.valueOf(localDate);
     }
 
